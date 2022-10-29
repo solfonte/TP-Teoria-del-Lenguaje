@@ -1,51 +1,49 @@
-package main
+package server
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 const (
-	HOST = "localhost"
-	PORT = "9988"
-	TYPE = "tcp"
+	HOST                  = "localhost"
+	PORT                  = "9988"
+	TYPE                  = "tcp"
+	ShutdownServerCommand = "Q"
 )
 
-func main() {
+func start() {
 	fmt.Println("Server Running...")
 
 	server, error := net.Listen(TYPE, HOST+":"+PORT)
 	// there are no exceptions we handle error with if (hay panic tambien investigar)
+	fmt.Println("Listening on " + HOST + ":" + PORT)
+	fmt.Println("Waiting for client...")
+
 	if error != nil {
 		fmt.Println("Error listening:", error.Error())
 		os.Exit(1)
 	}
 	// delay the execution of the function or method or an anonymous method until the nearby functions returns.
-	defer server.Close()
-	fmt.Println("Listening on " + HOST + ":" + PORT)
-	fmt.Println("Waiting for client...")
-	for {
-		// acept diferent connections
-		conn, error := server.Accept()
-		if error != nil {
-			fmt.Println("Error accepting: ", error.Error())
-			os.Exit(1)
-		}
-		fmt.Println("client connected")
-		go processClient(conn)
-	}
+	receiver := Receiver{listenerSocket: server}
+	go stop()
+	go start_receiver(receiver)
 
 }
-func processClient(connection net.Conn) {
-	buffer := make([]byte, 1024)
-	// leo lo que me llega
-	dataLen, error := connection.Read(buffer)
-	if error != nil {
-		fmt.Println("Error reading:", error.Error())
-		connection.Close()
+
+func stop() {
+	var quit bool
+	for !quit {
+		/* process info until someone enters exit */
+		input, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+		value := strings.TrimSpace(input)
+		if value == ShutdownServerCommand {
+			/* close loop */
+			fmt.Println("entre a cerrar")
+			quit = true
+		}
 	}
-	fmt.Println("Received: ", string(buffer[:dataLen]))
-	_, error = connection.Write([]byte("Llego este mensaje al server: " + string(buffer[:dataLen])))
-	connection.Close()
 }
