@@ -1,9 +1,11 @@
 package main
 
-import "fmt"
-import "github.com/solfonte/TP-Teoria-del-Lenguaje/server"
+import (
+	"fmt"
+	"truco/app/server"
+)
 
 func main() {
-	fmt.Printf(("hola"))
-	server.start()
+	fmt.Printf("hola")
+	server.Start()
 }

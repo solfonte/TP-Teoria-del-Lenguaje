@@ -6,14 +6,15 @@ import (
 	"os"
 )
 
-type Receiver struct {
+type Acceptor struct {
 	listenerSocket net.Listener
 }
 
-func start_receiver(receiver Receiver) {
+func start_receiver(acceptor Acceptor) {
+	fmt.Printf(("estoy en receiver"))
 	for {
 		// acept diferent connections
-		conn, error := receiver.listenerSocket.Accept()
+		conn, error := acceptor.listenerSocket.Accept()
 		if error != nil {
 			fmt.Println("Error accepting: ", error.Error())
 			os.Exit(1)
@@ -35,4 +36,8 @@ func process_client(connection net.Conn) {
 	fmt.Println("Received: ", string(buffer[:dataLen]))
 	_, error = connection.Write([]byte("Llego este mensaje al server: " + string(buffer[:dataLen])))
 	connection.Close()
+}
+
+func stop_receiver(acceptor Acceptor) {
+	acceptor.listenerSocket.Close()
 }

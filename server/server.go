@@ -15,7 +15,7 @@ const (
 	ShutdownServerCommand = "Q"
 )
 
-func start() {
+func Start() {
 	fmt.Println("Server Running...")
 
 	server, error := net.Listen(TYPE, HOST+":"+PORT)
@@ -28,13 +28,14 @@ func start() {
 		os.Exit(1)
 	}
 	// delay the execution of the function or method or an anonymous method until the nearby functions returns.
-	receiver := Receiver{listenerSocket: server}
-	go stop()
-	go start_receiver(receiver)
+	acceptor := Acceptor{listenerSocket: server}
+	go stop(acceptor)
+	start_receiver(acceptor)
 
 }
 
-func stop() {
+func stop(acceptor Acceptor) {
+
 	var quit bool
 	for !quit {
 		/* process info until someone enters exit */
@@ -42,8 +43,8 @@ func stop() {
 		value := strings.TrimSpace(input)
 		if value == ShutdownServerCommand {
 			/* close loop */
-			fmt.Println("entre a cerrar")
 			quit = true
+			stop_receiver(acceptor)
 		}
 	}
 }
