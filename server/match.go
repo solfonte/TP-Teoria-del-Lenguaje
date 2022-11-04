@@ -9,10 +9,11 @@ type Match struct {
 	started    bool
 }
 
-func addPlayerToMatch(match *Match, player Player) {
+func (match *Match) addPlayerToMatch(player Player) {
 	match.players = append(match.players, player)
 	if len(match.players) == match.maxPlayers {
 		match.started = true
 		fmt.Println("Comenzo partida")
+
 	}
 }

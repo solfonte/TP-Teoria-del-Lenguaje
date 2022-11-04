@@ -6,19 +6,19 @@ type MatchManager struct {
 	matches []Match
 }
 
-func process_player(matchManager *MatchManager, player Player) {
-	askPlayerName(player)
-	messageClient, _ := sendMenu(player)
-	requestedmatch := processRequest(player, messageClient)
+func (matchManager *MatchManager) process_player(player *Player) {
+	player.askPlayerName()
+	messageClient, _ := sendMenu(*player)
+	requestedmatch := processRequest(*player, messageClient)
 	if requestedmatch["create"] == 0 {
 		newMatch := Match{duration: requestedmatch["duration"], maxPlayers: requestedmatch["members"], started: false, players: []Player{}}
-		addPlayerToMatch(&newMatch, player)
+		newMatch.addPlayerToMatch(*player)
 		matchManager.matches = append(matchManager.matches, newMatch)
 		fmt.Println("Matches ", matchManager.matches)
 	} else {
 		fmt.Println("Matches antes de pasarlos: ", matchManager.matches)
 		match := look_matches_with_criteria(matchManager.matches, requestedmatch["duration"], requestedmatch["members"])
-		addPlayerToMatch(match, player)
+		match.addPlayerToMatch(*player)
 	}
 }
 

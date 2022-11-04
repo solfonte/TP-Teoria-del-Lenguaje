@@ -13,7 +13,7 @@ type Player struct {
 	points int
 }
 
-func askPlayerName(player Player) {
+func (player *Player) askPlayerName() {
 	common.Send(player.socket, "Podes ingresar tu nombre")
 	playerName, error := common.Receive(player.socket)
 	if error != nil {
