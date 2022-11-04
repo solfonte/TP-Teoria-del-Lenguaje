@@ -20,4 +20,5 @@ func askPlayerName(player Player) {
 		fmt.Println("Error reciving from client: ", error.Error())
 	}
 	player.name = playerName
+	fmt.Println("nombre del jugador: ", player.name)
 }
