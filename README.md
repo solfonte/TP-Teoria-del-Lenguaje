@@ -22,5 +22,5 @@
 
 ### Server 
 ```Bash 
-    go run server.go 
+    go run server_main.go 
 ```
