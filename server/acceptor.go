@@ -12,7 +12,7 @@ type Acceptor struct {
 }
 
 func start_receiver(acceptor Acceptor) {
-	matchManager := MatchManager{}
+	matchManager := MatchManager{matches: []Match{}}
 	fmt.Printf(("estoy en receiver\n"))
 	for {
 		// acept diferent connections
@@ -23,7 +23,7 @@ func start_receiver(acceptor Acceptor) {
 		}
 		newPlayer := Player{id: 1, socket: peer}
 		acceptor.players = append(acceptor.players, newPlayer)
-		process_player(matchManager, newPlayer)
+		process_player(&matchManager, newPlayer)
 
 		fmt.Println("client connected")
 
