@@ -1,11 +1,13 @@
 package server
 
 import (
-	"bufio"
+	//"bufio"
 	"fmt"
 	"net"
 	"os"
-	"strings"
+	//"strings"
+	"os/signal"
+    "syscall"
 )
 
 const (
@@ -16,8 +18,7 @@ const (
 )
 
 func Start() {
-	fmt.Println("Server Running...")
-
+	
 	server, error := net.Listen(TYPE, HOST+":"+PORT)
 	// there are no exceptions we handle error with if (hay panic tambien investigar)
 	fmt.Println("Listening on " + HOST + ":" + PORT)
@@ -32,19 +33,12 @@ func Start() {
 	go stop(acceptor)
 	start_receiver(acceptor)
 
+	
 }
 
 func stop(acceptor Acceptor) {
-
-	var quit bool
-	for !quit {
-		/* process info until someone enters exit */
-		input, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-		value := strings.TrimSpace(input)
-		if value == ShutdownServerCommand {
-			/* close loop */
-			quit = true
-			stop_receiver(acceptor)
-		}
-	}
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	<-sigs
+	stop_receiver(acceptor)
 }
