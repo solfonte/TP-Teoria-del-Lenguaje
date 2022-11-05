@@ -3,12 +3,12 @@ package main
 //  The net module lets you make network connections and transmit data.
 
 import (
+	"bufio"
 	"fmt"
 	"net"
-	"truco/app/common"
-	"bufio"
 	"os"
 	"strings"
+	"truco/app/common"
 )
 
 const (
@@ -25,6 +25,10 @@ func main() {
 		fmt.Println("Fail connect to server")
 		return
 	}
+	runClient(socket)
+}
+
+func runClient(socket net.Conn) {
 	fmt.Println("entre a client run")
 	sendMatchParameters(socket)
 	//este receive deberia bloquearse esperando a que empiece la partida.
@@ -32,7 +36,7 @@ func main() {
 	fmt.Println("Message server: ", messageServer)
 }
 
-func sendMatchParameters(socket net.Conn){
+func sendMatchParameters(socket net.Conn) {
 	reader := bufio.NewReader(os.Stdin)
 	// pido nombre
 	messageServer, _ := common.Receive(socket)
@@ -45,20 +49,19 @@ func sendMatchParameters(socket net.Conn){
 	common.Send(socket, "ok")
 	messageServer, _ = common.Receive(socket)
 	fmt.Println("Message server: ", messageServer)
-	common.Send(socket, "ok") //TODO: esto hay que sacarlo porque lo pusimos 
+	common.Send(socket, "ok") //TODO: esto hay que sacarlo porque lo pusimos
 	messageServer, _ = common.Receive(socket)
 	fmt.Println("Message server: ", messageServer)
-	
-	// responde el cliente 
-	
+
+	// responde el cliente
+
 	for !strings.HasPrefix(messageServer, "OK") {
 		messageClient, _ = reader.ReadString('\n')
 		common.Send(socket, messageClient)
 		messageServer, _ = common.Receive(socket)
 		fmt.Println("Message server: ", messageServer)
 	}
-	// consultar 
+	// consultar
 	// se creo partida o se esta buscando partida
 
 }
-
