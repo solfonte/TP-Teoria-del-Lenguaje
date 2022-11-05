@@ -3,6 +3,9 @@ package server
 import (
 	"math/rand"
     "time"
+	"encoding/csv"
+	"fmt"
+	"os"
 )
 
 type CardDealer struct {
@@ -16,7 +19,9 @@ func (cardDealer *CardDealer) initialize (){
 }
 
 func (cardDealer *CardDealer) assignCards (player *Player) {
-	//random generator para asignar al azar
+
+	cardNames := readCSV("server/cards.csv")
+
 	rand.Seed(time.Now().UnixNano())
 	var amountOfCards int = 0
 		var assignedCards [3]int
@@ -32,4 +37,25 @@ func (cardDealer *CardDealer) assignCards (player *Player) {
 			}
 		} 
 		player.dealCards(assignedCards)
+		fmt.Println("AL JUGADOR SE LE ASIGNARON LAS CARTAS: ")
+		fmt.Println(cardNames[assignedCards[0]],cardNames[assignedCards[1]],cardNames[assignedCards[2]])
+		
+}
+
+func readCSV(filePath string) [][]string{
+	f, err := os.Open(filePath)
+    if err != nil {
+       // log.Fatal("Unable to read input file " + filePath, err)
+       fmt.Println("Unable to read input file " + filePath, err)
+    }
+    defer f.Close()
+
+	csvReader := csv.NewReader(f)
+	csvReader.Comma = ','
+    records, err := csvReader.ReadAll()
+    if err != nil {
+        fmt.Println("Unable to parse file as CSV for " + filePath, err)
+    }
+
+	return records
 }
