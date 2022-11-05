@@ -1,11 +1,10 @@
 package server
-/*
+
 import (
 	"fmt"
-	"math/rand"
-    "time"
+
 )
-*/
+
 type Match struct {
 	duration   int
 	maxPlayers int
@@ -29,7 +28,15 @@ func (match *Match) addPlayerToMatch(player Player) {
 		match.players = append(match.players, player)
 		if len(match.players) == match.maxPlayers {
 			match.started = true
-			deal_cards(match.players)
+			beginGame(match.players)	
 		}
+	}
+}
+
+func beginGame(players []Player){
+	deal_cards(players)
+	fmt.Println("Entre a comenzo juego")
+	for _,player := range players {
+		startGame(player)
 	}
 }
