@@ -1,8 +1,6 @@
 package main
 
-//  The net module lets you make network connections and transmit data.
-
-import (
+import(
 	"fmt"
 	"net"
 	"truco/app/common"
@@ -10,27 +8,6 @@ import (
 	"os"
 	"strings"
 )
-
-const (
-	SERVER_HOST = "localhost"
-	SERVER_PORT = "9988"
-	SERVER_TYPE = "tcp"
-)
-
-func main() {
-
-	// connect to server
-	socket, err := net.Dial(SERVER_TYPE, SERVER_HOST+":"+SERVER_PORT)
-	if err != nil {
-		fmt.Println("Fail connect to server")
-		return
-	}
-	fmt.Println("entre a client run")
-	sendMatchParameters(socket)
-	//este receive deberia bloquearse esperando a que empiece la partida.
-	messageServer, _ := common.Receive(socket)
-	fmt.Println("Message server: ", messageServer)
-}
 
 func sendMatchParameters(socket net.Conn){
 	reader := bufio.NewReader(os.Stdin)
@@ -45,7 +22,7 @@ func sendMatchParameters(socket net.Conn){
 	common.Send(socket, "ok")
 	messageServer, _ = common.Receive(socket)
 	fmt.Println("Message server: ", messageServer)
-	common.Send(socket, "ok") //TODO: esto hay que sacarlo porque lo pusimos 
+	common.Send(socket, "ok") //TODO: esto hay que sacarlo porque lo pusimos como patch para que no se bloquee
 	messageServer, _ = common.Receive(socket)
 	fmt.Println("Message server: ", messageServer)
 	
@@ -61,4 +38,3 @@ func sendMatchParameters(socket net.Conn){
 	// se creo partida o se esta buscando partida
 
 }
-
