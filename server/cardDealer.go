@@ -35,7 +35,6 @@ func (cardDealer *CardDealer) assignCards (player *Player) {
 				card_suit := cardNames[card][1]
 
 				assignedCards[amountOfCards] = Card{id : card, value : card_value, suit : card_suit }
-				fmt.Println("carta: " + cardNames[card][0] + " y palo " + card_suit)
 
 				//se le asigna cero para determinar que ya se repartio
 				cardDealer.cards[card] = 0
@@ -43,7 +42,6 @@ func (cardDealer *CardDealer) assignCards (player *Player) {
 			}
 		} 
 		player.dealCards(assignedCards)
-		fmt.Println("AL JUGADOR SE LE ASIGNARON LAS CARTAS: ")
 		
 }
 
