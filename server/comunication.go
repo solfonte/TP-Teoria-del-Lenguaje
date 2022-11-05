@@ -1,13 +1,13 @@
 package server
 
 import (
+	"fmt"
 	"strconv"
 	"truco/app/common"
-	"fmt"
 )
 
 func sendMenu(player Player) (string, error) {
-	common.Send(player.socket, "Bienvenido al truco " + player.name)
+	common.Send(player.socket, "Bienvenido al truco "+player.name)
 	messagePlayer, error := common.Receive(player.socket)
 	common.Send(player.socket, "Las reglas del juego son sencillas: .....")
 	messagePlayer, error = common.Receive(player.socket)
@@ -22,12 +22,11 @@ func sendMenu(player Player) (string, error) {
 	return messagePlayer, error
 }
 
-func getAmountOfPlayers(player Player) int{
-	
+func getAmountOfPlayers(player Player) int {
+
 	common.Send(player.socket, "ingrese cantidad integrantes; 2 o 4")
 	members, _ := common.Receive(player.socket)
 	amount_members, _ := strconv.Atoi(members)
-
 
 	for amount_members != 2 && amount_members != 4 {
 		common.Send(player.socket, " Error! Elegir cantidad de integrantes 2 o 4")
@@ -65,21 +64,21 @@ func processRequest(player Player, message string) map[string]int {
 		common.Send(player.socket, "Ok, Partida solicitada, se esta buscando una partida")
 		return match
 	}
-		
+
 }
 
-func getMatchParameters(match map[string]int, player Player){
+func getMatchParameters(match map[string]int, player Player) {
 	members := getAmountOfPlayers(player)
-	duration:= getAmountOfPoints(player)
+	duration := getAmountOfPoints(player)
 	match["members"] = members
 	match["duration"] = duration
 }
 
-func startGame(player Player){
-	common.Send(player.socket, "El juego ya arrancado")
+func startGame(player Player) {
+	common.Send(player.socket, "El juego comenzó")
 	common.Send(player.socket, "Estas son tus cartas")
 	card1 := strconv.Itoa(player.cards[0].value) + " " + player.cards[0].suit
 	card2 := strconv.Itoa(player.cards[1].value) + " " + player.cards[1].suit
 	card3 := strconv.Itoa(player.cards[2].value) + " " + player.cards[2].suit
-	common.Send(player.socket, card1 + " " + card2 + " " + card3)
+	common.Send(player.socket, card1+" "+card2+" "+card3)
 }
