@@ -14,7 +14,6 @@ const (
 	HOST                  = "localhost"
 	PORT                  = "9988"
 	TYPE                  = "tcp"
-	ShutdownServerCommand = "Q"
 )
 
 func Start() {
