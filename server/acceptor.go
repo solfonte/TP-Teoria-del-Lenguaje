@@ -19,12 +19,13 @@ func start_receiver(acceptor Acceptor) {
 		// acept diferent connections
 		peer, error := acceptor.listenerSocket.Accept()
 		if error != nil {
+			//TODO: cuando se cierra el aceptador, no es un error pero sale por aca y figura como que el servidor "fallo"
 			fmt.Println("Error accepting: ", error.Error())
 			os.Exit(1)
 		}
 		newPlayer := Player{id: 1, socket: peer}
 		acceptor.players = append(acceptor.players, newPlayer)
-		matchManager.process_player(&newPlayer)
+		go matchManager.process_player(&newPlayer)
 
 		fmt.Println("client connected")
 
