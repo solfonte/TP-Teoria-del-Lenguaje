@@ -24,15 +24,17 @@ func main() {
 		fmt.Println("Fail connect to server")
 		return
 	}
+	runClient(socket)
+}
+
+func runClient(socket net.Conn) {
 	fmt.Println("entre a client run")
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		messageServer, error := common.Receive(socket)
 		if error != nil {
 			fmt.Println("Error reciving from server: ", error.Error())
-			fmt.Println("Close connection")
 			socket.Close()
-			return
 		}
 		fmt.Println("Message server: ", messageServer)
 		messageClient, _ := reader.ReadString('\n')
@@ -42,24 +44,4 @@ func main() {
 		}
 		common.Send(socket, messageClient)
 	}
-	//go runClient(socket)
 }
-
-// func runClient(socket net.Conn) {
-// 	fmt.Println("entre a client run")
-// 	reader := bufio.NewReader(os.Stdin)
-// 	for {
-// 		messageServer, error := common.Receive(socket)
-// 		if error != nil {
-// 			fmt.Println("Error reciving from server: ", error.Error())
-// 			socket.Close()
-// 		}
-// 		fmt.Println("Message server: ", messageServer)
-// 		messageClient, _ := reader.ReadString('\n')
-// 		if messageClient == "close" {
-// 			fmt.Println("Stop playing")
-// 			return
-// 		}
-// 		common.Send(socket, messageClient)
-// 	}
-// }
