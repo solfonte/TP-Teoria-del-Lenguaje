@@ -24,3 +24,5 @@
 ```Bash 
     go run server_main.go 
 ```
+
+[SIGINT capture](https://gobyexample.com/signals)
