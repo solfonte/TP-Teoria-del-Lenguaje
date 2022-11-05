@@ -11,7 +11,7 @@ type Player struct {
 	name   string
 	socket net.Conn
 	points int
-	cards [3]int
+	cards [3]Card
 }
 
 func (player *Player) askPlayerName() {
@@ -24,7 +24,7 @@ func (player *Player) askPlayerName() {
 	fmt.Println("nombre del jugador: ", player.name)
 }
 
-func (player *Player) dealCards(cards [3]int){
+func (player *Player) dealCards(cards [3]Card){
 	//despues hay que mapear los numeros a las cartas. Por ahora queda asi
 	player.cards = cards
 }

@@ -6,11 +6,13 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type CardDealer struct {
 	cards [40]int
 }
+
 
 func (cardDealer *CardDealer) initialize (){
 	for i := range cardDealer.cards {
@@ -24,12 +26,16 @@ func (cardDealer *CardDealer) assignCards (player *Player) {
 
 	rand.Seed(time.Now().UnixNano())
 	var amountOfCards int = 0
-		var assignedCards [3]int
+	var assignedCards [3]Card
 
 		for amountOfCards < 3 {
-			card := rand.Int() % 40
-			if cardDealer.cards[card] != 0 {
-				assignedCards[amountOfCards] = card
+			card := rand.Int() % 40 // posicion en nuestro vector de cartas 
+			if cardDealer.cards[card] != 0 { // si no fue asignada 
+				card_value, _ := strconv.Atoi(cardNames[card][0])
+				card_suit := cardNames[card][1]
+
+				assignedCards[amountOfCards] = Card{id : card, value : card_value, suit : card_suit }
+				fmt.Println("carta: " + cardNames[card][0] + " y palo " + card_suit)
 
 				//se le asigna cero para determinar que ya se repartio
 				cardDealer.cards[card] = 0
@@ -38,7 +44,6 @@ func (cardDealer *CardDealer) assignCards (player *Player) {
 		} 
 		player.dealCards(assignedCards)
 		fmt.Println("AL JUGADOR SE LE ASIGNARON LAS CARTAS: ")
-		fmt.Println(cardNames[assignedCards[0]],cardNames[assignedCards[1]],cardNames[assignedCards[2]])
 		
 }
 
