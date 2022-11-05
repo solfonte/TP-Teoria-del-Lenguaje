@@ -10,10 +10,12 @@ type Match struct {
 }
 
 func (match *Match) addPlayerToMatch(player Player) {
-	match.players = append(match.players, player)
-	if len(match.players) == match.maxPlayers {
-		match.started = true
-		fmt.Println("Comenzo partida")
-
+	if match != nil {
+		match.players = append(match.players, player)
+		if len(match.players) == match.maxPlayers {
+			match.started = true
+			fmt.Println("Comenzo partida")
+	
+		}
 	}
 }
