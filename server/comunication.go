@@ -81,12 +81,10 @@ func getMatchParameters(match map[string]int, player Player) {
 }
 
 func startGame(player Player) {
-	common.Send(player.socket, "El juego comenzó")
-	common.Send(player.socket, "Estas son tus cartas")
-	card1 := strconv.Itoa(player.cards[0].value) + " " + player.cards[0].suit
-	card2 := strconv.Itoa(player.cards[1].value) + " " + player.cards[1].suit
-	card3 := strconv.Itoa(player.cards[2].value) + " " + player.cards[2].suit
-	common.Send(player.socket, card1+" "+card2+" "+card3) //esto no se esta mostrando
-	fmt.Println(card1, card2, card3)                      //Investigar como hacer para hacer multiples sends sin que se trabe
 
+	card1 := player.cards[0].getFullName()
+	card2 := player.cards[1].getFullName()
+	card3 := player.cards[2].getFullName()
+	common.Send(player.socket, "El juego comenzó \n Estas son tus cartas: \n"+card1+" "+card2+" "+card3) //esto no se esta mostrando
+	fmt.Println("cartas: "+card1, card2, card3)
 }
