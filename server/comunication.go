@@ -85,7 +85,7 @@ func startGame(player Player) {
 	card1 := strconv.Itoa(player.cards[0].value) + " " + player.cards[0].suit
 	card2 := strconv.Itoa(player.cards[1].value) + " " + player.cards[1].suit
 	card3 := strconv.Itoa(player.cards[2].value) + " " + player.cards[2].suit
-	common.Send(player.socket, card1+" "+card2+" "+card3)
-	fmt.Println(card1, card2, card3) //Investigar como hacer para hacer multiples sends sin que se trabe
+	common.Send(player.socket, card1+" "+card2+" "+card3) //esto no se esta mostrando
+	fmt.Println(card1, card2, card3)                      //Investigar como hacer para hacer multiples sends sin que se trabe
 
 }
