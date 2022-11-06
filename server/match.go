@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-
 )
 
 type Match struct {
@@ -10,14 +9,15 @@ type Match struct {
 	maxPlayers int
 	players    []Player
 	started    bool
+	rounds     []Round
 }
 
-func deal_cards(players []Player){
-	
-	var cardDealer  = CardDealer{}
+func deal_cards(players []Player) {
+
+	var cardDealer = CardDealer{}
 	cardDealer.initialize()
 
-	for _,p := range players {
+	for _, p := range players {
 
 		cardDealer.assignCards(&p)
 	}
@@ -28,15 +28,19 @@ func (match *Match) addPlayerToMatch(player Player) {
 		match.players = append(match.players, player)
 		if len(match.players) == match.maxPlayers {
 			match.started = true
-			beginGame(match.players)	
+			beginGame(match.players)
 		}
 	}
 }
 
-func beginGame(players []Player){
+func beginGame(players []Player) {
 	deal_cards(players)
 	fmt.Println("Entre a comenzo juego")
-	for _,player := range players {
+
+	var round = Round{}
+	round.initialize(players)
+	for _, player := range players {
 		startGame(player)
+		round.askPlayerForMove()
 	}
 }

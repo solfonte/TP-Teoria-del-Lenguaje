@@ -26,6 +26,7 @@ func main() {
 		return
 	}
 	runClient(socket)
+	fmt.Println("SALI DEL RUNCLIENT")
 }
 
 func runClient(socket net.Conn) {
@@ -63,5 +64,14 @@ func sendMatchParameters(socket net.Conn) {
 	}
 	// consultar
 	// se creo partida o se esta buscando partida
+
+	for !strings.HasPrefix(messageServer, "Seleccione") {
+		messageServer, _ = common.Receive(socket)
+		fmt.Println("Message server: ", messageServer)
+	}
+
+	messageClient, _ = reader.ReadString('\n')
+
+	common.Send(socket, messageClient)
 
 }
