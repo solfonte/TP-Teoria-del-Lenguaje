@@ -35,13 +35,13 @@ func (Round *Round) askPlayerForMove() {
 	for i := 0; i <= len(Round.players) && i != Round.currentPlayer; i++ {
 		common.Send(Round.players[i].socket, "Espera a que juegue tu oponente")
 	}
-	for i := Round.currentPlayer + 1; i <= len(Round.players); i++ {
-		common.Send(Round.players[i].socket, "Espera a que juegue tu oponente")
-	}
 	common.Send(Round.players[Round.currentPlayer].socket, "Podes hacer las siguientes jugadas:")
 	common.Send(Round.players[Round.currentPlayer].socket, "1) tirar una carta")
+	fmt.Println("SADSADSA") //Investigar como hacer para hacer multiples sends sin que se trabe
 	common.Send(Round.players[Round.currentPlayer].socket, "2) cantar envido")
+	fmt.Println("SADSADSA") //Investigar como hacer para hacer multiples sends sin que se trabe
 	common.Send(Round.players[Round.currentPlayer].socket, "3) cantar truco")
+	fmt.Println("SADSADSA") //Investigar como hacer para hacer multiples sends sin que se trabe
 	common.Send(Round.players[Round.currentPlayer].socket, "Seleccione: ")
 
 	jugada, _ := common.Receive(Round.players[Round.currentPlayer].socket)
