@@ -23,8 +23,9 @@ func processMenuOptions(socket net.Conn, messageServer string) {
 		messageClient, _ := reader.ReadString('\n')
 		common.Send(socket, messageClient)
 		messageServer, _ = common.Receive(socket)
-		fmt.Println("Message server: ", messageServer)
+		fmt.Println(messageServer)
 	}
+	fmt.Println("buscando o creando partida")
 }
 
 func sendMenuResponses(socket net.Conn) {

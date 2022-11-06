@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -20,8 +21,9 @@ func (cardDealer *CardDealer) initialize() {
 }
 
 func (cardDealer *CardDealer) assignCards(player *Player) {
-
-	cardNames := readCSV("server/cards.csv")
+	absPath, _ := filepath.Abs("../server/cards.csv")
+	fmt.Println(absPath)
+	cardNames := readCSV(absPath)
 
 	rand.Seed(time.Now().UnixNano())
 	var amountOfCards int = 0
@@ -47,6 +49,7 @@ func (cardDealer *CardDealer) assignCards(player *Player) {
 }
 
 func readCSV(filePath string) [][]string {
+
 	f, err := os.Open(filePath)
 	if err != nil {
 		fmt.Println("Unable to read input file "+filePath, err)
