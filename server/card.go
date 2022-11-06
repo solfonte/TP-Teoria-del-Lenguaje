@@ -4,6 +4,28 @@ import (
 	"strconv"
 )
 
+// todo: hacer un file de constantes y mover esto:
+const RANGO_I_TRES = 4
+const RANGO_F_TRES = 7
+const RANGO_I_DOS = 8
+const RANGO_F_DOS = 11
+const RANGO_I_UNO = 12
+const RANGO_F_UNO = 13
+const RANGO_I_DOCE = 14
+const RANGO_F_DOCE = 17
+const RANGO_I_ONCE = 18
+const RANGO_F_ONCE = 21
+const RANGO_I_DIEZ = 22
+const RANGO_F_DIEZ = 25
+const RANGO_I_SIETE = 26
+const RANGO_F_SIETE = 27
+const RANGO_I_SEIS = 28
+const RANGO_F_SEIS = 31
+const RANGO_I_CINCO = 32
+const RANGO_F_CINCO = 35
+const RANGO_I_CUATRO = 36
+const RANGO_F_CUATRO = 39
+
 type Card struct {
 	id    int
 	value int
@@ -16,34 +38,34 @@ func (Card Card) getFullName() string {
 
 // Devuelve 1 si la carta es mejor que la otra, 0 si son de igual jerarquia o -1 si es menor que la otra.
 func (Card Card) compareCards(anotherCard Card) int {
-	if Card.id >= 4 && Card.id <= 7 && anotherCard.id >= 4 && anotherCard.id <= 7 {
+	if Card.id >= RANGO_I_TRES && Card.id <= RANGO_F_TRES && anotherCard.id >= RANGO_I_TRES && anotherCard.id <= RANGO_F_TRES {
 		return 0
 	}
-	if Card.id >= 8 && Card.id <= 11 && anotherCard.id >= 8 && anotherCard.id <= 11 {
+	if Card.id >= RANGO_I_DOS && Card.id <= RANGO_F_DOS && anotherCard.id >= RANGO_I_DOS && anotherCard.id <= RANGO_F_DOS {
 		return 0
 	}
-	if Card.id >= 12 && Card.id <= 13 && anotherCard.id >= 12 && anotherCard.id <= 13 {
+	if Card.id >= RANGO_I_UNO && Card.id <= RANGO_F_UNO && anotherCard.id >= RANGO_I_UNO && anotherCard.id <= RANGO_F_UNO {
 		return 0
 	}
-	if Card.id >= 14 && Card.id <= 17 && anotherCard.id >= 14 && anotherCard.id <= 17 {
+	if Card.id >= RANGO_I_DOCE && Card.id <= RANGO_F_DOCE && anotherCard.id >= RANGO_I_DOCE && anotherCard.id <= RANGO_F_DOCE {
 		return 0
 	}
-	if Card.id >= 18 && Card.id <= 21 && anotherCard.id >= 18 && anotherCard.id <= 21 {
+	if Card.id >= RANGO_I_ONCE && Card.id <= RANGO_F_ONCE && anotherCard.id >= RANGO_I_ONCE && anotherCard.id <= RANGO_F_ONCE {
 		return 0
 	}
-	if Card.id >= 22 && Card.id <= 25 && anotherCard.id >= 22 && anotherCard.id <= 25 {
+	if Card.id >= RANGO_I_DIEZ && Card.id <= RANGO_F_DIEZ && anotherCard.id >= RANGO_I_DIEZ && anotherCard.id <= RANGO_F_DIEZ {
 		return 0
 	}
-	if Card.id >= 26 && Card.id <= 27 && anotherCard.id >= 26 && anotherCard.id <= 27 {
+	if Card.id >= RANGO_I_SIETE && Card.id <= RANGO_F_SIETE && anotherCard.id >= RANGO_I_SIETE && anotherCard.id <= RANGO_F_SIETE {
 		return 0
 	}
-	if Card.id >= 28 && Card.id <= 31 && anotherCard.id >= 28 && anotherCard.id <= 31 {
+	if Card.id >= RANGO_I_SEIS && Card.id <= RANGO_F_SEIS && anotherCard.id >= RANGO_I_SEIS && anotherCard.id <= RANGO_F_SEIS {
 		return 0
 	}
-	if Card.id >= 32 && Card.id <= 35 && anotherCard.id >= 32 && anotherCard.id <= 35 {
+	if Card.id >= RANGO_I_CINCO && Card.id <= RANGO_F_CINCO && anotherCard.id >= RANGO_I_CINCO && anotherCard.id <= RANGO_F_CINCO {
 		return 0
 	}
-	if Card.id >= 36 && Card.id <= 39 && anotherCard.id >= 36 && anotherCard.id <= 39 {
+	if Card.id >= RANGO_I_CUATRO && Card.id <= RANGO_F_CUATRO && anotherCard.id >= RANGO_I_CUATRO && anotherCard.id <= RANGO_F_CUATRO {
 		return 0
 	}
 	if Card.id < anotherCard.id {
