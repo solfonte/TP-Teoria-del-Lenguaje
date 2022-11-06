@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"truco/app/common"
 )
 
@@ -15,11 +16,15 @@ func sendMenu(player Player) (string, error) {
 	fmt.Println("paso")
 	// receives its answer
 	messagePlayer, error = common.Receive(player.socket)
-	for (messagePlayer != "CREATE") && (messagePlayer != "JOIN") {
-		common.Send(player.socket, "Error CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada")
+	response := strings.ToUpper(messagePlayer)
+	fmt.Println(response)
+
+	for (response != "CREATE") && (response != "JOIN") {
+		common.Send(player.socket, "Error: ingrese CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada")
 		messagePlayer, error = common.Receive(player.socket)
+		response = strings.ToUpper(messagePlayer)
 	}
-	return messagePlayer, error
+	return response, error
 }
 
 func getAmountOfPlayers(player Player) int {
