@@ -3,8 +3,10 @@ package client
 //  The net module lets you make network connections and transmit data.
 
 import (
+	"bufio"
 	"fmt"
 	"net"
+	"os"
 	"truco/app/common"
 )
 
@@ -30,6 +32,18 @@ func runClient(socket net.Conn) {
 	fmt.Println("entre a client run")
 	sendMenuResponses(socket)
 	//este receive deberia bloquearse esperando a que empiece la partida.
-	messageServer, _ := common.Receive(socket)
-	fmt.Println("Message server: ", messageServer)
+	startGame(socket)
+	//loop juego
+	processGameloop(socket)
+}
+
+func processGameloop(socket net.Conn) {
+	// loop de server manda algo cliente responde
+	promptReader := bufio.NewReader(os.Stdin)
+	for {
+		messageServer, _ := common.Receive(socket)
+		fmt.Println(messageServer)
+		messageClient, _ := promptReader.ReadString('\n')
+		common.Send(socket, messageClient)
+	}
 }

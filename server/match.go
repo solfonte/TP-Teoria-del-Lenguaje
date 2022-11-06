@@ -41,6 +41,6 @@ func beginGame(players []Player) {
 	round.initialize(players)
 	for _, player := range players {
 		startGame(player)
-		round.askPlayerForMove()
 	}
+	round.askPlayerForMove()
 }

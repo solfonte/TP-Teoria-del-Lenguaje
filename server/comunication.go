@@ -85,6 +85,10 @@ func startGame(player Player) {
 	card1 := player.cards[0].getFullName()
 	card2 := player.cards[1].getFullName()
 	card3 := player.cards[2].getFullName()
-	common.Send(player.socket, "El juego comenzó \n Estas son tus cartas: \n"+card1+" "+card2+" "+card3) //esto no se esta mostrando
+	common.Send(player.socket, "El juego comenzó")
+	message, _ := common.Receive(player.socket)
+	common.Send(player.socket, "Estas son tus cartas: "+card1+" "+card2+" "+card3) //esto no se esta mostrando)
+	message, _ = common.Receive(player.socket)
+	fmt.Println(message)
 	fmt.Println("cartas: "+card1, card2, card3)
 }
