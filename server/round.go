@@ -40,11 +40,28 @@ func (Round *Round) handleEnvido() {
 	fmt.Println("cantaste ENVIDO")
 }
 
+func (Round *Round) handleThrowACard() int {
+	common.Send(Round.players[Round.currentPlayer].socket, "Que carta queres tirar?")
+	fmt.Println("dasdas")
+	common.Send(Round.players[Round.currentPlayer].socket, "1) "+Round.players[Round.currentPlayer].cards[0].getFullName())
+	fmt.Println("dasdas")
+	common.Send(Round.players[Round.currentPlayer].socket, "2) "+Round.players[Round.currentPlayer].cards[1].getFullName())
+	fmt.Println("dasdas")
+	common.Send(Round.players[Round.currentPlayer].socket, "3) "+Round.players[Round.currentPlayer].cards[2].getFullName())
+	fmt.Println("dasdas")
+
+	common.Send(Round.players[Round.currentPlayer].socket, "Seleccione: ")
+
+	jugada, _ := common.Receive(Round.players[Round.currentPlayer].socket)
+	option, _ := strconv.Atoi(jugada)
+	return option
+}
+
 func (Round *Round) askPlayerForMove() {
 	fmt.Println("EN LA ROUND")
 	fmt.Println(Round.players[Round.currentPlayer])
 	for i := 0; i <= len(Round.players) && i != Round.currentPlayer; i++ {
-		common.Send(Round.players[i].socket, "Espera a que juegue tu oponente")
+		common.Send(Round.players[i].socket, "Espera a que juegue tu oponente...")
 	}
 	common.Send(Round.players[Round.currentPlayer].socket, "Podes hacer las siguientes jugadas:")
 	common.Send(Round.players[Round.currentPlayer].socket, "1) tirar una carta")
@@ -63,9 +80,7 @@ func (Round *Round) askPlayerForMove() {
 
 	switch option {
 	case 1:
-		common.Send(Round.players[Round.currentPlayer].socket, "tiraste una carta")
-		fmt.Println("tiraste una carta")
-		//meter aca lo de cual tirar
+		Round.handleThrowACard()
 	case 2:
 		Round.handleEnvido()
 	case 3:

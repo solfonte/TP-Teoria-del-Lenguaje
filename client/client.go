@@ -74,4 +74,14 @@ func sendMatchParameters(socket net.Conn) {
 
 	common.Send(socket, messageClient)
 
+	if messageClient == "1" {
+		for !strings.HasPrefix(messageServer, "Seleccione") {
+			messageServer, _ = common.Receive(socket)
+			fmt.Println("Message server: ", messageServer)
+		}
+
+		messageClient, _ = reader.ReadString('\n')
+
+		common.Send(socket, messageClient)
+	}
 }
