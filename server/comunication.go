@@ -16,6 +16,7 @@ func sendMenu(player Player) (string, error) {
 	fmt.Println("paso")
 	// receives its answer
 	messagePlayer, error = common.Receive(player.socket)
+	fmt.Println(messagePlayer)
 	response := strings.ToUpper(messagePlayer)
 	fmt.Println(response)
 
