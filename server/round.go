@@ -13,6 +13,7 @@ type Round struct {
 	hand          int
 	currentPlayer int
 	championId    int
+	envido        bool
 }
 
 func (Round *Round) initialize(players []Player) {
@@ -21,12 +22,22 @@ func (Round *Round) initialize(players []Player) {
 	Round.hand = rand.Int() % len(players)
 	Round.currentPlayer = Round.hand
 	Round.championId = -1
+	Round.envido = false
 }
 
 func (Round *Round) startRound() {
 	Round.askPlayerForMove()
 	//recibir
 	//leer y mandar la jugada que sea
+}
+
+func (Round *Round) canSingEnvido() bool {
+	return (Round.moves <= 1 || !Round.envido)
+}
+
+func (Round *Round) handleEnvido() {
+	common.Send(Round.players[Round.currentPlayer].socket, "cantaste ENVIDO")
+	fmt.Println("cantaste ENVIDO")
 }
 
 func (Round *Round) askPlayerForMove() {
@@ -38,8 +49,11 @@ func (Round *Round) askPlayerForMove() {
 	common.Send(Round.players[Round.currentPlayer].socket, "Podes hacer las siguientes jugadas:")
 	common.Send(Round.players[Round.currentPlayer].socket, "1) tirar una carta")
 	fmt.Println("SADSADSA") //Investigar como hacer para hacer multiples sends sin que se trabe
-	common.Send(Round.players[Round.currentPlayer].socket, "2) cantar envido")
-	fmt.Println("SADSADSA") //Investigar como hacer para hacer multiples sends sin que se trabe
+	if Round.canSingEnvido() {
+		common.Send(Round.players[Round.currentPlayer].socket, "2) cantar envido")
+		fmt.Println("SADSADSA") //Investigar como hacer para hacer multiples sends sin que se trabe
+	}
+
 	common.Send(Round.players[Round.currentPlayer].socket, "3) cantar truco")
 	fmt.Println("SADSADSA") //Investigar como hacer para hacer multiples sends sin que se trabe
 	common.Send(Round.players[Round.currentPlayer].socket, "Seleccione: ")
@@ -53,8 +67,7 @@ func (Round *Round) askPlayerForMove() {
 		fmt.Println("tiraste una carta")
 		//meter aca lo de cual tirar
 	case 2:
-		common.Send(Round.players[Round.currentPlayer].socket, "cantaste ENVIDO")
-		fmt.Println("cantaste ENVIDO")
+		Round.handleEnvido()
 	case 3:
 		common.Send(Round.players[Round.currentPlayer].socket, "cantaste TRUCO")
 		fmt.Println("cantaste TRUCO")
