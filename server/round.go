@@ -8,7 +8,7 @@ import (
 )
 
 type Round struct {
-	players       []Player
+	players       []*Player
 	moves         int
 	hand          int
 	currentPlayer *Player
@@ -16,11 +16,11 @@ type Round struct {
 	envido        bool
 }
 
-func (Round *Round) initialize(players []Player) {
+func (Round *Round) initialize(players []*Player) {
 	Round.players = players
 	Round.moves = 0
 	Round.hand = rand.Int() % len(players)
-	Round.currentPlayer = &players[Round.hand]
+	Round.currentPlayer = players[Round.hand]
 	Round.championId = -1
 	Round.envido = false
 }

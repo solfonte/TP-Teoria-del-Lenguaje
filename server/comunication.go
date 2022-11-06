@@ -82,6 +82,7 @@ func getMatchParameters(match map[string]int, player Player) {
 
 func startGame(player Player) {
 
+	fmt.Println(player.cards[0].suit)
 	card1 := player.cards[0].getFullName()
 	card2 := player.cards[1].getFullName()
 	card3 := player.cards[2].getFullName()
