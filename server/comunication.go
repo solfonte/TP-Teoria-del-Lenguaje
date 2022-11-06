@@ -66,7 +66,7 @@ func processRequest(player Player, message string) map[string]int {
 	} else {
 		match["create"] = 1
 		getMatchParameters(match, player)
-		common.Send(player.socket, "Ok, Partida solicitada, se esta buscando una partida")
+		common.Send(player.socket, "OK, Partida solicitada, se esta buscando una partida")
 		return match
 	}
 
