@@ -22,7 +22,7 @@ func start_receiver(acceptor Acceptor) {
 			fmt.Println("Error accepting: ", error.Error())
 			os.Exit(1)
 		}
-		newPlayer := Player{id: 1, socket: peer}
+		newPlayer := Player{id: len(acceptor.players) + 1, socket: peer}
 		acceptor.players = append(acceptor.players, newPlayer)
 		matchManager.process_player(&newPlayer)
 
