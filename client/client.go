@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 	"truco/app/common"
 )
 
@@ -43,6 +44,9 @@ func processGameloop(socket net.Conn) {
 	for {
 		messageServer, _ := common.Receive(socket)
 		fmt.Println(messageServer)
+		if strings.HasPrefix(messageServer, "Espera a que juegue tu oponente...") {
+			common.Send(socket, "OK")
+		}
 		messageClient, _ := promptReader.ReadString('\n')
 		common.Send(socket, messageClient)
 	}

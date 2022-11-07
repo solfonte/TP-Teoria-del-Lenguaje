@@ -58,8 +58,11 @@ func (Round *Round) askPlayerForMove() {
 	fmt.Println("EN LA ROUND")
 	fmt.Println(Round.currentPlayer)
 
-	for i := 0; i <= len(Round.players) && Round.players[i].id != Round.currentPlayer.id; i++ {
-		common.Send(Round.players[i].socket, "Espera a que juegue tu oponente...")
+	for i := 0; i < len(Round.players); i++ {
+		if Round.players[i].id != Round.currentPlayer.id {
+			fmt.Println("entre")
+			common.Send(Round.players[i].socket, "Espera a que juegue tu oponente...")
+		}
 	}
 	messageEnvio := ""
 	if Round.canSingEnvido() {
