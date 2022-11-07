@@ -41,45 +41,41 @@ func (Round *Round) handleEnvido() {
 }
 
 func (Round *Round) handleThrowACard() int {
-	common.Send(Round.currentPlayer.socket, "Que carta queres tirar?")
-	fmt.Println("dasdas")
-	common.Send(Round.currentPlayer.socket, "1) "+Round.currentPlayer.cards[0].getFullName())
-	fmt.Println("dasdas")
-	common.Send(Round.currentPlayer.socket, "2) "+Round.currentPlayer.cards[1].getFullName())
-	fmt.Println("dasdas")
-	common.Send(Round.currentPlayer.socket, "3) "+Round.currentPlayer.cards[2].getFullName())
-	fmt.Println("dasdas")
-
-	common.Send(Round.currentPlayer.socket, "Seleccione: ")
+	card1 := "1) " + Round.currentPlayer.cards[0].getFullName()
+	card2 := " 2) " + Round.currentPlayer.cards[1].getFullName()
+	card3 := " 3) " + Round.currentPlayer.cards[2].getFullName()
+	message := "Que carta queres tirar? "
+	common.Send(Round.currentPlayer.socket, message+card1+card2+card3+" Seleccione un numero")
 
 	jugada, _ := common.Receive(Round.currentPlayer.socket)
 	option, _ := strconv.Atoi(jugada)
+	fmt.Println("Carta seleccionada ", option)
+	fmt.Println(Round.currentPlayer.cards[option-1].getFullName())
 	return option
 }
 
 func (Round *Round) askPlayerForMove() {
 	fmt.Println("EN LA ROUND")
 	fmt.Println(Round.currentPlayer)
+
 	for i := 0; i <= len(Round.players) && Round.players[i].id != Round.currentPlayer.id; i++ {
 		common.Send(Round.players[i].socket, "Espera a que juegue tu oponente...")
 	}
-	common.Send(Round.currentPlayer.socket, "Podes hacer las siguientes jugadas:")
-	common.Send(Round.currentPlayer.socket, "1) tirar una carta")
-	fmt.Println("SADSADSA") //Investigar como hacer para hacer multiples sends sin que se trabe
+	messageEnvio := ""
 	if Round.canSingEnvido() {
-		common.Send(Round.currentPlayer.socket, "2) cantar envido")
+		messageEnvio = "2) cantar envido"
 		fmt.Println("SADSADSA") //Investigar como hacer para hacer multiples sends sin que se trabe
 	}
-
-	common.Send(Round.currentPlayer.socket, "3) cantar truco")
-	fmt.Println("SADSADSA") //Investigar como hacer para hacer multiples sends sin que se trabe
-	common.Send(Round.currentPlayer.socket, "Seleccione: ")
+	message := "Es tu turno, podes hacer las siguientes jugadas: "
+	command := "1) tirar una carta, " + messageEnvio + "3) cantar truco. Eliga un numero"
+	common.Send(Round.currentPlayer.socket, message+command)
 
 	jugada, _ := common.Receive(Round.currentPlayer.socket)
 	option, _ := strconv.Atoi(jugada)
-
+	fmt.Println("opticon elegifa: ", option)
 	switch option {
 	case 1:
+		fmt.Println("entre a handle tirar una carta")
 		Round.handleThrowACard()
 	case 2:
 		Round.handleEnvido()
