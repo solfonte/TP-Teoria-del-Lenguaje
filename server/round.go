@@ -53,6 +53,15 @@ func (Round *Round) handleThrowACard() Card {
 	return Round.currentPlayer.cards[option-1]
 }
 
+func (Round *Round) changeTurn() {
+	if Round.hand < len(Round.players) {
+		Round.hand = +1
+	} else {
+		Round.hand = 0
+	}
+	Round.currentPlayer = Round.players[Round.hand]
+}
+
 func (Round *Round) askPlayerForMove() {
 	fmt.Println("EN LA ROUND")
 	fmt.Println(Round.currentPlayer)
