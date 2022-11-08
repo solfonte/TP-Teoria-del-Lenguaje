@@ -40,18 +40,17 @@ func (Round *Round) handleEnvido() {
 	fmt.Println("cantaste ENVIDO")
 }
 
-func (Round *Round) handleThrowACard() int {
+func (Round *Round) handleThrowACard() Card {
 	card1 := "1) " + Round.currentPlayer.cards[0].getFullName()
 	card2 := " 2) " + Round.currentPlayer.cards[1].getFullName()
 	card3 := " 3) " + Round.currentPlayer.cards[2].getFullName()
 	message := "Que carta queres tirar? "
-	common.Send(Round.currentPlayer.socket, message+card1+card2+card3+" Seleccione un numero")
+	common.Send(Round.currentPlayer.socket, message+card1+card2+card3+". Seleccione un numero:")
 
 	jugada, _ := common.Receive(Round.currentPlayer.socket)
 	option, _ := strconv.Atoi(jugada)
-	fmt.Println("Carta seleccionada ", option)
-	fmt.Println(Round.currentPlayer.cards[option-1].getFullName())
-	return option
+	fmt.Println("Carta seleccionada ", Round.currentPlayer.cards[option-1].getFullName())
+	return Round.currentPlayer.cards[option-1]
 }
 
 func (Round *Round) askPlayerForMove() {
@@ -67,18 +66,18 @@ func (Round *Round) askPlayerForMove() {
 	messageEnvio := ""
 	if Round.canSingEnvido() {
 		messageEnvio = "2) cantar envido"
-		fmt.Println("SADSADSA") //Investigar como hacer para hacer multiples sends sin que se trabe
+		fmt.Println("entre a handle envido") //Investigar como hacer para hacer multiples sends sin que se trabe
 	}
 	message := "Es tu turno, podes hacer las siguientes jugadas: "
-	command := "1) tirar una carta, " + messageEnvio + "3) cantar truco. Eliga un numero"
+	command := "1) tirar una carta, " + messageEnvio + "3) cantar truco. Elija un numero"
 	common.Send(Round.currentPlayer.socket, message+command)
 
 	jugada, _ := common.Receive(Round.currentPlayer.socket)
 	option, _ := strconv.Atoi(jugada)
-	fmt.Println("opticon elegifa: ", option)
+	fmt.Println("option elegida: ", option)
 	switch option {
 	case 1:
-		fmt.Println("entre a handle tirar una carta")
+		fmt.Println("opcion tirar una carta")
 		Round.handleThrowACard()
 	case 2:
 		Round.handleEnvido()
@@ -86,4 +85,5 @@ func (Round *Round) askPlayerForMove() {
 		common.Send(Round.currentPlayer.socket, "cantaste TRUCO")
 		fmt.Println("cantaste TRUCO")
 	}
+	Round.changeTurn()
 }
