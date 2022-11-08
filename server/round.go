@@ -62,7 +62,7 @@ func (Round *Round) changeTurn() {
 	Round.currentPlayer = Round.players[Round.hand]
 }
 
-func (Round *Round) askPlayerForMove() {
+func (Round *Round) askPlayerForMove() int {
 	fmt.Println("EN LA ROUND")
 	fmt.Println(Round.currentPlayer)
 
@@ -72,13 +72,13 @@ func (Round *Round) askPlayerForMove() {
 			common.Send(Round.players[i].socket, "Espera a que juegue tu oponente...")
 		}
 	}
-	messageEnvio := ""
+	messageEnvido := ""
 	if Round.canSingEnvido() {
-		messageEnvio = "2) cantar envido"
+		messageEnvido = "2) cantar envido"
 		fmt.Println("entre a handle envido") //Investigar como hacer para hacer multiples sends sin que se trabe
 	}
 	message := "Es tu turno, podes hacer las siguientes jugadas: "
-	command := "1) tirar una carta, " + messageEnvio + "3) cantar truco. Elija un numero"
+	command := "1) tirar una carta, " + messageEnvido + "3) cantar truco. Elija un numero"
 	common.Send(Round.currentPlayer.socket, message+command)
 
 	jugada, _ := common.Receive(Round.currentPlayer.socket)
@@ -95,4 +95,20 @@ func (Round *Round) askPlayerForMove() {
 		fmt.Println("cantaste TRUCO")
 	}
 	Round.changeTurn()
+	return option
+}
+
+func (Round *Round) getOpponentMove(move int) {
+	switch move {
+	case 1:
+		common.Send(Round.currentPlayer.socket, "Tu oponente tiro una carta")
+		//ask for a move
+	case 2:
+		common.Send(Round.currentPlayer.socket, "Tu oponente canto envido")
+		//abrir caso de quiero, real envido, falta envido y decir los puntos
+	case 3:
+		common.Send(Round.currentPlayer.socket, "Tu oponente canto truco")
+		//abrir caso de quiero, re truco, vale 4
+		// y tirar cartas
+	}
 }
