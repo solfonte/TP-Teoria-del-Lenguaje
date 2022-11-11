@@ -45,9 +45,14 @@ func processGameloop(socket net.Conn) {
 		messageServer, _ := common.Receive(socket)
 		fmt.Println(messageServer)
 		if strings.HasPrefix(messageServer, "Espera a que juegue tu oponente...") {
+			fmt.Println("entre a esperar")
 			common.Send(socket, "OK")
+		} else if strings.Contains(messageServer, "The other player") {
+			fmt.Println("entre a the other player")
+			common.Send(socket, "OK")
+		} else {
+			messageClient, _ := promptReader.ReadString('\n')
+			common.Send(socket, messageClient)
 		}
-		messageClient, _ := promptReader.ReadString('\n')
-		common.Send(socket, messageClient)
 	}
 }
