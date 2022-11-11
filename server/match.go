@@ -10,6 +10,7 @@ type Match struct {
 	players    []*Player
 	started    bool
 	rounds     []Round
+	points     int
 }
 
 func deal_cards(players []*Player) {
@@ -28,20 +29,23 @@ func (match *Match) addPlayerToMatch(player *Player) {
 		match.players = append(match.players, player)
 		if len(match.players) == match.maxPlayers {
 			match.started = true
-			beginGame(match.players)
+			match.beginGame()
 		}
 	}
 }
 
-func beginGame(players []*Player) {
-	deal_cards(players)
+func (match *Match) beginGame() {
+	deal_cards(match.players)
 	fmt.Println("Entre a comenzo juego")
 
 	var round = Round{}
-	round.initialize(players)
-	for _, player := range players {
+	round.initialize(match.players)
+	for _, player := range match.players {
 		fmt.Println("primer carat ", player.cards[0].suit)
 		startGame(*player)
 	}
-	round.askPlayerForMove()
+	for match.points <= 15 {
+		match.points += round.startRound()
+
+	}
 }
