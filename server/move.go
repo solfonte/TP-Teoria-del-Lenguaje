@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"truco/app/common"
 )
@@ -40,7 +41,7 @@ func (move *Move) assingWinner(result int, player1 *Player, player2 *Player) boo
 }
 
 func (move *Move) getMaxPoints() int {
-	return move.points
+	return int(math.Max(float64(move.loser.points), float64(move.winner.points)))
 }
 
 func (move *Move) process_winner(winner *Player, loser *Player) bool {
@@ -48,6 +49,7 @@ func (move *Move) process_winner(winner *Player, loser *Player) bool {
 	move.winner.points = 0
 	move.loser.id = loser.id
 	move.loser.points = 0
+	// hay que settear a cero por cada ronda
 	winner.winsPerPlay += 1
 	if move.typeMove == 3 || winner.winsPerPlay >= 2 {
 		fmt.Println("asdinos puntos partida a ganador")
@@ -133,6 +135,8 @@ func (move *Move) askPlayerForMove(player *Player) int {
 		common.Send(player.socket, "cantaste TRUCO")
 		fmt.Println("cantaste TRUCO")
 	}
+	//chequear numeros
+
 	return option
 }
 

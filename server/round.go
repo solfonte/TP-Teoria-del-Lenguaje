@@ -9,7 +9,6 @@ type Round struct {
 	moves         int
 	waitingPlayer *Player
 	currentPlayer *Player
-	championId    int
 	envido        bool
 	cardsPlayed   []Card
 	points        int
@@ -18,23 +17,23 @@ type Round struct {
 func (Round *Round) initialize(players map[int](*Player)) {
 	Round.players = players
 	Round.moves = 0
-	Round.championId = -1
 	Round.envido = false
 	Round.points = 0
 }
 
-func (round *Round) startRound() int {
+func (round *Round) startRound(initialCurrentId int, initialWaitingId int) int {
 	completeRound := 1
 	finish := false
 	round.moves = 0
 	fmt.Println("Arranca ronda")
-	round.decide_hand_players()
-	for completeRound <= 3 || !finish {
+	round.decide_hand_players(initialCurrentId, initialWaitingId)
+	for completeRound <= 3 && !finish {
 		var move = Move{typeMove: completeRound}
 		finish = move.start_move(round.currentPlayer, round.waitingPlayer)
 		completeRound += 1
-		round.currentPlayer = round.players[move.winner.id]
-		round.waitingPlayer = round.players[move.loser.id]
+
+		round.decide_hand_players(move.winner.id, move.loser.id)
+
 		round.points += move.getMaxPoints()
 		fmt.Println("Puntos ronda", round.points)
 	}
@@ -46,10 +45,9 @@ func (round *Round) startRound() int {
 	return round.points
 }
 
-func (round *Round) decide_hand_players() {
-	//Mañana veo
-	round.waitingPlayer = round.players[1]
-	round.currentPlayer = round.players[2]
+func (round *Round) decide_hand_players(initialCurrentPlayerId int, initialWaitPlayerId int) {
+	round.waitingPlayer = round.players[initialWaitPlayerId]
+	round.currentPlayer = round.players[initialCurrentPlayerId]
 }
 
 // func (round *Round) waitingPlayerId() int {

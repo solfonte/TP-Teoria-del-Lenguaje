@@ -41,6 +41,8 @@ func runClient(socket net.Conn) {
 func processGameloop(socket net.Conn) {
 	// loop de server manda algo cliente responde
 	promptReader := bufio.NewReader(os.Stdin)
+	// falta desconexion tanto cliente como servidor
+	//handlear ctrl c
 	for {
 		messageServer, _ := common.Receive(socket)
 		fmt.Println(messageServer)
@@ -50,7 +52,7 @@ func processGameloop(socket net.Conn) {
 		} else if strings.Contains(messageServer, "Tu oponente tiro una carta") {
 			fmt.Println("Tu oponente tiro una carta")
 			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "la jugada") {
+		} else if strings.Contains(messageServer, "la jugada") || strings.Contains(messageServer, "la ronda") {
 			fmt.Println("gannaste o perdiste")
 			common.Send(socket, "OK")
 		} else {
