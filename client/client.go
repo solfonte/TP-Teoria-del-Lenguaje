@@ -50,6 +50,9 @@ func processGameloop(socket net.Conn) {
 		} else if strings.Contains(messageServer, "Tu oponente tiro una carta") {
 			fmt.Println("Tu oponente tiro una carta")
 			common.Send(socket, "OK")
+		} else if strings.Contains(messageServer, "la jugada") {
+			fmt.Println("gannaste o perdiste")
+			common.Send(socket, "OK")
 		} else {
 			messageClient, _ := promptReader.ReadString('\n')
 			common.Send(socket, messageClient)

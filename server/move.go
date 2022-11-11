@@ -6,9 +6,14 @@ import (
 	"truco/app/common"
 )
 
+type InfoPlayer struct {
+	id     int
+	points int
+}
+
 type Move struct {
-	winner      int
-	loser       int
+	winner      InfoPlayer
+	loser       InfoPlayer
 	points      int
 	typeMove    int
 	cardsPlayed []Card
@@ -28,25 +33,39 @@ func (move *Move) start_move(player1 *Player, player2 *Player) bool {
 
 func (move *Move) assingWinner(result int, player1 *Player, player2 *Player) bool {
 	if result == 1 || result == 0 {
-		move.winner = player1.id
-		move.loser = player2.id
-		player1.winsPerPlay += 1
-
-		fmt.Println("ganador primera jugada ", move.winner)
-		if player1.winsPerPlay == 2 {
-			return true
-		} else {
-			return false
-		}
+		return move.process_winner(player1, player2)
 	} else {
-		move.winner = player2.id
-		move.loser = player1.id
-		fmt.Println("ganador primera jugada ", move.winner)
-		if player1.winsPerPlay == 2 {
-			return true
-		} else {
-			return false
-		}
+		return move.process_winner(player2, player1)
+	}
+}
+
+func (move *Move) getMaxPoints() int {
+	return move.points
+}
+
+func (move *Move) process_winner(winner *Player, loser *Player) bool {
+	move.winner.id = winner.id
+	move.winner.points = 0
+	move.loser.id = loser.id
+	move.loser.points = 0
+	winner.winsPerPlay += 1
+	if move.typeMove == 3 || winner.winsPerPlay >= 2 {
+		move.winner.points = 1
+	} else {
+		move.typeMove = 0
+	}
+
+	fmt.Println("ganador primera jugada ", move.winner)
+	common.Send(winner.socket, "Ganaste la jugada "+strconv.Itoa(move.typeMove))
+	common.Receive(winner.socket)
+
+	common.Send(loser.socket, "Perdiste la jugada"+strconv.Itoa(move.typeMove) )
+	common.Receive(loser.socket)
+
+	if winner.winsPerPlay == 2 {
+		return true
+	} else {
+		return false
 	}
 }
 
