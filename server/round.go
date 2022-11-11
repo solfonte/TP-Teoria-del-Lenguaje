@@ -1,11 +1,13 @@
 package server
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Round struct {
 	players       map[int]*Player
 	moves         int
-	watingPlayer  *Player
+	waitingPlayer *Player
 	currentPlayer *Player
 	championId    int
 	envido        bool
@@ -24,22 +26,29 @@ func (Round *Round) initialize(players map[int](*Player)) {
 func (round *Round) startRound() int {
 	completeRound := 1
 	finish := false
+	round.moves = 0
+	fmt.Println("Arranca ronda")
 	round.decide_hand_players()
 	for completeRound <= 3 || !finish {
 		var move = Move{typeMove: completeRound}
-		finish = move.start_move(round.currentPlayer, round.watingPlayer)
+		finish = move.start_move(round.currentPlayer, round.waitingPlayer)
 		completeRound += 1
 		round.currentPlayer = round.players[move.winner.id]
-		round.watingPlayer = round.players[move.loser.id]
+		round.waitingPlayer = round.players[move.loser.id]
 		round.points += move.getMaxPoints()
+		fmt.Println("Puntos ronda", round.points)
 	}
 	fmt.Println("Gano ronda ", round.currentPlayer)
 	fmt.Println("Puntos ronda", round.points)
+	msgWinner := "Ganaste la ronda"
+	msgLoser := "Perdiste la ronda"
+	sendInfoPlayers(round.currentPlayer, round.waitingPlayer, msgWinner, msgLoser)
 	return round.points
 }
+
 func (round *Round) decide_hand_players() {
 	//Mañana veo
-	round.watingPlayer = round.players[1]
+	round.waitingPlayer = round.players[1]
 	round.currentPlayer = round.players[2]
 }
 

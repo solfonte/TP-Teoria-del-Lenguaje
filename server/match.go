@@ -46,6 +46,5 @@ func (match *Match) beginGame() {
 	}
 	for match.points <= 15 {
 		match.points += round.startRound()
-
 	}
 }

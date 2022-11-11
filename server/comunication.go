@@ -93,3 +93,11 @@ func startGame(player Player) {
 	fmt.Println(message)
 	fmt.Println("cartas: "+card1, card2, card3)
 }
+
+func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser string){
+	common.Send(winner.socket,msgWinner)
+	common.Receive(winner.socket)
+
+	common.Send(loser.socket, msgLoser)
+	common.Receive(loser.socket)
+}
