@@ -11,7 +11,7 @@ type Player struct {
 	name         string
 	socket       net.Conn
 	points       int
-	cards        [3]Card
+	cards        []Card
 	cardSelected Card
 	winsPerPlay  int
 }
@@ -26,7 +26,12 @@ func (player *Player) askPlayerName() {
 	fmt.Println("nombre del jugador: ", player.name)
 }
 
-func (player *Player) dealCards(cards [3]Card) {
+func (player *Player) dealCards(cards []Card) {
 	player.cards = cards
 	fmt.Println("cards jugador: ", player.cards)
+}
+
+func (player *Player) removeCardSelected(posTodelete int) {
+	player.cards = append(player.cards[:posTodelete], player.cards[posTodelete+1:]...)
+
 }

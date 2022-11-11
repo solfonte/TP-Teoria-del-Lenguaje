@@ -50,21 +50,22 @@ func (move *Move) process_winner(winner *Player, loser *Player) bool {
 	move.loser.points = 0
 	winner.winsPerPlay += 1
 	if move.typeMove == 3 || winner.winsPerPlay >= 2 {
+		fmt.Println("asdinos puntos partida a ganador")
 		move.winner.points = 1
 	} else {
-		move.typeMove = 0
+		move.winner.points = 0
 	}
 
 	fmt.Println("ganador primera jugada ", move.winner)
-	common.Send(winner.socket, "Ganaste la jugada "+strconv.Itoa(move.typeMove))
-	common.Receive(winner.socket)
-
-	common.Send(loser.socket, "Perdiste la jugada"+strconv.Itoa(move.typeMove) )
-	common.Receive(loser.socket)
-
+	msgwinner := "Ganaste la jugada " + strconv.Itoa(move.typeMove)
+	msgLoser := "Perdiste la jugada" + strconv.Itoa(move.typeMove)
+	sendInfoPlayers(winner, loser, msgwinner, msgLoser)
+	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
 	if winner.winsPerPlay == 2 {
+		fmt.Println("termino jugada")
 		return true
 	} else {
+		fmt.Println("No termino jugada")
 		return false
 	}
 }
@@ -85,16 +86,22 @@ func (move *Move) handleEnvido(player *Player) {
 }
 
 func (move *Move) handleThrowACard(player *Player) {
-	card1 := "1) " + player.cards[0].getFullName()
-	card2 := " 2) " + player.cards[1].getFullName()
-	card3 := " 3) " + player.cards[2].getFullName()
+
 	message := "Que carta queres tirar? "
-	common.Send(player.socket, message+card1+card2+card3+". Seleccione un numero:")
+	for index, card := range player.cards {
+		number := strconv.Itoa(index+1) + ") "
+		message += number
+		message += card.getFullName()
+	}
+	common.Send(player.socket, message+". Seleccione un numero:")
 
 	jugada, _ := common.Receive(player.socket)
 	option, _ := strconv.Atoi(jugada)
 	fmt.Println("Carta seleccionada ", player.cards[option-1].getFullName())
 	move.cardsPlayed = append(move.cardsPlayed, player.cards[option-1])
+	fmt.Println("cartas", player.cards)
+	player.removeCardSelected(option - 1)
+	fmt.Println("cartas", player.cards)
 }
 
 func (move *Move) sendInfoMove(player *Player) int {
