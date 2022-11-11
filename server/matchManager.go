@@ -11,7 +11,7 @@ func (matchManager *MatchManager) process_player(player *Player) {
 	messageClient, _ := sendMenu(*player)
 	requestedmatch := processRequest(*player, messageClient)
 	if requestedmatch["create"] == 0 {
-		newMatch := Match{duration: requestedmatch["duration"], maxPlayers: requestedmatch["members"], started: false, players: []*Player{}}
+		newMatch := Match{duration: requestedmatch["duration"], maxPlayers: requestedmatch["members"], started: false, players: make(map[int]*Player)}
 		newMatch.addPlayerToMatch(player)
 		matchManager.matches = append(matchManager.matches, newMatch)
 		fmt.Println("Matches ", matchManager.matches)

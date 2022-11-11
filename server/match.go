@@ -7,13 +7,13 @@ import (
 type Match struct {
 	duration   int
 	maxPlayers int
-	players    []*Player
+	players    map[int]*Player
 	started    bool
 	rounds     []Round
 	points     int
 }
 
-func deal_cards(players []*Player) {
+func deal_cards(players map[int]*Player) {
 
 	var cardDealer = CardDealer{}
 	cardDealer.initialize()
@@ -26,7 +26,7 @@ func deal_cards(players []*Player) {
 
 func (match *Match) addPlayerToMatch(player *Player) {
 	if match != nil {
-		match.players = append(match.players, player)
+		match.players[player.id] = player
 		if len(match.players) == match.maxPlayers {
 			match.started = true
 			match.beginGame()

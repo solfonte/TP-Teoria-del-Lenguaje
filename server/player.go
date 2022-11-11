@@ -13,6 +13,7 @@ type Player struct {
 	points       int
 	cards        [3]Card
 	cardSelected Card
+	winsPerPlay  int
 }
 
 func (player *Player) askPlayerName() {
