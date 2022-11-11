@@ -50,3 +50,12 @@
     aceptador.Accept()
     acceptador.Close()
     ```
+
+* Channels 
+
+Permiten la comunicaion entre dos go rutings, es decir si yo quiero que una go ruting utilize los valores de otra se los puedo enviar por el channel establecido. El cannal debe definir un tipo. 
+Son bloqueantes, lo cual permite que exista una sincronizacion. 
+Se pueden definir tamaños:
+* si es fijo se llama buffer y se bloquea si esta lleno o si esta vacio 
+
+No hace falta cerrarlos. Puede hacerlo para indicar al receptor que ya no se envia nada. 
