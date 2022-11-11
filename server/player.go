@@ -7,11 +7,12 @@ import (
 )
 
 type Player struct {
-	id     int
-	name   string
-	socket net.Conn
-	points int
-	cards  [3]Card
+	id           int
+	name         string
+	socket       net.Conn
+	points       int
+	cards        [3]Card
+	cardSelected Card
 }
 
 func (player *Player) askPlayerName() {
@@ -28,5 +29,3 @@ func (player *Player) dealCards(cards [3]Card) {
 	player.cards = cards
 	fmt.Println("cards jugador: ", player.cards)
 }
-
-

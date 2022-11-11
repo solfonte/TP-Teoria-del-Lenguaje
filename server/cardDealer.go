@@ -21,7 +21,7 @@ func (cardDealer *CardDealer) initialize() {
 }
 
 func (cardDealer *CardDealer) assignCards(player *Player) {
-	absPath, _ := filepath.Abs("../server/cards.csv")
+	absPath, _ := filepath.Abs("../TP-Teoria-del-Lenguaje/server/cards.csv")
 	fmt.Println(absPath)
 	cardNames := readCSV(absPath)
 

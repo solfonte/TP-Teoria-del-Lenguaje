@@ -24,6 +24,7 @@ func start_receiver(acceptor Acceptor) {
 		}
 		newPlayer := Player{id: len(acceptor.players) + 1, socket: peer}
 		acceptor.players = append(acceptor.players, newPlayer)
+
 		matchManager.process_player(&newPlayer)
 
 		fmt.Println("client connected")
