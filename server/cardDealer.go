@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type CardDealer struct {
@@ -15,13 +17,17 @@ type CardDealer struct {
 }
 
 func (cardDealer *CardDealer) initialize() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		fmt.Println("error loading .env")
+	}
 	for i := range cardDealer.cards {
 		cardDealer.cards[i] = 1
 	}
 }
 
 func (cardDealer *CardDealer) assignCards(player *Player) {
-	absPath, _ := filepath.Abs("../TP-Teoria-del-Lenguaje/server/cards.csv")
+	absPath, _ := filepath.Abs(os.Getenv("FILENAME"))
 	fmt.Println(absPath)
 	cardNames := readCSV(absPath)
 
