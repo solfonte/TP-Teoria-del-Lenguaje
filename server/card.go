@@ -5,6 +5,7 @@ import (
 )
 
 // todo: hacer un file de constantes y mover esto:
+/*
 const RANGO_I_TRES = 4
 const RANGO_F_TRES = 7
 const RANGO_I_DOS = 8
@@ -25,7 +26,7 @@ const RANGO_I_CINCO = 32
 const RANGO_F_CINCO = 35
 const RANGO_I_CUATRO = 36
 const RANGO_F_CUATRO = 39
-
+*/
 type Card struct {
 	id    int
 	value int
