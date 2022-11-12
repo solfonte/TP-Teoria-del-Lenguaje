@@ -40,6 +40,7 @@ func (match *Match) addPlayerToMatch(player *Player) {
 			match.waiterPlayerId = player.id
 			match.started = true
 			match.beginGame()
+			fmt.Println("tERMINO PARTIDA")
 		} else {
 			// CREO ALGUIEN LA PARTIDA
 			fmt.Println("alguiien creo la partida")
@@ -69,9 +70,25 @@ func (match *Match) beginGame() {
 		fmt.Println("primer carat ", player.cards[0].suit)
 		startGame(*player)
 	}
-	for match.points <= 15 {
+	for match.points <= 2 {
 		match.points += round.startRound(match.initialPlayerId, match.waiterPlayerId)
 		match.changeInitialPlayerForRounds()
 		match.deal_cards(match.players)
+	}
+	match.process_winner_and_loser()
+
+}
+
+func (match Match) process_winner_and_loser() {
+	if match.players[match.initialPlayerId].points >= match.players[match.waiterPlayerId].points {
+		sendInfoPlayers(match.players[match.initialPlayerId],
+			match.players[match.waiterPlayerId],
+			"Ganaste la partida :)",
+			"Perdiste la partida :(")
+	} else {
+		sendInfoPlayers(match.players[match.waiterPlayerId],
+			match.players[match.initialPlayerId],
+			"Ganaste la partida :)",
+			"Perdiste la partida :(")
 	}
 }

@@ -27,6 +27,9 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int) int {
 	round.moves = 0
 	fmt.Println("Arranca ronda")
 	round.decide_hand_players(initialCurrentId, initialWaitingId)
+	round.currentPlayer.winsPerPlay = 0
+	round.waitingPlayer.winsPerPlay = 0
+
 	for completeRound <= 3 && !finish {
 		var move = Move{typeMove: completeRound}
 		finish = move.start_move(round.currentPlayer, round.waitingPlayer)

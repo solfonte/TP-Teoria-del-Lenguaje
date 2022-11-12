@@ -52,7 +52,7 @@ func processGameloop(socket net.Conn) {
 		} else if strings.Contains(messageServer, "Tu oponente tiro una carta") {
 			fmt.Println("Tu oponente tiro una carta")
 			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "la jugada") || strings.Contains(messageServer, "la ronda") {
+		} else if strings.Contains(messageServer, "Ganaste") || strings.Contains(messageServer, "Perdiste") {
 			fmt.Println("ganaste o perdiste")
 			common.Send(socket, "OK")
 		} else {

@@ -54,6 +54,8 @@ func (move *Move) process_winner(winner *Player, loser *Player) bool {
 	if move.typeMove == 3 || winner.winsPerPlay >= 2 {
 		fmt.Println("asdinos puntos partida a ganador")
 		move.winner.points = 1
+		winner.points += 1
+		fmt.Println("Puntos jugador ganador", winner.points, winner.name)
 	} else {
 		move.winner.points = 0
 	}
