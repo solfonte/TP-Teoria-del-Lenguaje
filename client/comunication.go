@@ -1,40 +1,57 @@
-package main
+package client
 
-import(
+import (
+	"bufio"
 	"fmt"
 	"net"
-	"truco/app/common"
-	"bufio"
 	"os"
 	"strings"
+	"truco/app/common"
 )
 
-func sendMatchParameters(socket net.Conn){
+func sendPlayerName(socket net.Conn) {
 	reader := bufio.NewReader(os.Stdin)
-	// pido nombre
 	messageServer, _ := common.Receive(socket)
-	fmt.Println("Message server: ", messageServer)
+	fmt.Println(messageServer)
 	messageClient, _ := reader.ReadString('\n')
 	common.Send(socket, messageClient)
-	// bienvenida
-	messageServer, _ = common.Receive(socket)
-	fmt.Println("Message server: ", messageServer)
-	common.Send(socket, "ok")
-	messageServer, _ = common.Receive(socket)
-	fmt.Println("Message server: ", messageServer)
-	common.Send(socket, "ok") //TODO: esto hay que sacarlo porque lo pusimos como patch para que no se bloquee
-	messageServer, _ = common.Receive(socket)
-	fmt.Println("Message server: ", messageServer)
-	
-	// responde el cliente 
-	
+}
+
+func processMenuOptions(socket net.Conn, messageServer string) {
+	reader := bufio.NewReader(os.Stdin)
 	for !strings.HasPrefix(messageServer, "OK") {
-		messageClient, _ = reader.ReadString('\n')
+		messageClient, _ := reader.ReadString('\n')
 		common.Send(socket, messageClient)
 		messageServer, _ = common.Receive(socket)
-		fmt.Println("Message server: ", messageServer)
+		fmt.Println(messageServer)
 	}
-	// consultar 
-	// se creo partida o se esta buscando partida
+	fmt.Println("buscando o creando partida")
+}
+
+func sendMenuResponses(socket net.Conn) {
+	sendPlayerName(socket)
+	i := 0
+	messageServer := ""
+	for i < 2 {
+		messageServer, _ = common.Receive(socket)
+		fmt.Println(messageServer)
+		common.Send(socket, "Ok")
+		i++
+	}
+	messageServer, _ = common.Receive(socket)
+	fmt.Println(messageServer)
+	processMenuOptions(socket, messageServer)
+}
+
+func startGame(socket net.Conn) {
+	i := 0
+	// estas son tus cartas
+	for i < 2 {
+		messageServer, _ := common.Receive(socket)
+		fmt.Println("Message server: ", messageServer)
+		common.Send(socket, "Ok")
+		i++
+	}
+	
 
 }

@@ -1,13 +1,14 @@
 package server
 
 import (
-	"strconv"
-	"truco/app/common"
 	"fmt"
+	"strconv"
+	"strings"
+	"truco/app/common"
 )
 
 func sendMenu(player Player) (string, error) {
-	common.Send(player.socket, "Bienvenido al truco " + player.name)
+	common.Send(player.socket, "Bienvenido al truco "+player.name)
 	messagePlayer, error := common.Receive(player.socket)
 	common.Send(player.socket, "Las reglas del juego son sencillas: .....")
 	messagePlayer, error = common.Receive(player.socket)
@@ -15,19 +16,23 @@ func sendMenu(player Player) (string, error) {
 	fmt.Println("paso")
 	// receives its answer
 	messagePlayer, error = common.Receive(player.socket)
-	for (messagePlayer != "CREATE") && (messagePlayer != "JOIN") {
-		common.Send(player.socket, "Error CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada")
+	fmt.Println(messagePlayer)
+	response := strings.ToUpper(messagePlayer)
+	fmt.Println(response)
+
+	for (response != "CREATE") && (response != "JOIN") {
+		common.Send(player.socket, "Error: ingrese CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada")
 		messagePlayer, error = common.Receive(player.socket)
+		response = strings.ToUpper(messagePlayer)
 	}
-	return messagePlayer, error
+	return response, error
 }
 
-func getAmountOfPlayers(player Player) int{
-	
+func getAmountOfPlayers(player Player) int {
+
 	common.Send(player.socket, "ingrese cantidad integrantes; 2 o 4")
 	members, _ := common.Receive(player.socket)
 	amount_members, _ := strconv.Atoi(members)
-
 
 	for amount_members != 2 && amount_members != 4 {
 		common.Send(player.socket, " Error! Elegir cantidad de integrantes 2 o 4")
@@ -62,24 +67,37 @@ func processRequest(player Player, message string) map[string]int {
 	} else {
 		match["create"] = 1
 		getMatchParameters(match, player)
-		common.Send(player.socket, "Ok, Partida solicitada, se esta buscando una partida")
+		common.Send(player.socket, "OK, Partida solicitada, se esta buscando una partida")
 		return match
 	}
-		
+
 }
 
-func getMatchParameters(match map[string]int, player Player){
+func getMatchParameters(match map[string]int, player Player) {
 	members := getAmountOfPlayers(player)
-	duration:= getAmountOfPoints(player)
+	duration := getAmountOfPoints(player)
 	match["members"] = members
 	match["duration"] = duration
 }
 
-func startGame(player Player){
-	common.Send(player.socket, "El juego ya arrancado")
-	common.Send(player.socket, "Estas son tus cartas")
-	card1 := strconv.Itoa(player.cards[0].value) + " " + player.cards[0].suit
-	card2 := strconv.Itoa(player.cards[1].value) + " " + player.cards[1].suit
-	card3 := strconv.Itoa(player.cards[2].value) + " " + player.cards[2].suit
-	common.Send(player.socket, card1 + " " + card2 + " " + card3)
+func startGame(player Player) {
+
+	fmt.Println(player.cards[0].suit)
+	card1 := player.cards[0].getFullName()
+	card2 := player.cards[1].getFullName()
+	card3 := player.cards[2].getFullName()
+	common.Send(player.socket, "El juego comenzó")
+	message, _ := common.Receive(player.socket)
+	common.Send(player.socket, "Estas son tus cartas: "+card1+" "+card2+" "+card3) //esto no se esta mostrando)
+	message, _ = common.Receive(player.socket)
+	fmt.Println(message)
+	fmt.Println("cartas: "+card1, card2, card3)
+}
+
+func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser string){
+	common.Send(winner.socket,msgWinner)
+	common.Receive(winner.socket)
+
+	common.Send(loser.socket, msgLoser)
+	common.Receive(loser.socket)
 }

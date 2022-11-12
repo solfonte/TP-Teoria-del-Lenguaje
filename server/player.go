@@ -7,11 +7,13 @@ import (
 )
 
 type Player struct {
-	id     int
-	name   string
-	socket net.Conn
-	points int
-	cards [3]Card
+	id           int
+	name         string
+	socket       net.Conn
+	points       int
+	cards        []Card
+	cardSelected Card
+	winsPerPlay  int
 }
 
 func (player *Player) askPlayerName() {
@@ -24,7 +26,12 @@ func (player *Player) askPlayerName() {
 	fmt.Println("nombre del jugador: ", player.name)
 }
 
-func (player *Player) dealCards(cards [3]Card){
-	//despues hay que mapear los numeros a las cartas. Por ahora queda asi
+func (player *Player) dealCards(cards []Card) {
 	player.cards = cards
+	fmt.Println("cards jugador: ", player.cards)
+}
+
+func (player *Player) removeCardSelected(posTodelete int) {
+	player.cards = append(player.cards[:posTodelete], player.cards[posTodelete+1:]...)
+
 }

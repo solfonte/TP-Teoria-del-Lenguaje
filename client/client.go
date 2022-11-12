@@ -1,14 +1,14 @@
-package main
+package client
 
 //  The net module lets you make network connections and transmit data.
 
 import (
+	"bufio"
 	"fmt"
 	"net"
-	"truco/app/common"
-	"bufio"
 	"os"
 	"strings"
+	"truco/app/common"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 	SERVER_TYPE = "tcp"
 )
 
-func main() {
+func Start() {
 
 	// connect to server
 	socket, err := net.Dial(SERVER_TYPE, SERVER_HOST+":"+SERVER_PORT)
@@ -25,40 +25,39 @@ func main() {
 		fmt.Println("Fail connect to server")
 		return
 	}
+	runClient(socket)
+	fmt.Println("SALI DEL RUNCLIENT")
+}
+
+func runClient(socket net.Conn) {
 	fmt.Println("entre a client run")
-	sendMatchParameters(socket)
+	sendMenuResponses(socket)
 	//este receive deberia bloquearse esperando a que empiece la partida.
-	messageServer, _ := common.Receive(socket)
-	fmt.Println("Message server: ", messageServer)
+	startGame(socket)
+	//loop juego
+	processGameloop(socket)
 }
 
-func sendMatchParameters(socket net.Conn){
-	reader := bufio.NewReader(os.Stdin)
-	// pido nombre
-	messageServer, _ := common.Receive(socket)
-	fmt.Println("Message server: ", messageServer)
-	messageClient, _ := reader.ReadString('\n')
-	common.Send(socket, messageClient)
-	// bienvenida
-	messageServer, _ = common.Receive(socket)
-	fmt.Println("Message server: ", messageServer)
-	common.Send(socket, "ok")
-	messageServer, _ = common.Receive(socket)
-	fmt.Println("Message server: ", messageServer)
-	common.Send(socket, "ok") //TODO: esto hay que sacarlo porque lo pusimos 
-	messageServer, _ = common.Receive(socket)
-	fmt.Println("Message server: ", messageServer)
-	
-	// responde el cliente 
-	
-	for !strings.HasPrefix(messageServer, "OK") {
-		messageClient, _ = reader.ReadString('\n')
-		common.Send(socket, messageClient)
-		messageServer, _ = common.Receive(socket)
-		fmt.Println("Message server: ", messageServer)
+func processGameloop(socket net.Conn) {
+	// loop de server manda algo cliente responde
+	promptReader := bufio.NewReader(os.Stdin)
+	// falta desconexion tanto cliente como servidor
+	//handlear ctrl c
+	for {
+		messageServer, _ := common.Receive(socket)
+		fmt.Println(messageServer)
+		if strings.HasPrefix(messageServer, "Espera a que juegue tu oponente...") {
+			fmt.Println("entre a esperar")
+			common.Send(socket, "OK")
+		} else if strings.Contains(messageServer, "Tu oponente tiro una carta") {
+			fmt.Println("Tu oponente tiro una carta")
+			common.Send(socket, "OK")
+		} else if strings.Contains(messageServer, "la jugada") || strings.Contains(messageServer, "la ronda") {
+			fmt.Println("gannaste o perdiste")
+			common.Send(socket, "OK")
+		} else {
+			messageClient, _ := promptReader.ReadString('\n')
+			common.Send(socket, messageClient)
+		}
 	}
-	// consultar 
-	// se creo partida o se esta buscando partida
-
 }
-

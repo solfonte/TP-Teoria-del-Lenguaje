@@ -28,7 +28,7 @@ func Start() {
 		os.Exit(1)
 	}
 	// delay the execution of the function or method or an anonymous method until the nearby functions returns.
-	acceptor := Acceptor{listenerSocket: server}
+	acceptor := Acceptor{Listener: server}
 	go stop(acceptor)
 	start_receiver(acceptor)
 
