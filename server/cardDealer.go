@@ -35,15 +35,15 @@ func (cardDealer *CardDealer) assignCards(player *Player) {
 			card_value, _ := strconv.Atoi(cardNames[card][0])
 			card_suit := cardNames[card][1]
 
-				assignedCards[amountOfCards] = Card{id : card, value : card_value, suit : card_suit }
+			assignedCards = append(assignedCards, Card{id: card, value: card_value, suit: card_suit})
 
-				//se le asigna cero para determinar que ya se repartio
-				cardDealer.cards[card] = 0
-				amountOfCards += 1
-			}
-		} 
-		player.dealCards(assignedCards)
-		
+			//se le asigna cero para determinar que ya se repartio
+			cardDealer.cards[card] = 0
+			amountOfCards += 1
+		}
+	}
+	player.dealCards(assignedCards)
+
 }
 
 func readCSV(filePath string) [][]string {
