@@ -54,6 +54,8 @@ func (move *Move) process_winner(winner *Player, loser *Player) bool {
 	if move.typeMove == 3 || winner.winsPerPlay >= 2 {
 		fmt.Println("asdinos puntos partida a ganador")
 		move.winner.points = 1
+		winner.points += 1
+		fmt.Println("Puntos jugador ganador", winner.points, winner.name)
 	} else {
 		move.winner.points = 0
 	}
@@ -93,7 +95,7 @@ func (move *Move) handleThrowACard(player *Player) {
 	for index, card := range player.cards {
 		number := strconv.Itoa(index+1) + ") "
 		message += number
-		message += card.getFullName()
+		message += card.getFullName() + " "
 	}
 	common.Send(player.socket, message+". Seleccione un numero:")
 
@@ -107,6 +109,7 @@ func (move *Move) handleThrowACard(player *Player) {
 }
 
 func (move *Move) sendInfoMove(player *Player) int {
+
 	messageEnvido := ""
 	if move.canSingEnvido() {
 		messageEnvido = "2) cantar envido"
