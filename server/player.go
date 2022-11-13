@@ -11,7 +11,7 @@ type Player struct {
 	name         string
 	socket       net.Conn
 	points       int
-	cards        []Card
+	hand        []Hand
 	cardSelected Card
 	winsPerPlay  int
 }
@@ -27,11 +27,9 @@ func (player *Player) askPlayerName() {
 }
 
 func (player *Player) dealCards(cards []Card) {
-	player.cards = cards
-	fmt.Println("cards jugador: ", player.cards)
+	player.hand = Hand{cards: cards, cardsNotSelected: cards}
 }
 
 func (player *Player) removeCardSelected(posTodelete int) {
-	player.cards = append(player.cards[:posTodelete], player.cards[posTodelete+1:]...)
-
+	hand.removeCardSelected(posToDelete)
 }

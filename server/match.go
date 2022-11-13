@@ -67,7 +67,6 @@ func (match *Match) beginGame() {
 	var round = Round{}
 	round.initialize(match.players)
 	for _, player := range match.players {
-		fmt.Println("primer carat ", player.cards[0].suit)
 		startGame(*player)
 	}
 	for match.points <= 2 {

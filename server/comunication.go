@@ -81,9 +81,6 @@ func getMatchParameters(match map[string]int, player Player) {
 }
 
 func startGame(player Player) {
-
-	fmt.Println(player.cards[0].suit)
-
 	common.Send(player.socket, "El juego comenzó")
 	message, _ := common.Receive(player.socket)
 	fmt.Println(message)
@@ -91,9 +88,11 @@ func startGame(player Player) {
 }
 
 func sendInfoCards(player Player) {
-	card1 := player.cards[0].getFullName()
-	card2 := player.cards[1].getFullName()
-	card3 := player.cards[2].getFullName()
+
+	//TODO: ver si no conviene que sea dinamico para cuando le queden dos o una?
+	card1 := player.hand.cards[0].getFullName()
+	card2 := player.hand.cards[1].getFullName()
+	card3 := player.hand.cards[2].getFullName()
 	common.Send(player.socket, "Estas son tus cartas: "+card1+" "+card2+" "+card3)
 	message, _ := common.Receive(player.socket)
 	fmt.Println(message)
