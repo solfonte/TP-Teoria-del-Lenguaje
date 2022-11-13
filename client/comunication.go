@@ -9,9 +9,16 @@ import (
 	"truco/app/common"
 )
 
+func checkErrorServer(err error) {
+	if err != nil {
+		panic("error in server, Close connection")
+	}
+}
+
 func sendPlayerName(socket net.Conn) {
 	reader := bufio.NewReader(os.Stdin)
-	messageServer, _ := common.Receive(socket)
+	messageServer, err := common.Receive(socket)
+	checkErrorServer(err)
 	fmt.Println(messageServer)
 	messageClient, _ := reader.ReadString('\n')
 	common.Send(socket, messageClient)
@@ -22,7 +29,8 @@ func processMenuOptions(socket net.Conn, messageServer string) {
 	for !strings.HasPrefix(messageServer, "OK") {
 		messageClient, _ := reader.ReadString('\n')
 		common.Send(socket, messageClient)
-		messageServer, _ = common.Receive(socket)
+		messageServer, err := common.Receive(socket)
+		checkErrorServer(err)
 		fmt.Println(messageServer)
 	}
 	fmt.Println("buscando o creando partida")
@@ -33,12 +41,14 @@ func sendMenuResponses(socket net.Conn) {
 	i := 0
 	messageServer := ""
 	for i < 2 {
-		messageServer, _ = common.Receive(socket)
+		messageServer, err := common.Receive(socket)
+		checkErrorServer(err)
 		fmt.Println(messageServer)
 		common.Send(socket, "Ok")
 		i++
 	}
-	messageServer, _ = common.Receive(socket)
+	messageServer, err := common.Receive(socket)
+	checkErrorServer(err)
 	fmt.Println(messageServer)
 	processMenuOptions(socket, messageServer)
 }
@@ -47,11 +57,11 @@ func startGame(socket net.Conn) {
 	i := 0
 	// estas son tus cartas
 	for i < 2 {
-		messageServer, _ := common.Receive(socket)
+		messageServer, err := common.Receive(socket)
+		checkErrorServer(err)
 		fmt.Println("Message server: ", messageServer)
 		common.Send(socket, "Ok")
 		i++
 	}
-	
 
 }

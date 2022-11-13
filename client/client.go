@@ -74,8 +74,3 @@ func processGameloop(socket net.Conn) {
 	}
 }
 
-func checkErrorServer(err error) {
-	if err != nil {
-		panic("error in server, Close connection")
-	}
-}
