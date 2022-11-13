@@ -35,3 +35,8 @@ func (player *Player) removeCardSelected(posTodelete int) {
 	player.cards = append(player.cards[:posTodelete], player.cards[posTodelete+1:]...)
 
 }
+
+func (player *Player) stop() {
+	fmt.Println("player disconnect", player.name)
+	player.socket.Close()
+}

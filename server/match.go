@@ -13,6 +13,7 @@ type Match struct {
 	points          int
 	initialPlayerId int
 	waiterPlayerId  int
+	finish          bool
 }
 
 func (match *Match) clearCards(players map[int]*Player) {
@@ -76,9 +77,9 @@ func (match *Match) beginGame() {
 		match.points += round.startRound(match.initialPlayerId, match.waiterPlayerId)
 		match.changeInitialPlayerForRounds()
 		match.deal_cards(match.players)
-
 	}
 	match.process_winner_and_loser()
+	match.finish = true
 
 }
 

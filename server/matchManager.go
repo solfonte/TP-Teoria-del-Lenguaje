@@ -34,3 +34,14 @@ func look_matches_with_criteria(matches []Match, duration int, maxPlayers int) *
 	}
 	return nil
 }
+
+func (matchManager *MatchManager) delete_finish_matches() {
+	temp := matchManager.matches[:0]
+	for _, match := range matchManager.matches {
+		if !match.finish {
+			temp = append(temp, match)
+		}
+
+	}
+	matchManager.matches = temp
+}
