@@ -71,9 +71,12 @@ func (match *Match) beginGame() {
 		startGame(*player)
 	}
 	for match.points <= 2 {
+		sendInfoCards(*match.players[match.initialPlayerId])
+		sendInfoCards(*match.players[match.waiterPlayerId])
 		match.points += round.startRound(match.initialPlayerId, match.waiterPlayerId)
 		match.changeInitialPlayerForRounds()
 		match.deal_cards(match.players)
+
 	}
 	match.process_winner_and_loser()
 
