@@ -16,6 +16,11 @@ type Match struct {
 	finish          bool
 }
 
+type PlayerError struct {
+	player *Player
+	err    error
+}
+
 func (match *Match) clearCards(players map[int]*Player) {
 	for _, p := range players {
 		p.cards = []Card{}
@@ -61,11 +66,23 @@ func (match *Match) changeInitialPlayerForRounds() {
 	match.initialPlayerId = newInitialPlayer
 }
 
+func (match *Match) handle_disconnection_player(playerError PlayerError) {
+	msg := "Tu oponente se desconecto"
+	if playerError.player.id == match.initialPlayerId {
+		sendOtherPlayDisconnection(*match.players[match.waiterPlayerId], msg)
+	} else {
+		sendOtherPlayDisconnection(*match.players[match.initialPlayerId], msg)
+	}
+	playerError.player.stop()
+	match.finish = true
+}
+
 func (match *Match) beginGame() {
 	match.deal_cards(match.players)
 	fmt.Println("Entre a comenzo juego")
 
 	var round = Round{}
+	var playerError = PlayerError{err: nil, player: nil}
 	round.initialize(match.players)
 	for _, player := range match.players {
 		fmt.Println("primer carat ", player.cards[0].suit)
@@ -74,7 +91,12 @@ func (match *Match) beginGame() {
 	for match.points <= 2 {
 		sendInfoCards(*match.players[match.initialPlayerId])
 		sendInfoCards(*match.players[match.waiterPlayerId])
-		match.points += round.startRound(match.initialPlayerId, match.waiterPlayerId)
+		match.points = round.startRound(match.initialPlayerId, match.waiterPlayerId, &playerError)
+		if playerError.err != nil {
+			fmt.Println(playerError.err)
+			match.handle_disconnection_player(playerError)
+			return
+		}
 		match.changeInitialPlayerForRounds()
 		match.deal_cards(match.players)
 	}

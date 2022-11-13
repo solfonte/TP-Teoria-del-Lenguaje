@@ -20,16 +20,23 @@ type Move struct {
 	cardsPlayed []Card
 }
 
-func (move *Move) start_move(player1 *Player, player2 *Player) bool {
-	move.askPlayerForWait(player2)
-	option := move.askPlayerForMove(player1)
-	move.askPlayerForWait(player1)
-	move.getOpponentMove(option, player2)
+func (move *Move) start_move(player1 *Player, player2 *Player, playerError *PlayerError) (bool, int) {
+	err := move.askPlayerForWait(player2, playerError)
+	option, err := move.askPlayerForMove(player1, playerError)
+	if err == -1 {
+		return false, -1
+	}
+	err = move.askPlayerForWait(player1, playerError)
+	err = move.getOpponentMove(option, player2, playerError)
+	if err == -1 {
+		return false, err
+	}
+
 	if len(move.cardsPlayed) == 2 {
 		result := move.cardsPlayed[0].compareCards(move.cardsPlayed[1])
-		return move.assingWinner(result, player1, player2)
+		return move.assingWinner(result, player1, player2), 0
 	}
-	return false
+	return false, 0
 }
 
 func (move *Move) assingWinner(result int, player1 *Player, player2 *Player) bool {
@@ -74,10 +81,16 @@ func (move *Move) process_winner(winner *Player, loser *Player) bool {
 	}
 }
 
-func (move *Move) askPlayerForWait(player *Player) {
+func (move *Move) askPlayerForWait(player *Player, playerError *PlayerError) int {
 	common.Send(player.socket, "Espera a que juegue tu oponente...")
-	message, _ := common.Receive(player.socket)
+	message, err := common.Receive(player.socket)
+	if err != nil {
+		playerError.player = player
+		playerError.err = err
+		return -1
+	}
 	fmt.Println(message)
+	return 0
 }
 
 func (move *Move) canSingEnvido() bool {
@@ -89,7 +102,7 @@ func (move *Move) handleEnvido(player *Player) {
 	fmt.Println("cantaste ENVIDO")
 }
 
-func (move *Move) handleThrowACard(player *Player) {
+func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int {
 
 	message := "Que carta queres tirar? "
 	for index, card := range player.cards {
@@ -99,16 +112,22 @@ func (move *Move) handleThrowACard(player *Player) {
 	}
 	common.Send(player.socket, message+". Seleccione un numero:")
 
-	jugada, _ := common.Receive(player.socket)
+	jugada, err := common.Receive(player.socket)
+	if err != nil {
+		playerError.player = player
+		playerError.err = err
+		return -1
+	}
 	option, _ := strconv.Atoi(jugada)
 	fmt.Println("Carta seleccionada ", player.cards[option-1].getFullName())
 	move.cardsPlayed = append(move.cardsPlayed, player.cards[option-1])
 	fmt.Println("cartas", player.cards)
 	player.removeCardSelected(option - 1)
 	fmt.Println("cartas", player.cards)
+	return 0
 }
 
-func (move *Move) sendInfoMove(player *Player) int {
+func (move *Move) sendInfoMove(player *Player, playerError *PlayerError) (int, int) {
 
 	messageEnvido := ""
 	if move.canSingEnvido() {
@@ -118,39 +137,49 @@ func (move *Move) sendInfoMove(player *Player) int {
 	command := "1) tirar una carta, " + messageEnvido + "3) cantar truco. Elija un numero"
 	common.Send(player.socket, message+command)
 
-	jugada, _ := common.Receive(player.socket)
+	jugada, err := common.Receive(player.socket)
+	if err != nil {
+		playerError.player = player
+		playerError.err = err
+		return -1, -1
+	}
 	option, _ := strconv.Atoi(jugada)
-	return option
+	return option, 0
 }
 
-func (move *Move) askPlayerForMove(player *Player) int {
+func (move *Move) askPlayerForMove(player *Player, playerError *PlayerError) (int, int) {
 	fmt.Println("EN LA rpimer jufada")
 	fmt.Println(player)
-	option := move.sendInfoMove(player)
+	option, err := move.sendInfoMove(player, playerError)
+	if err == -1 {
+		return -1, -1
+	}
 	fmt.Println("option elegida: ", option)
 	switch option {
 	case 1:
 		fmt.Println("opcion tirar una carta")
-		move.handleThrowACard(player)
+		err = move.handleThrowACard(player, playerError)
 	case 2:
 		move.handleEnvido(player)
 	case 3:
 		common.Send(player.socket, "cantaste TRUCO")
 		fmt.Println("cantaste TRUCO")
 	}
-	//chequear numeros
-
-	return option
+	if err == -1 {
+		return -1, -1
+	}
+	return option, err
 }
 
-func (move *Move) getOpponentMove(action int, player *Player) {
+func (move *Move) getOpponentMove(action int, player *Player, playerError *PlayerError) int {
+	var err int
 	switch action {
 	case 1:
 		message := "Tu oponente tiro una carta " + move.cardsPlayed[0].getFullName()
 		common.Send(player.socket, message)
 		messageClient, _ := common.Receive(player.socket)
 		fmt.Println(messageClient)
-		move.askPlayerForMove(player)
+		_, err = move.askPlayerForMove(player, playerError)
 	case 2:
 		common.Send(player.socket, "Tu oponente canto envido")
 		//abrir caso de quiero, real envido, falta envido y decir los puntos
@@ -159,4 +188,5 @@ func (move *Move) getOpponentMove(action int, player *Player) {
 		//abrir caso de quiero, re truco, vale 4
 		// y tirar cartas
 	}
+	return err
 }

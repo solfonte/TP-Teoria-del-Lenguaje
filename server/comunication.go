@@ -90,6 +90,12 @@ func startGame(player Player) {
 
 }
 
+func sendOtherPlayDisconnection(player Player, msg string) {
+	common.Send(player.socket, msg)
+	message, _ := common.Receive(player.socket)
+	fmt.Println(message)
+}
+
 func sendInfoCards(player Player) {
 	card1 := player.cards[0].getFullName()
 	card2 := player.cards[1].getFullName()
