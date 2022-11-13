@@ -28,7 +28,9 @@ func (cardDealer *CardDealer) initialize() {
 
 func (cardDealer *CardDealer) assignCards(player *Player) {
 	absPath, _ := filepath.Abs(os.Getenv("FILENAME"))
-	cardNames := readCSV(absPath)
+	fmt.Println(absPath)
+	cardNames := readCSV("server/cards.csv")
+
 
 	rand.Seed(time.Now().UnixNano())
 	var amountOfCards int = 0

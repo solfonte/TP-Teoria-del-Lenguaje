@@ -17,7 +17,7 @@ type Match struct {
 
 func (match *Match) clearCards(players map[int]*Player) {
 	for _, p := range players {
-		p.cards = []Card{}
+		p.clearCards()
 	}
 }
 

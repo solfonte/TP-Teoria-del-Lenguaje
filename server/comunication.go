@@ -90,9 +90,10 @@ func startGame(player Player) {
 func sendInfoCards(player Player) {
 
 	//TODO: ver si no conviene que sea dinamico para cuando le queden dos o una?
-	card1 := player.hand.cards[0].getFullName()
-	card2 := player.hand.cards[1].getFullName()
-	card3 := player.hand.cards[2].getFullName()
+	cards := player.getCards()//hand.cards[0].getFullName()
+	card1 := cards[0].getFullName()
+	card2 := cards[1].getFullName()
+	card3 := cards[2].getFullName()
 	common.Send(player.socket, "Estas son tus cartas: "+card1+" "+card2+" "+card3)
 	message, _ := common.Receive(player.socket)
 	fmt.Println(message)

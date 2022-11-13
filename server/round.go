@@ -33,6 +33,7 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int) int {
 	for completeRound <= 3 && !finish {
 		var move = Move{typeMove: completeRound}
 		finish = move.start_move(round.currentPlayer, round.waitingPlayer)
+		
 		completeRound += 1
 
 		round.decide_hand_players(move.winner.id, move.loser.id)

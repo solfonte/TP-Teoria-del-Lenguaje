@@ -11,9 +11,25 @@ type Player struct {
 	name         string
 	socket       net.Conn
 	points       int
-	hand        []Hand
+	hand        Hand
 	cardSelected Card
 	winsPerPlay  int
+}
+
+func (player *Player) clearCards(){
+	var cards []Card
+	player.hand = Hand{cards: cards, cardsNotSelected: cards}
+}
+
+func (player *Player) getCards() []Card{
+	return player.hand.cards
+}
+
+func (player *Player ) verifyEnvidoWinnerAgainst(opponent *Player) *Player{
+	if player.hand.winsOver(opponent.hand) {
+		return player
+	}
+	return opponent
 }
 
 func (player *Player) askPlayerName() {
@@ -30,6 +46,11 @@ func (player *Player) dealCards(cards []Card) {
 	player.hand = Hand{cards: cards, cardsNotSelected: cards}
 }
 
-func (player *Player) removeCardSelected(posTodelete int) {
-	hand.removeCardSelected(posToDelete)
+func (player *Player) removeCardSelected(posToDelete int) {
+	player.hand.removeCardSelected(posToDelete)
+}
+
+func (player *Player) sumPoints(points int){
+	fmt.Println("SUME PUNTOS POR ENVIDO ", points)
+	player.points += points
 }
