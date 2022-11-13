@@ -2,6 +2,7 @@ package server
 
 type Hand struct {
 	cards [3]Card
+	cardsNotSelected [3]Card
 }
 
 const (
@@ -10,6 +11,10 @@ const (
 	COPA = 2
 	ESPADA = 3
 )
+
+func (hand Hand*) removeCardSelected(posToDelete){
+	hand.cardsNotSelected = append(hand.cardsNotSelected[:posTodelete], hand.cardsNotSelected[posTodelete+1:]...)
+}
 
 func (hand *Hand) pointsForSuit() int {
 	points := 0
