@@ -54,3 +54,7 @@ func (player *Player) sumPoints(points int){
 	fmt.Println("SUME PUNTOS POR ENVIDO ", points)
 	player.points += points
 }
+func (player *Player) stop() {
+	fmt.Println("player disconnect", player.name)
+	player.socket.Close()
+}

@@ -87,6 +87,12 @@ func startGame(player Player) {
 
 }
 
+func sendOtherPlayDisconnection(player Player, msg string) {
+	common.Send(player.socket, msg)
+	message, _ := common.Receive(player.socket)
+	fmt.Println(message)
+}
+
 func sendInfoCards(player Player) {
 
 	//TODO: ver si no conviene que sea dinamico para cuando le queden dos o una?

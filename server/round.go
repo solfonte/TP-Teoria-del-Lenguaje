@@ -21,7 +21,7 @@ func (Round *Round) initialize(players map[int](*Player)) {
 	Round.points = 0
 }
 
-func (round *Round) startRound(initialCurrentId int, initialWaitingId int) int {
+func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playerError *PlayerError) int {
 	completeRound := 1
 	finish := false
 	round.moves = 0
@@ -29,11 +29,15 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int) int {
 	round.decide_hand_players(initialCurrentId, initialWaitingId)
 	round.currentPlayer.winsPerPlay = 0
 	round.waitingPlayer.winsPerPlay = 0
+	var err int
 
 	for completeRound <= 3 && !finish {
 		var move = Move{typeMove: completeRound}
-		finish = move.start_move(round.currentPlayer, round.waitingPlayer)
-		
+		finish, err = move.start_move(round.currentPlayer, round.waitingPlayer, playerError)
+		if err == -1 {
+			return -1
+		}
+		//TODO: CAMBIAR EL RETURN PARA NO CORTAR EL FOR
 		completeRound += 1
 
 		round.decide_hand_players(move.winner.id, move.loser.id)

@@ -25,6 +25,13 @@ func Start() {
 		fmt.Println("Fail connect to server")
 		return
 	}
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("", err)
+
+		}
+		socket.Close()
+	}()
 	runClient(socket)
 	fmt.Println("SALI DEL RUNCLIENT")
 }
@@ -44,7 +51,8 @@ func processGameloop(socket net.Conn) {
 	// falta desconexion tanto cliente como servidor
 	//handlear ctrl c
 	for {
-		messageServer, _ := common.Receive(socket)
+		messageServer, err := common.Receive(socket)
+		checkErrorServer(err)
 		fmt.Println(messageServer)
 		if strings.HasPrefix(messageServer, "Espera a que juegue tu oponente...") {
 			fmt.Println("entre a esperar")
@@ -57,9 +65,12 @@ func processGameloop(socket net.Conn) {
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Estas son tus cartas") {
 			common.Send(socket, "OK")
+		} else if strings.Contains(messageServer, "Tu oponente se desconecto") {
+			common.Send(socket, "OK")
 		} else {
 			messageClient, _ := promptReader.ReadString('\n')
 			common.Send(socket, messageClient)
 		}
 	}
 }
+
