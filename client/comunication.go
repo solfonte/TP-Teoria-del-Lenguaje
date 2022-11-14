@@ -26,14 +26,20 @@ func sendPlayerName(socket net.Conn) {
 
 func processMenuOptions(socket net.Conn, messageServer string) {
 	reader := bufio.NewReader(os.Stdin)
-	for !strings.HasPrefix(messageServer, "OK") {
+	for {
+		fmt.Println("estoy en process menu")
 		messageClient, _ := reader.ReadString('\n')
 		common.Send(socket, messageClient)
 		messageServer, err := common.Receive(socket)
 		checkErrorServer(err)
 		fmt.Println(messageServer)
+		if strings.Contains(messageServer, "OK") {
+			fmt.Println("buscando o creando partida")
+			return
+		}
+
 	}
-	fmt.Println("buscando o creando partida")
+
 }
 
 func sendMenuResponses(socket net.Conn) {
@@ -57,6 +63,7 @@ func startGame(socket net.Conn) {
 	i := 0
 	// estas son tus cartas
 	for i < 2 {
+		fmt.Println("estoy aca")
 		messageServer, err := common.Receive(socket)
 		checkErrorServer(err)
 		fmt.Println("Message server: ", messageServer)

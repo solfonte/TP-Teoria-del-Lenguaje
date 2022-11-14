@@ -85,6 +85,7 @@ func (match *Match) beginGame() {
 	var playerError = PlayerError{err: nil, player: nil}
 	round.initialize(match.players)
 	for _, player := range match.players {
+		fmt.Println("comenzo juego")
 		startGame(*player)
 	}
 	for match.points <= 2 {

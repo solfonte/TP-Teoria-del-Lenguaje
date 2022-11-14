@@ -96,7 +96,7 @@ func sendOtherPlayDisconnection(player Player, msg string) {
 func sendInfoCards(player Player) {
 
 	//TODO: ver si no conviene que sea dinamico para cuando le queden dos o una?
-	cards := player.getCards()//hand.cards[0].getFullName()
+	cards := player.getCards() //hand.cards[0].getFullName()
 	card1 := cards[0].getFullName()
 	card2 := cards[1].getFullName()
 	card3 := cards[2].getFullName()
