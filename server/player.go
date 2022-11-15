@@ -26,7 +26,7 @@ func (player *Player) getCards() []Card {
 }
 
 func (player *Player) verifyEnvidoWinnerAgainst(opponent *Player) *Player {
-	if player.hand.winsOver(opponent.hand) {
+	if player.hand.winsEnvidoOver(opponent.hand) {
 		return player
 	}
 	return opponent
