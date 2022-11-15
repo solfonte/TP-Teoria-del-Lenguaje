@@ -94,35 +94,26 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	err := 0
 	var option1 int = 0 
 	var option2 int = 0
-	for !moveFinished && err != -1 {
-		fmt.Println("entro a una nueva vuelta de 3 tirosss y el type move es ", strconv.Itoa(move.typeMove))
-		err = move.askPlayerForWait(player2, playerError)
-		fmt.Println("el jugador 2 espera")
 
+	for !moveFinished && err != -1 {
+		err = move.askPlayerForWait(player2, playerError)
 		if err != -1{
-			fmt.Println("juega el jugador 1")
 			options := move.definePlayerPossibleOptions(option2)
 			option1, err = move.askPlayerForMove(player1, options, playerError)
 		}
 		if err != -1 {
-			fmt.Println("manejamos el resultado de opciones ingresadas que son: ", option1, " and ", option2)
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 			fmt.Println("Finish: ", moveFinished)
 		}
 		if err != -1 {
-		fmt.Println("el jugador 1 espera")
-
 			err = move.askPlayerForWait(player1, playerError)
 		}
 		if err != -1{
-			fmt.Println("juega el jugador 1")
 			options := move.definePlayerPossibleOptions(option1)
 			option2, err = move.askPlayerForMove(player2, options, playerError)
 		}
 		if err != -1 {
-			fmt.Println("manejamos el resultado de opciones ingresadas que son: ", option1, " and ", option2)
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
-			fmt.Println("Finish: ", moveFinished)
 		}
 		option1 = 0
 	}
@@ -188,6 +179,7 @@ func (move *Move) askPlayerForWait(player *Player, playerError *PlayerError) int
 
 func (move *Move) handleEnvido(player *Player) {
 	common.Send(player.socket, "cantaste ENVIDO")
+	common.Receive(player.socket)
 	move.alreadySangEnvido = true
 }
 
@@ -258,8 +250,12 @@ func (move *Move) sendInfoMove(player *Player, options []int,  playerError *Play
 	msgError := ""
 	//TODO: tanto en sendInfo move como en handlethwro se hace el mismo loop, ver de meterlos
 	// en una misma funcion.(recibea mensaje y cant de optiones y devuelvan la opcion elegida)
+	fmt.Println("todavia no entre al for")
+
 	for !containsOption(option, options) {
 		common.Send(player.socket, msgError+message)
+		fmt.Println("Le mande al jugador " + msgError + message)
+
 		jugada, err := common.Receive(player.socket)
 		if err != nil {
 			playerError.player = player
@@ -268,7 +264,7 @@ func (move *Move) sendInfoMove(player *Player, options []int,  playerError *Play
 		}
 		msgError = "Error: no elegiste una opcion valida. "
 		option, _ = strconv.Atoi(jugada)
-		fmt.Println("opcion ingresada: ", option)
+		fmt.Println("El jugador " + player.name + " mando la opcion: ", option)
 	}
 	return option, 0
 }
@@ -279,9 +275,9 @@ func (move *Move) askPlayerForMove(player *Player, options []int, playerError *P
 	var err int
 
 	if len(move.cardsPlayed) > 0 {
-		message := "Tu oponente tiro una carta " + move.cardsPlayed[0].getFullName() //TODO:porque 0?
+		message := "Tu oponente tiro una carta " + move.cardsPlayed[0].getFullName()
 		common.Send(player.socket, message)
-		//messageClient, _ := common.Receive(player.socket)
+		/*chequear errores*/common.Receive(player.socket)
 	}
 
 	option, err = move.sendInfoMove(player, options, playerError)
@@ -297,12 +293,6 @@ func (move *Move) askPlayerForMove(player *Player, options []int, playerError *P
 			move.handleEnvido(player)
 		case CANTAR_TRUCO:
 			fmt.Println("canto truco")
-		case QUERER_ENVIDO:	// si quiere envido es porque alguien lo canto
-			fmt.Println("QUIERE ENVIDO")
-		case QUERER_ENVIDO_ENVIDO: // si quiere envido envido es porque alguien canto envido
-			fmt.Println("QUIERE ENVIDO ENVIDO")
-		case NO_QUERER_ENVIDO:	// si no quiere envido es porque alguien lo canto
-			fmt.Println("NO QUIERE ENVIDO")
 	}
 	return option, err
 }
