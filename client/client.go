@@ -33,11 +33,9 @@ func Start() {
 		socket.Close()
 	}()
 	runClient(socket)
-	fmt.Println("SALI DEL RUNCLIENT")
 }
 
 func runClient(socket net.Conn) {
-	fmt.Println("entre a client run")
 	sendMenuResponses(socket)
 	//este receive deberia bloquearse esperando a que empiece la partida.
 	startGame(socket)
@@ -55,7 +53,6 @@ func processGameloop(socket net.Conn) {
 		checkErrorServer(err)
 		fmt.Println(messageServer)
 		if strings.HasPrefix(messageServer, "Espera a que juegue tu oponente...") {
-			fmt.Println("entre a esperar")
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Tu oponente tiro una carta") {
 			fmt.Println("Tu oponente tiro una carta")

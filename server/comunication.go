@@ -13,7 +13,6 @@ func sendMenu(player Player) (string, error) {
 	common.Send(player.socket, "Las reglas del juego son sencillas: .....")
 	messagePlayer, error = common.Receive(player.socket)
 	common.Send(player.socket, "ingresa CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada")
-	fmt.Println("paso")
 	// receives its answer
 	messagePlayer, error = common.Receive(player.socket)
 	fmt.Println(messagePlayer)

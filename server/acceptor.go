@@ -14,7 +14,6 @@ type Acceptor struct {
 func start_receiver(acceptor Acceptor) {
 	matchManager := &MatchManager{matches: []Match{}}
 
-	fmt.Printf(("estoy en receiver\n"))
 	for {
 		// acept diferent connections
 		peer, error := acceptor.Accept()

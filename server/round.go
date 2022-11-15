@@ -26,14 +26,13 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 	completeRound := 1
 	finish := false
 	round.moves = 0
-	fmt.Println("Arranca ronda")
 	round.decide_hand_players(initialCurrentId, initialWaitingId)
 	round.currentPlayer.winsPerPlay = 0
 	round.waitingPlayer.winsPerPlay = 0
 	var err int
 
 	for completeRound <= 3 && !finish {
-		var move = Move{typeMove: completeRound}
+		var move = Move{typeMove: completeRound, alreadySangEnvido: false} //TODO: no se si hace falta inicializarlo asi pero por ahora para probar 
 		err = move.start_move(round.currentPlayer, round.waitingPlayer, playerError, &finish)
 		if err == -1 {
 			return -1
