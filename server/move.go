@@ -58,7 +58,7 @@ func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponen
 	return true
 }
 
-func (move *Move) start_move(player1 *Player, player2 *Player, playerError *PlayerError, finish *bool) (int) {
+func (move *Move) start_move(player1 *Player, player2 *Player, playerError *PlayerError, finish *bool) int {
 	var moveFinished bool
 	err := 0
 	var option1 int
@@ -89,7 +89,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 		}
 	}
 	//TODO:err podria ser bool
-	return  err
+	return err
 }
 
 func (move *Move) assingWinner(result int, player1 *Player, player2 *Player, finish *bool) bool {
@@ -156,25 +156,44 @@ func (move *Move) handleEnvido(player *Player) {
 	common.Send(player.socket, "cantaste ENVIDO")
 }
 
+func containsOption(option int, options []int) bool {
+	var result bool = false
+	for _, x := range options {
+		if x == option {
+			result = true
+			break
+		}
+	}
+	return result
+}
+
 func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int {
 
 	message := "Que carta queres tirar? "
 	playerCards := player.getCards()
+
+	var maxOptionsSelected []int
 	for index, card := range playerCards {
 		number := strconv.Itoa(index+1) + ") "
 		message += number
 		message += card.getFullName() + " "
+		maxOptionsSelected = append(maxOptionsSelected, index+1)
 	}
-	common.Send(player.socket, message+". Seleccione un numero:")
+	option := 0
+	msgError := ""
+	for !containsOption(option, maxOptionsSelected) {
+		common.Send(player.socket, msgError+message+". Seleccione un numero:")
 
-	jugada, err := common.Receive(player.socket)
-	if err != nil {
-		fmt.Println("entre a error de receive")
-		playerError.player = player
-		playerError.err = err
-		return -1
+		jugada, err := common.Receive(player.socket)
+		if err != nil {
+			fmt.Println("entre a error de receive")
+			playerError.player = player
+			playerError.err = err
+			return -1
+		}
+		option, _ = strconv.Atoi(jugada)
+		msgError = "Error: no elegiste una opcion valida. "
 	}
-	option, _ := strconv.Atoi(jugada)
 
 	move.cardsPlayed = append(move.cardsPlayed, playerCards[option-1])
 	player.removeCardSelected(option - 1)
@@ -184,20 +203,31 @@ func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int
 func (move *Move) sendInfoMove(player *Player, playerError *PlayerError) (int, int) {
 
 	messageEnvido := ""
+	var options []int
 	if move.canSingEnvido() {
 		messageEnvido = "2) cantar envido"
+		options = append(options, 2)
 	}
+	options = append(options, 1)
+	options = append(options, 3)
 	message := "Es tu turno, podes hacer las siguientes jugadas: "
 	command := "1) tirar una carta, " + messageEnvido + "3) cantar truco. Elija un numero"
-	common.Send(player.socket, message+command)
+	option := 0
+	msgError := ""
+	//TODO: tanto en sendInfo move como en handlethwro se hace el mismo loop, ver de meterlos
+	// en una misma funcion.(recibea mensaje y cant de optiones y devuelvan la opcion elegida)
+	for !containsOption(option, options) {
+		common.Send(player.socket, msgError+message+command)
 
-	jugada, err := common.Receive(player.socket)
-	if err != nil {
-		playerError.player = player
-		playerError.err = err
-		return -1, -1
+		jugada, err := common.Receive(player.socket)
+		if err != nil {
+			playerError.player = player
+			playerError.err = err
+			return -1, -1
+		}
+		msgError = "Error: no elegiste una opcion valida. "
+		option, _ = strconv.Atoi(jugada)
 	}
-	option, _ := strconv.Atoi(jugada)
 	return option, 0
 }
 
