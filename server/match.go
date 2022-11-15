@@ -88,7 +88,7 @@ func (match *Match) beginGame() {
 		fmt.Println("comenzo juego")
 		startGame(*player)
 	}
-	for match.points <= 2 {
+	for match.points < 2 {
 		sendInfoCards(*match.players[match.initialPlayerId])
 		sendInfoCards(*match.players[match.waiterPlayerId])
 		match.points = round.startRound(match.initialPlayerId, match.waiterPlayerId, &playerError)

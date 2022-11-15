@@ -38,7 +38,7 @@ func (move *Move) handleOpponentResponse(option int, actual *Player, opponent *P
 	}
 
 }*/
-func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponent *Player) bool {
+func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) bool {
 	if option1 == QUIERE_ENVIDO || option2 == QUIERE_ENVIDO {
 		fmt.Println("entra a quiere envido")
 		//TODO: el oponent es el q no es mano???? importante
@@ -51,11 +51,14 @@ func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponen
 	} else if option2 == NO_QUIERE_ENVIDO {
 		actual.sumPoints(1)
 		return false
+	} else if option1 == 1 && option2 == 1 {
+		result := move.cardsPlayed[0].compareCards(move.cardsPlayed[1])
+		return move.assingWinner(result, actual, opponent, finish)
 	}
 	return true
 }
 
-func (move *Move) start_move(player1 *Player, player2 *Player, playerError *PlayerError) (bool, int) {
+func (move *Move) start_move(player1 *Player, player2 *Player, playerError *PlayerError, finish *bool) (int) {
 	var moveFinished bool
 	err := 0
 	var option1 int
@@ -66,30 +69,34 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 		//TODO: encontrar una mejor forma de hacer esto
 		err = move.askPlayerForWait(player2, playerError)
 		if err != -1 {
-			fmt.Println("entre a ask playr por move player 1 ")
+			fmt.Println("entre ask player por move: ", player1.name)
 			option1, err = move.askPlayerForMove(player1, false, 0, playerError)
 		}
 		if err != -1 {
-			fmt.Println("entre a ask playr to wait player 2 ")
+			fmt.Println("entre ask player to wait: ", player1.name)
 			err = move.askPlayerForWait(player1, playerError)
 		}
 		if err != -1 {
-			fmt.Println("entre a ask playr to move player 2 ")
+			fmt.Println("entre ask player por move: ", player2.name)
+			fmt.Println("Option del jugador1: ", option1)
 			option2, err = move.askPlayerForMove(player2, true, option1, playerError)
 		}
+		fmt.Println("Error al salir de ambos jugadores: ", err)
 		if err != -1 {
-			moveFinished = move.handleResult(option1, option2, player1, player2)
+			fmt.Println("ambos jugadores jugaron, manejo resultados")
+			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
+			fmt.Println("Finish: ", moveFinished)
 		}
 	}
 	//TODO:err podria ser bool
-	return false, err
+	return  err
 }
 
-func (move *Move) assingWinner(result int, player1 *Player, player2 *Player) bool {
+func (move *Move) assingWinner(result int, player1 *Player, player2 *Player, finish *bool) bool {
 	if result == 1 || result == 0 {
-		return move.process_winner(player1, player2)
+		return move.process_winner(player1, player2, finish)
 	} else {
-		return move.process_winner(player2, player1)
+		return move.process_winner(player2, player1, finish)
 	}
 }
 
@@ -97,7 +104,7 @@ func (move *Move) getMaxPoints() int {
 	return int(math.Max(float64(move.loser.points), float64(move.winner.points)))
 }
 
-func (move *Move) process_winner(winner *Player, loser *Player) bool {
+func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bool {
 	move.winner.id = winner.id
 	move.winner.points = 0
 	move.loser.id = loser.id
@@ -120,11 +127,13 @@ func (move *Move) process_winner(winner *Player, loser *Player) bool {
 	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
 	if winner.winsPerPlay == 2 {
 		fmt.Println("termino jugada")
-		return true
+		*finish = true
 	} else {
 		fmt.Println("No termino jugada")
-		return false
+		*finish = false
 	}
+	// termino jugada
+	return true
 }
 
 func (move *Move) askPlayerForWait(player *Player, playerError *PlayerError) int {
@@ -160,6 +169,7 @@ func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int
 
 	jugada, err := common.Receive(player.socket)
 	if err != nil {
+		fmt.Println("entre a error de receive")
 		playerError.player = player
 		playerError.err = err
 		return -1
@@ -195,10 +205,11 @@ func (move *Move) askPlayerForMove(player *Player, moveAsOpponent bool, action i
 	var option int
 	err := 0
 	if moveAsOpponent {
-		fmt.Println("soy oponente")
+		fmt.Println("soy oponente ", player.name)
 		option, err = move.getOpponentMove(action, player, playerError)
 	} else {
-		option, err := move.sendInfoMove(player, playerError)
+		fmt.Println("No soy oponente ", player.name)
+		option, err = move.sendInfoMove(player, playerError)
 		if err == -1 {
 			return -1, -1
 		}
@@ -207,6 +218,7 @@ func (move *Move) askPlayerForMove(player *Player, moveAsOpponent bool, action i
 		case 1:
 			fmt.Println("opcion tirar una carta")
 			err = move.handleThrowACard(player, playerError)
+			fmt.Println("error al salir de elegir una opcion de carta: ", err)
 		case 2:
 			move.handleEnvido(player)
 		case 3:
@@ -215,6 +227,7 @@ func (move *Move) askPlayerForMove(player *Player, moveAsOpponent bool, action i
 		}
 	}
 	if err == -1 {
+		fmt.Println("Toda la funcion de ask for move devuelve error")
 		return -1, -1
 	}
 	return option, err
@@ -227,8 +240,8 @@ func (move *Move) getOpponentMove(action int, player *Player, playerError *Playe
 		message := "Tu oponente tiro una carta " + move.cardsPlayed[0].getFullName()
 		common.Send(player.socket, message)
 		messageClient, _ := common.Receive(player.socket) //TODO: porque esta este receive
-		fmt.Println(messageClient)
-		return move.askPlayerForMove(player, false, 1, playerError)
+		fmt.Println("el mensaje es " + messageClient)
+		return move.askPlayerForMove(player, false, 0, playerError)
 	case 2:
 		common.Send(player.socket, opponentMessageForEnvido)
 		jugada, _ := common.Receive(player.socket)

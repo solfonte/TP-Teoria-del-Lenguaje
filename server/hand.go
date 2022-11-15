@@ -5,18 +5,18 @@ import (
 )
 
 type Hand struct {
-	cards []Card
+	cards            []Card
 	cardsNotSelected []Card
 }
 
 const (
-	BASTO = 0
-	ORO = 1
-	COPA = 2
+	BASTO  = 0
+	ORO    = 1
+	COPA   = 2
 	ESPADA = 3
 )
 
-func (hand *Hand) removeCardSelected(posTodelete int){
+func (hand *Hand) removeCardSelected(posTodelete int) {
 	hand.cardsNotSelected = append(hand.cardsNotSelected[:posTodelete], hand.cardsNotSelected[posTodelete+1:]...)
 }
 
@@ -24,30 +24,29 @@ func (hand *Hand) pointsForSuit() int {
 	points := 0
 	var basto []Card
 	var oro []Card
-	var copa  []Card
+	var copa []Card
 	var espada []Card
-	suits := [4][]Card{basto,oro,copa,espada} 
+	suits := [4][]Card{basto, oro, copa, espada}
 	var repeatedSuit []Card
-	 
 
 	for _, card := range hand.cards {
 		if card.suit == "basto" {
 			suits[BASTO] = append(suits[BASTO], card)
-		}else if card.suit == "oro"{
+		} else if card.suit == "oro" {
 			suits[ORO] = append(suits[ORO], card)
-		}else if card.suit == "copa"{
+		} else if card.suit == "copa" {
 			suits[COPA] = append(suits[COPA], card)
-		}else{
+		} else {
 			suits[ESPADA] = append(suits[ESPADA], card)
 		}
 	}
 
-	for _, suit:= range suits {
+	for _, suit := range suits {
 		if len(suit) >= 2 {
 			repeatedSuit = suit
 			points += 20
 		}
-	} 
+	}
 
 	if repeatedSuit != nil {
 		greatestCardNumber := 0
@@ -63,17 +62,17 @@ func (hand *Hand) pointsForSuit() int {
 		if len(repeatedSuit) == 3 && repeatedSuit[2].value < 10 {
 			if greatestCardNumber > repeatedSuit[2].value && secondGreatestCardNumber < repeatedSuit[2].value {
 				secondGreatestCardNumber = repeatedSuit[2].value
-			}else if greatestCardNumber < repeatedSuit[2].value && secondGreatestCardNumber > repeatedSuit[2].value {
+			} else if greatestCardNumber < repeatedSuit[2].value && secondGreatestCardNumber > repeatedSuit[2].value {
 				greatestCardNumber = repeatedSuit[2].value
-			}else if greatestCardNumber < repeatedSuit[2].value && secondGreatestCardNumber < repeatedSuit[2].value{
+			} else if greatestCardNumber < repeatedSuit[2].value && secondGreatestCardNumber < repeatedSuit[2].value {
 				if greatestCardNumber > secondGreatestCardNumber {
 					secondGreatestCardNumber = repeatedSuit[2].value
-				}else {
+				} else {
 					greatestCardNumber = repeatedSuit[2].value
 				}
 			}
-		}	
-		points += greatestCardNumber + secondGreatestCardNumber	
+		}
+		points += greatestCardNumber + secondGreatestCardNumber
 	}
 	fmt.Println("en points for suit")
 	return points

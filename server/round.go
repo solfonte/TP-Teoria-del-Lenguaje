@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"math"
 )
 
 type Round struct {
@@ -33,7 +34,7 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 
 	for completeRound <= 3 && !finish {
 		var move = Move{typeMove: completeRound}
-		finish, err = move.start_move(round.currentPlayer, round.waitingPlayer, playerError)
+		err = move.start_move(round.currentPlayer, round.waitingPlayer, playerError, &finish)
 		if err == -1 {
 			return -1
 		}
@@ -42,7 +43,7 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 
 		round.decide_hand_players(move.winner.id, move.loser.id)
 
-		round.points += move.getMaxPoints()
+		round.points += round.getMatchPointsPlayers(initialCurrentId, initialWaitingId)
 		fmt.Println("Puntos ronda", round.points)
 	}
 	fmt.Println("Gano ronda ", round.currentPlayer)
@@ -51,6 +52,10 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 	msgLoser := "Perdiste la ronda"
 	sendInfoPlayers(round.currentPlayer, round.waitingPlayer, msgWinner, msgLoser)
 	return round.points
+}
+
+func (round *Round) getMatchPointsPlayers(initialCurrentPlayerId int, initialWaitPlayerId int) int {
+	return int(math.Max(float64(round.players[initialCurrentPlayerId].points), float64(round.players[initialWaitPlayerId].points)))
 }
 
 func (round *Round) decide_hand_players(initialCurrentPlayerId int, initialWaitPlayerId int) {
