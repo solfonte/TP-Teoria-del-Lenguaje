@@ -45,9 +45,7 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 		}
 		options = append(options, CANTAR_TRUCO)
 	} else if (opponentOption == CANTAR_ENVIDO){
-		if (move.canSingEnvido()){
-			options = append(options, CANTAR_ENVIDO)
-		}
+		options = append(options, QUERER_ENVIDO)
 		options = append(options, QUERER_ENVIDO_ENVIDO)
 		options = append(options, NO_QUERER_ENVIDO)
 	}else if (opponentOption == QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO){
@@ -107,6 +105,11 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			option1, err = move.askPlayerForMove(player1, options, playerError)
 		}
 		if err != -1 {
+			fmt.Println("manejamos el resultado de opciones ingresadas que son: ", option1, " and ", option2)
+			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
+			fmt.Println("Finish: ", moveFinished)
+		}
+		if err != -1 {
 		fmt.Println("el jugador 1 espera")
 
 			err = move.askPlayerForWait(player1, playerError)
@@ -121,6 +124,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 			fmt.Println("Finish: ", moveFinished)
 		}
+		option1 = 0
 	}
 	//TODO:err podria ser bool
 	return err
