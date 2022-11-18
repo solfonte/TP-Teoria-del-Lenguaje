@@ -19,9 +19,9 @@ const (
 )
 
 const (
-	CANTO_TRUCO   = 20
-	ACEPTA_TRUCO  = 21
-	RECHAZA_TRUCO = 22
+	CANTO_TRUCO    = 20
+	ACEPTAR_TRUCO  = 21
+	RECHAZAR_TRUCO = 22
 )
 
 type InfoPlayer struct {
@@ -61,15 +61,15 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 	} else if opponentOption == QUERER_ENVIDO_ENVIDO {
 		options = append(options, TIRAR_CARTA)
 		options = append(options, NO_QUERER_ENVIDO)
+	} else if opponentOption == CANTAR_TRUCO {
+		options = append(options, ACEPTAR_TRUCO)
+		options = append(options, RECHAZAR_TRUCO)
 	} else {
 		options = append(options, TIRAR_CARTA)
 		if move.canSingEnvido() {
 			options = append(options, CANTAR_ENVIDO)
 		}
 		options = append(options, CANTAR_TRUCO)
-	}
-	if move.trucoState == CANTO_TRUCO {
-		options = append(options)
 	}
 	return options
 	//TODO: DESPUES SE AGREGA TRUCO
@@ -196,6 +196,12 @@ func (move *Move) handleEnvido(player *Player) {
 }
 
 func (move *Move) handleTruco(player *Player) {
+	if move.trucoState == CANTO_TRUCO {
+		common.Send(player.socket, "aceptaste TRUCO")
+		common.Receive(player.socket)
+		move.trucoState = ACEPTAR_TRUCO
+		//luego hacer lo de tirar carta
+	}
 	common.Send(player.socket, "cantaste TRUCO")
 	common.Receive(player.socket)
 	move.trucoState = CANTO_TRUCO
@@ -262,6 +268,10 @@ func (move *Move) sendInfoMove(player *Player, options []int, playerError *Playe
 			message += "(" + strconv.Itoa(QUERER_ENVIDO_ENVIDO) + ") Quiero envido envido "
 		} else if possibleOption == NO_QUERER_ENVIDO {
 			message += "(" + strconv.Itoa(NO_QUERER_ENVIDO) + ") No quiero envido "
+		} else if possibleOption == ACEPTAR_TRUCO {
+			message += "(" + strconv.Itoa(ACEPTAR_TRUCO) + ") Quiero truco "
+		} else if possibleOption == RECHAZAR_TRUCO {
+			message += "(" + strconv.Itoa(RECHAZAR_TRUCO) + ") Rechazar truco "
 		}
 	}
 	//esto va en otra funcion
@@ -317,6 +327,8 @@ func (move *Move) askPlayerForMove(player *Player, options []int, playerError *P
 		*msg = "Cantaste envido."
 	case CANTAR_TRUCO:
 		fmt.Println("canto truco")
+		move.handleTruco(player)
+	case ACEPTAR_TRUCO:
 		move.handleTruco(player)
 	}
 	return option, err
