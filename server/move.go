@@ -50,6 +50,7 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 		options = append(options, NO_QUERER_ENVIDO)
 	}else if (opponentOption == QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO){
 		options = append(options, TIRAR_CARTA)
+		options = append(options, CANTAR_TRUCO)
 	}else if (opponentOption == QUERER_ENVIDO_ENVIDO){
 		options = append(options, TIRAR_CARTA)
 		options = append(options, NO_QUERER_ENVIDO)
@@ -66,21 +67,17 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 
 func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) bool {
 	if option1 == QUERER_ENVIDO || option2 == QUERER_ENVIDO {
-		fmt.Println("alguno quiere envido")
 		//TODO: el oponent es el q no es mano???? importante
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
 		envidoWinner.sumPoints(2)
 		return false
 	} else if option1 == NO_QUERER_ENVIDO {
-		fmt.Println("Uno no quiere envido")
 		opponent.sumPoints(1)
 		return false
 	} else if option2 == NO_QUERER_ENVIDO {
-		fmt.Println("Dos no quiere envido")
 		actual.sumPoints(1)
 		return false
 	} else if option1 == TIRAR_CARTA && option2 == TIRAR_CARTA {
-		fmt.Println("ambos tiraron carta")
 		result := move.cardsPlayed[0].compareCards(move.cardsPlayed[1])
 		return move.assingWinner(result, actual, opponent, finish)
 	} else if option1 == CANTAR_ENVIDO || option2 == CANTAR_ENVIDO {
@@ -254,7 +251,6 @@ func (move *Move) sendInfoMove(player *Player, options []int,  playerError *Play
 
 	for !containsOption(option, options) {
 		common.Send(player.socket, msgError+message)
-		fmt.Println("Le mande al jugador " + msgError + message)
 
 		jugada, err := common.Receive(player.socket)
 		if err != nil {
