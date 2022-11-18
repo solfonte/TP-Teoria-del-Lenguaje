@@ -64,6 +64,8 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 	} else if opponentOption == CANTAR_TRUCO {
 		options = append(options, ACEPTAR_TRUCO)
 		options = append(options, RECHAZAR_TRUCO)
+	} else if opponentOption == ACEPTAR_TRUCO {
+		options = append(options, TIRAR_CARTA)
 	} else {
 		options = append(options, TIRAR_CARTA)
 		if move.canSingEnvido() {
@@ -86,6 +88,12 @@ func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponen
 		return false
 	} else if option2 == NO_QUERER_ENVIDO {
 		actual.sumPoints(1)
+		return false
+	} else if option1 == CANTAR_TRUCO || option2 == CANTAR_TRUCO {
+		fmt.Println("alguno canto truco")
+		return false
+	} else if option1 == ACEPTAR_TRUCO || option2 == ACEPTAR_TRUCO {
+		fmt.Println("alguno quiere truco")
 		return false
 	} else if option1 == TIRAR_CARTA && option2 == TIRAR_CARTA {
 		result := move.cardsPlayed[0].compareCards(move.cardsPlayed[1])
@@ -201,10 +209,11 @@ func (move *Move) handleTruco(player *Player) {
 		common.Receive(player.socket)
 		move.trucoState = ACEPTAR_TRUCO
 		//luego hacer lo de tirar carta
+	} else {
+		common.Send(player.socket, "cantaste TRUCO")
+		common.Receive(player.socket)
+		move.trucoState = CANTO_TRUCO
 	}
-	common.Send(player.socket, "cantaste TRUCO")
-	common.Receive(player.socket)
-	move.trucoState = CANTO_TRUCO
 }
 
 func containsOption(option int, options []int) bool {
@@ -308,7 +317,12 @@ func (move *Move) askPlayerForMove(player *Player, options []int, playerError *P
 		/*chequear errores*/ common.Receive(player.socket)
 	}
 	if move.trucoState == CANTO_TRUCO {
-		message := "Tu oponente canto truco"
+		message := "Tu oponente canto TRUCO"
+		common.Send(player.socket, message)
+		/*chequear errores*/ common.Receive(player.socket)
+	}
+	if move.trucoState == ACEPTAR_TRUCO {
+		message := "Tu oponente Acepto el TRUCO"
 		common.Send(player.socket, message)
 		/*chequear errores*/ common.Receive(player.socket)
 	}
