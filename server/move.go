@@ -19,9 +19,10 @@ const (
 )
 
 const (
-	CANTO_TRUCO    = 20
-	ACEPTAR_TRUCO  = 21
-	RECHAZAR_TRUCO = 22
+	CANTO_TRUCO      = 20
+	ACEPTAR_TRUCO    = 21
+	RECHAZAR_TRUCO   = 22
+	TERMINAR_PARTIDA = 0
 )
 
 type InfoPlayer struct {
@@ -37,6 +38,7 @@ type Move struct {
 	cardsPlayed       []Card
 	alreadySangEnvido bool
 	trucoState        int //20 canto truco, 21 se acepto truco, 22 se rechaza truco
+	alreadyAcepted    bool
 }
 
 func (move *Move) canSingEnvido() bool {
@@ -269,7 +271,7 @@ func (move *Move) sendInfoMove(player *Player, options []int, playerError *Playe
 			message += "(" + strconv.Itoa(TIRAR_CARTA) + ") Tirar una carta "
 		} else if possibleOption == CANTAR_ENVIDO {
 			message += "(" + strconv.Itoa(CANTAR_ENVIDO) + ") Cantar envido "
-		} else if possibleOption == CANTAR_TRUCO {
+		} else if possibleOption == CANTAR_TRUCO && move.trucoState < ACEPTAR_TRUCO {
 			message += "(" + strconv.Itoa(CANTAR_TRUCO) + ") Cantar truco "
 		} else if possibleOption == QUERER_ENVIDO {
 			message += "(" + strconv.Itoa(QUERER_ENVIDO) + ") Quiero envido "
@@ -321,7 +323,8 @@ func (move *Move) askPlayerForMove(player *Player, options []int, playerError *P
 		common.Send(player.socket, message)
 		/*chequear errores*/ common.Receive(player.socket)
 	}
-	if move.trucoState == ACEPTAR_TRUCO {
+	if move.trucoState == ACEPTAR_TRUCO && !move.alreadyAcepted {
+		move.alreadyAcepted = true
 		message := "Tu oponente Acepto el TRUCO"
 		common.Send(player.socket, message)
 		/*chequear errores*/ common.Receive(player.socket)
