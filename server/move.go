@@ -31,18 +31,24 @@ type InfoPlayer struct {
 }
 
 type Move struct {
-	winner            InfoPlayer
-	loser             InfoPlayer
-	points            int
-	typeMove          int
-	cardsPlayed       []Card
-	alreadySangEnvido bool
-	trucoState        int //20 canto truco, 21 se acepto truco, 22 se rechaza truco
-	alreadyAcepted    bool
+	winner              InfoPlayer
+	loser               InfoPlayer
+	points              int
+	typeMove            int
+	cardsPlayed         []Card
+	alreadySangEnvido   bool
+	trucoState          int //20 canto truco, 21 se acepto truco, 22 se rechaza truco
+	alreadyAceptedTruco bool
+	alreadySangTruco    bool
 }
 
 func (move *Move) canSingEnvido() bool {
-	return move.typeMove == 1 && !move.alreadySangEnvido
+	return move.typeMove == 1 && !move.alreadySangEnvido && !move.alreadyAceptedTruco
+}
+
+// luego sumar aca mismo otros tipo re truco y eso
+func (move *Move) canSingTruco() bool {
+	return !move.alreadySangTruco
 }
 
 func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
@@ -52,7 +58,9 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 		if move.canSingEnvido() {
 			options = append(options, CANTAR_ENVIDO)
 		}
-		options = append(options, CANTAR_TRUCO)
+		if move.canSingTruco() {
+			options = append(options, CANTAR_TRUCO)
+		}
 	} else if opponentOption == CANTAR_ENVIDO {
 		options = append(options, QUERER_ENVIDO)
 		options = append(options, QUERER_ENVIDO_ENVIDO)
@@ -215,6 +223,7 @@ func (move *Move) handleTruco(player *Player) {
 		common.Send(player.socket, "cantaste TRUCO")
 		common.Receive(player.socket)
 		move.trucoState = CANTO_TRUCO
+		move.alreadySangTruco = true
 	}
 }
 
@@ -323,8 +332,8 @@ func (move *Move) askPlayerForMove(player *Player, options []int, playerError *P
 		common.Send(player.socket, message)
 		/*chequear errores*/ common.Receive(player.socket)
 	}
-	if move.trucoState == ACEPTAR_TRUCO && !move.alreadyAcepted {
-		move.alreadyAcepted = true
+	if move.trucoState == ACEPTAR_TRUCO && !move.alreadyAceptedTruco {
+		move.alreadyAceptedTruco = true
 		message := "Tu oponente Acepto el TRUCO"
 		common.Send(player.socket, message)
 		/*chequear errores*/ common.Receive(player.socket)
