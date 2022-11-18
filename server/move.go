@@ -18,6 +18,12 @@ const (
 	NO_QUERER_ENVIDO         = 10
 )
 
+const (
+	CANTO_TRUCO   = 20
+	ACEPTA_TRUCO  = 21
+	RECHAZA_TRUCO = 22
+)
+
 type InfoPlayer struct {
 	id     int
 	points int
@@ -30,6 +36,7 @@ type Move struct {
 	typeMove          int
 	cardsPlayed       []Card
 	alreadySangEnvido bool
+	trucoState        int //20 canto truco, 21 se acepto truco, 22 se rechaza truco
 }
 
 func (move *Move) canSingEnvido() bool {
@@ -51,7 +58,7 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 	} else if opponentOption == QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO {
 		options = append(options, TIRAR_CARTA)
 		options = append(options, CANTAR_TRUCO)
-	}else if (opponentOption == QUERER_ENVIDO_ENVIDO){
+	} else if opponentOption == QUERER_ENVIDO_ENVIDO {
 		options = append(options, TIRAR_CARTA)
 		options = append(options, NO_QUERER_ENVIDO)
 	} else {
@@ -60,6 +67,9 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 			options = append(options, CANTAR_ENVIDO)
 		}
 		options = append(options, CANTAR_TRUCO)
+	}
+	if move.trucoState == CANTO_TRUCO {
+		options = append(options)
 	}
 	return options
 	//TODO: DESPUES SE AGREGA TRUCO
@@ -185,6 +195,12 @@ func (move *Move) handleEnvido(player *Player) {
 	move.alreadySangEnvido = true
 }
 
+func (move *Move) handleTruco(player *Player) {
+	common.Send(player.socket, "cantaste TRUCO")
+	common.Receive(player.socket)
+	move.trucoState = CANTO_TRUCO
+}
+
 func containsOption(option int, options []int) bool {
 	var result bool = false
 	for _, x := range options {
@@ -281,6 +297,11 @@ func (move *Move) askPlayerForMove(player *Player, options []int, playerError *P
 		common.Send(player.socket, message)
 		/*chequear errores*/ common.Receive(player.socket)
 	}
+	if move.trucoState == CANTO_TRUCO {
+		message := "Tu oponente canto truco"
+		common.Send(player.socket, message)
+		/*chequear errores*/ common.Receive(player.socket)
+	}
 
 	option, err = move.sendInfoMove(player, options, playerError)
 
@@ -296,6 +317,7 @@ func (move *Move) askPlayerForMove(player *Player, options []int, playerError *P
 		*msg = "Cantaste envido."
 	case CANTAR_TRUCO:
 		fmt.Println("canto truco")
+		move.handleTruco(player)
 	}
 	return option, err
 }

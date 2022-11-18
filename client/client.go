@@ -64,6 +64,11 @@ func processGameloop(socket net.Conn) {
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Ganaste el envido") || strings.Contains(messageServer, "Perdiste el envido") {
 			common.Send(socket, "OK")
+		} else if strings.Contains(messageServer, "cantaste ENVIDO") {
+			common.Send(socket, "OK")
+
+		} else if strings.Contains(messageServer, "cantaste TRUCO") {
+			common.Send(socket, "OK")
 		} else {
 			messageClient, _ := promptReader.ReadString('\n')
 			common.Send(socket, messageClient)
