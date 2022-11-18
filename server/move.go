@@ -81,7 +81,9 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 		if move.canSingEnvido() {
 			options = append(options, CANTAR_ENVIDO)
 		}
-		options = append(options, CANTAR_TRUCO)
+		if move.canSingTruco() {
+			options = append(options, CANTAR_TRUCO)
+		}
 	}
 	return options
 	//TODO: DESPUES SE AGREGA TRUCO
