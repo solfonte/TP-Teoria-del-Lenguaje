@@ -113,6 +113,10 @@ func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponen
 	} else if option1 == ACEPTAR_TRUCO || option2 == ACEPTAR_TRUCO {
 		fmt.Println("alguno quiere truco")
 		return false
+	} else if option2 == RECHAZAR_TRUCO {
+		fmt.Println("Dos no quiere truco")
+		actual.sumPoints(1)
+		return true //se termina la ronda
 	}
 	return true
 }
@@ -178,13 +182,18 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 	// hay que settear a cero por cada ronda
 	winner.winsPerPlay += 1
 	if move.typeMove == 3 || winner.winsPerPlay >= 2 {
-		move.winner.points = 1
-		winner.points += 1
+		if winner.hasSagnTruco || loser.hasSagnTruco {
+			move.winner.points = 2
+			winner.points += 2
+		} else {
+			move.winner.points = 1
+			winner.points += 1
+		}
 	} else {
 		move.winner.points = 0
 	}
 
-	fmt.Println("ganador primera jugada ", move.winner)
+	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
 	msgwinner := "Ganaste la jugada " + strconv.Itoa(move.typeMove)
 	msgLoser := "Perdiste la jugada" + strconv.Itoa(move.typeMove)
 	sendInfoPlayers(winner, loser, msgwinner, msgLoser)

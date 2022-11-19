@@ -88,7 +88,7 @@ func (match *Match) beginGame() {
 		fmt.Println("comenzo juego")
 		startGame(*player)
 	}
-	for match.points < 2 {
+	for match.points < 6 {
 		for _, player := range match.players {
 			player.setHasSangTruco(false)
 		}
