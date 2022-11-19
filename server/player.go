@@ -27,8 +27,10 @@ func (player *Player) getCards() []Card {
 
 func (player *Player) verifyEnvidoWinnerAgainst(opponent *Player) *Player {
 	if player.hand.winsEnvidoOver(opponent.hand) {
+		sendInfoPlayers(player, opponent, "Ganaste el envido", "Perdiste el envido")
 		return player
 	}
+	sendInfoPlayers(opponent, player, "Ganaste el envido", "Perdiste el envido")
 	return opponent
 }
 
