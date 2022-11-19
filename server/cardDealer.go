@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+
 	//"path/filepath"
 	"strconv"
 	"time"
@@ -29,8 +30,7 @@ func (cardDealer *CardDealer) initialize() {
 
 func (cardDealer *CardDealer) assignCards(player *Player) {
 	//absPath, _ := filepath.Abs(os.Getenv("FILENAME"))
-	cardNames := readCSV("../TP-Teoria-del-Lenguaje/server/cards.csv")
-
+	cardNames := readCSV("../server/cards.csv")
 
 	rand.Seed(time.Now().UnixNano())
 	var amountOfCards int = 0
@@ -57,7 +57,7 @@ func readCSV(filePath string) [][]string {
 
 	f, err := os.Open(filePath)
 	if err != nil {
-		fmt.Println("Unable to read input file " + filePath, err)
+		fmt.Println("Unable to read input file "+filePath, err)
 	}
 	defer f.Close()
 
@@ -65,7 +65,7 @@ func readCSV(filePath string) [][]string {
 	csvReader.Comma = ','
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		fmt.Println("Unable to parse file as CSV for " + filePath, err)
+		fmt.Println("Unable to parse file as CSV for "+filePath, err)
 	}
 
 	return records

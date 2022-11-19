@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"math"
+	"net"
 	"strconv"
 	"truco/app/common"
 )
@@ -16,6 +17,10 @@ const (
 	QUERER_ENVIDO_ENVIDO     = 8
 	NO_QUERER_ENVIDO_ENVIDO  = 9
 	NO_QUERER_ENVIDO         = 10
+	IRSE_AL_MAZO             = 11
+	VER_MIS_CARTAS           = 12
+	WAIT                     = 80
+	STOP                     = 81
 )
 
 const (
@@ -128,8 +133,9 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	var option2 int = 0
 
 	for !moveFinished && err != -1 {
+		waitingChannelPlayer2 := make(chan int)
 		msg := ""
-		err = move.askPlayerForWait(player2, playerError, "")
+		go move.askPlayerForWait(waitingChannelPlayer2, player2, playerError, "")
 		move.setAlreadySangTruco(player1, player2)
 		if err != -1 {
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
@@ -139,13 +145,17 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			fmt.Println("opcion elegida: ", option1)
 			fmt.Println("error: ", err)
 		}
+		fmt.Println("\n\n EL TAAMANIOOO del channel es ", strconv.Itoa(len(waitingChannelPlayer2)))
+		waitingChannelPlayer2 <- STOP //TODO: no estamos captando los errores
 		if err != -1 {
 			fmt.Println("entre")
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 			fmt.Println("Finish: ", moveFinished)
 		}
+		waitingChannelPlayer1 := make(chan int)
+
 		if err != -1 {
-			err = move.askPlayerForWait(player1, playerError, msg)
+			go move.askPlayerForWait(waitingChannelPlayer1, player1, playerError, "")
 		}
 		fmt.Println("sali de que jugador uno espere")
 		if err != -1 {
@@ -153,6 +163,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			options := move.definePlayerPossibleOptions(option1)
 			option2, err = move.askPlayerForMove(player2, options, playerError, &msg)
 		}
+		waitingChannelPlayer1 <- STOP
 		if err != -1 {
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 		}
@@ -209,9 +220,51 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 	return true
 }
 
-func (move *Move) askPlayerForWait(player *Player, playerError *PlayerError, msg string) int {
+func receiveWaitingRequests(waitingChannel chan<- int, socket net.Conn) {
+	common.Send(socket, "Ingresas 11) Irse al mazo, 12) Consultar Cartas. Poner enter si no queres hacer nada")
+	message, err := common.Receive(socket)
+	option, _ := strconv.Atoi(message)
+	fmt.Println(">>>>>>>>>>>>>>>opcion recibida ", option)
+	if err != nil {
+		waitingChannel <- -1
+	}
+	waitingChannel <- option
+	return
+}
+
+func (move *Move) handleWaitingOptions(status int, player *Player) {
+	fmt.Println("++++=======Entre a handle wating options========+++")
+	fmt.Println("+++++status+++: ", status)
+	fmt.Println("-----player-----: ", player.name)
+	if status == VER_MIS_CARTAS {
+		//tenemos las card played pero faltaria decir quien tiro que
+		message := "Estas son tus cartas actuales: "
+		for _, card := range player.getCards() {
+			message += card.getFullName() + " - "
+		}
+		common.Send(player.socket, message)
+		common.Receive(player.socket) //receive de patch (ok)
+	}
+	return
+}
+
+func (move *Move) askPlayerForWait(waitingChannel chan int, player *Player, playerError *PlayerError, msg string) int {
 	common.Send(player.socket, msg+"Espera a que juegue tu oponente...")
 	_, err := common.Receive(player.socket)
+	if err != nil {
+		playerError.player = player
+		playerError.err = err
+		return -1
+	}
+
+	status := WAIT
+	for status != STOP && status != -1 {
+		move.handleWaitingOptions(status, player)
+		go receiveWaitingRequests(waitingChannel, player.socket)
+		status = <-waitingChannel
+	}
+	fmt.Println("Salgo del for de askPlayerForWait del jugador ", player.name)
+
 	if err != nil {
 		playerError.player = player
 		playerError.err = err
