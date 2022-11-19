@@ -47,8 +47,8 @@ func (move *Move) canSingEnvido() bool {
 }
 
 // luego sumar aca mismo otros tipo re truco y eso
-func (move *Move) canSingTruco() bool {
-	return !move.alreadySangTruco
+func (move *Move) setAlreadySangTruco(player1 *Player, player2 *Player) {
+	move.alreadySangTruco = (player1.hasSagnTruco || player2.hasSagnTruco)
 }
 
 func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
@@ -58,7 +58,7 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 		if move.canSingEnvido() {
 			options = append(options, CANTAR_ENVIDO)
 		}
-		if move.canSingTruco() {
+		if !move.alreadySangTruco {
 			options = append(options, CANTAR_TRUCO)
 		}
 	} else if opponentOption == CANTAR_ENVIDO {
@@ -81,7 +81,7 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 		if move.canSingEnvido() {
 			options = append(options, CANTAR_ENVIDO)
 		}
-		if move.canSingTruco() {
+		if !move.alreadySangTruco {
 			options = append(options, CANTAR_TRUCO)
 		}
 	}
@@ -126,6 +126,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	for !moveFinished && err != -1 {
 		msg := ""
 		err = move.askPlayerForWait(player2, playerError, "")
+		move.setAlreadySangTruco(player1, player2)
 		if err != -1 {
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 			options := move.definePlayerPossibleOptions(option2)
@@ -227,6 +228,7 @@ func (move *Move) handleTruco(player *Player) {
 		common.Receive(player.socket)
 		move.trucoState = CANTO_TRUCO
 		move.alreadySangTruco = true
+		player.hasSagnTruco = true
 	}
 }
 

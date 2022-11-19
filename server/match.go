@@ -89,6 +89,9 @@ func (match *Match) beginGame() {
 		startGame(*player)
 	}
 	for match.points < 2 {
+		for _, player := range match.players {
+			player.setHasSangTruco(false)
+		}
 		sendInfoCards(*match.players[match.initialPlayerId])
 		sendInfoCards(*match.players[match.waiterPlayerId])
 		match.points = round.startRound(match.initialPlayerId, match.waiterPlayerId, &playerError)
