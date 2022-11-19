@@ -13,7 +13,7 @@ import (
 
 const (
 	SERVER_HOST = "localhost"
-	SERVER_PORT = "9988"
+	SERVER_PORT = "9998"
 	SERVER_TYPE = "tcp"
 )
 
@@ -52,19 +52,17 @@ func processGameloop(socket net.Conn) {
 		messageServer, err := common.Receive(socket)
 		checkErrorServer(err)
 		fmt.Println(messageServer)
-		if strings.HasPrefix(messageServer, "Espera a que juegue tu oponente...") {
+		if strings.Contains(messageServer, "Espera a que juegue tu oponente...") {
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Tu oponente tiro una carta") {
-			fmt.Println("Tu oponente tiro una carta")
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Ganaste") || strings.Contains(messageServer, "Perdiste") {
-			fmt.Println("ganaste o perdiste")
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Estas son tus cartas") {
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Tu oponente se desconecto") {
 			common.Send(socket, "OK")
-		}else if strings.Contains(messageServer, "cantaste ENVIDO") {
+		} else if strings.Contains(messageServer, "Ganaste el envido") || strings.Contains(messageServer, "Perdiste el envido") {
 			common.Send(socket, "OK")
 		} else {
 			messageClient, _ := promptReader.ReadString('\n')
@@ -72,4 +70,3 @@ func processGameloop(socket net.Conn) {
 		}
 	}
 }
-
