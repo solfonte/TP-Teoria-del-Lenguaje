@@ -29,7 +29,7 @@ func (cardDealer *CardDealer) initialize() {
 
 func (cardDealer *CardDealer) assignCards(player *Player) {
 	//absPath, _ := filepath.Abs(os.Getenv("FILENAME"))
-	cardNames := readCSV("../server/cards.csv")
+	cardNames := readCSV("../TP-Teoria-del-Lenguaje/server/cards.csv")
 
 
 	rand.Seed(time.Now().UnixNano())
