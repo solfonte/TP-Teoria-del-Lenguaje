@@ -12,13 +12,18 @@ type Acceptor struct {
 }
 
 func start_receiver(acceptor Acceptor) {
-	matchManager := &MatchManager{matches: []Match{}}
-
+	matchManager := &MatchManager{matches: []*Match{}}
+	finishChannelWaitingPlayers := make(chan bool)
+	finishChannelStartMatches := make(chan bool)
+	go matchManager.processWaitingPlayers(finishChannelWaitingPlayers)
+	go matchManager.startMatches(finishChannelStartMatches)
 	for {
 		// acept diferent connections
 		peer, error := acceptor.Accept()
 		if error != nil {
 			fmt.Println("Error accepting: ", error.Error())
+			finishChannelWaitingPlayers <- true
+			finishChannelStartMatches <- true
 			os.Exit(1)
 		}
 		newPlayer := Player{id: len(acceptor.players) + 1, socket: peer}
@@ -26,7 +31,6 @@ func start_receiver(acceptor Acceptor) {
 
 		matchManager.delete_finish_matches()
 		matchManager.process_player(&newPlayer)
-
 		fmt.Println("client connected")
 
 	}

@@ -14,6 +14,7 @@ type Match struct {
 	initialPlayerId int
 	waiterPlayerId  int
 	finish          bool
+	readyToStart    bool
 }
 
 type PlayerError struct {
@@ -41,12 +42,12 @@ func (match *Match) deal_cards(players map[int]*Player) {
 func (match *Match) addPlayerToMatch(player *Player) {
 	if match != nil {
 		match.players[player.id] = player
+		fmt.Println("agrego jugador :", player.name)
 		if len(match.players) == match.maxPlayers {
 			fmt.Println("Arranco la partida")
 			match.waiterPlayerId = player.id
-			match.started = true
-			match.beginGame()
-			fmt.Println("tERMINO PARTIDA")
+			match.readyToStart = true
+			//match.beginGame()
 		} else {
 			// CREO ALGUIEN LA PARTIDA
 			fmt.Println("alguiien creo la partida")
@@ -105,7 +106,6 @@ func (match *Match) beginGame() {
 	}
 	match.process_winner_and_loser()
 	match.finish = true
-
 }
 
 func (match Match) process_winner_and_loser() {
