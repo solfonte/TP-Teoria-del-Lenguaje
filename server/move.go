@@ -104,14 +104,14 @@ func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponen
 	} else if option1 == CANTAR_TRUCO || option2 == CANTAR_TRUCO {
 		fmt.Println("alguno canto truco")
 		return false
-	} else if option1 == ACEPTAR_TRUCO || option2 == ACEPTAR_TRUCO {
-		fmt.Println("alguno quiere truco")
-		return false
 	} else if option1 == TIRAR_CARTA && option2 == TIRAR_CARTA {
 		result := move.cardsPlayed[0].compareCards(move.cardsPlayed[1])
 		return move.assingWinner(result, actual, opponent, finish)
 	} else if option1 == CANTAR_ENVIDO || option2 == CANTAR_ENVIDO {
 		fmt.Print("alguno pidio envido")
+		return false
+	} else if option1 == ACEPTAR_TRUCO || option2 == ACEPTAR_TRUCO {
+		fmt.Println("alguno quiere truco")
 		return false
 	}
 	return true
@@ -127,6 +127,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 		msg := ""
 		err = move.askPlayerForWait(player2, playerError, "")
 		if err != -1 {
+			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 			options := move.definePlayerPossibleOptions(option2)
 			fmt.Println("le pido que juege")
 			option1, err = move.askPlayerForMove(player1, options, playerError, &msg)
@@ -358,6 +359,9 @@ func (move *Move) askPlayerForMove(player *Player, options []int, playerError *P
 		move.handleTruco(player)
 	case ACEPTAR_TRUCO:
 		move.handleTruco(player)
+	}
+	if option == ACEPTAR_TRUCO && len(move.cardsPlayed)%2 != 0 {
+		return TIRAR_CARTA, err
 	}
 	return option, err
 }
