@@ -140,26 +140,18 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 		if err != -1 {
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 			options := move.definePlayerPossibleOptions(option2)
-			fmt.Println("le pido que juege")
 			option1, err = move.askPlayerForMove(player1, options, playerError, &msg)
-			fmt.Println("opcion elegida: ", option1)
-			fmt.Println("error: ", err)
 		}
-		fmt.Println("\n\n EL TAAMANIOOO del channel es ", strconv.Itoa(len(waitingChannelPlayer2)))
 		waitingChannelPlayer2 <- STOP //TODO: no estamos captando los errores
 		if err != -1 {
-			fmt.Println("entre")
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
-			fmt.Println("Finish: ", moveFinished)
 		}
 		waitingChannelPlayer1 := make(chan int)
 
 		if err != -1 {
 			go move.askPlayerForWait(waitingChannelPlayer1, player1, playerError, "")
 		}
-		fmt.Println("sali de que jugador uno espere")
 		if err != -1 {
-			fmt.Print("entre a mandarlea a jugador 2")
 			options := move.definePlayerPossibleOptions(option1)
 			option2, err = move.askPlayerForMove(player2, options, playerError, &msg)
 		}
@@ -224,7 +216,6 @@ func receiveWaitingRequests(waitingChannel chan<- int, socket net.Conn) {
 	common.Send(socket, "Ingresas 11) Irse al mazo, 12) Consultar Cartas. Poner enter si no queres hacer nada")
 	message, err := common.Receive(socket)
 	option, _ := strconv.Atoi(message)
-	fmt.Println(">>>>>>>>>>>>>>>opcion recibida ", option)
 	if err != nil {
 		waitingChannel <- -1
 	}
@@ -233,14 +224,11 @@ func receiveWaitingRequests(waitingChannel chan<- int, socket net.Conn) {
 }
 
 func (move *Move) handleWaitingOptions(status int, player *Player) {
-	fmt.Println("++++=======Entre a handle wating options========+++")
-	fmt.Println("+++++status+++: ", status)
-	fmt.Println("-----player-----: ", player.name)
 	if status == VER_MIS_CARTAS {
 		//tenemos las card played pero faltaria decir quien tiro que
 		message := "Estas son tus cartas actuales: "
 		for _, card := range player.getCards() {
-			message += card.getFullName() + " - "
+			message += card.getFullName() + " | "
 		}
 		common.Send(player.socket, message)
 		common.Receive(player.socket) //receive de patch (ok)
@@ -263,8 +251,6 @@ func (move *Move) askPlayerForWait(waitingChannel chan int, player *Player, play
 		go receiveWaitingRequests(waitingChannel, player.socket)
 		status = <-waitingChannel
 	}
-	fmt.Println("Salgo del for de askPlayerForWait del jugador ", player.name)
-
 	if err != nil {
 		playerError.player = player
 		playerError.err = err
@@ -388,7 +374,6 @@ func (move *Move) sendInfoMove(player *Player, options []int, playerError *Playe
 func (move *Move) askPlayerForMove(player *Player, options []int, playerError *PlayerError, msg *string) (int, int) {
 	option := 0
 	var err int
-	fmt.Println("entre a moer jugador")
 	if len(move.cardsPlayed) > 0 {
 		message := "Tu oponente tiro una carta " + move.cardsPlayed[0].getFullName()
 		common.Send(player.socket, message)
