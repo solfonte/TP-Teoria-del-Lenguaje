@@ -94,6 +94,26 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 	//TODO: DESPUES SE AGREGA TRUCO
 }
 
+func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool {
+	move.winner.id = winner.id
+	move.winner.points = 0
+	move.loser.id = loser.id
+	move.loser.points = 0
+	// hay que settear a cero por cada ronda
+	move.winner.points = 1
+	winner.points += 1
+	*finish = true
+	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
+	msgwinner := "Ganaste la jugada " + strconv.Itoa(move.typeMove)
+	msgLoser := "Perdiste la jugada" + strconv.Itoa(move.typeMove)
+	sendInfoPlayers(winner, loser, msgwinner, msgLoser)
+	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
+
+	fmt.Println("termino jugada")
+	*finish = true
+	return true
+}
+
 func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) bool {
 	if option1 == QUERER_ENVIDO || option2 == QUERER_ENVIDO {
 		//TODO: el oponent es el q no es mano???? importante
@@ -119,9 +139,11 @@ func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponen
 		fmt.Println("alguno quiere truco")
 		return false
 	} else if option2 == RECHAZAR_TRUCO {
-		fmt.Println("Dos no quiere truco")
-		actual.sumPoints(1)
-		return true //se termina la ronda
+		fmt.Println("No quiere truco")
+		return move.finish_round(actual, opponent, finish)
+	} else if option1 == RECHAZAR_TRUCO {
+		fmt.Println("No quiere truco")
+		return move.finish_round(opponent, actual, finish)
 	}
 	return true
 }
@@ -390,6 +412,13 @@ func (move *Move) askPlayerForMove(player *Player, options []int, playerError *P
 		common.Send(player.socket, message)
 		/*chequear errores*/ common.Receive(player.socket)
 	}
+	if move.trucoState == RECHAZAR_TRUCO && !move.alreadyAceptedTruco {
+		move.alreadyAceptedTruco = true
+		message := "Tu oponente Rechazo el TRUCO"
+		common.Send(player.socket, message)
+		/*chequear errores*/ common.Receive(player.socket)
+		return TERMINAR_PARTIDA, err
+	}
 
 	option, err = move.sendInfoMove(player, options, playerError)
 
@@ -408,6 +437,8 @@ func (move *Move) askPlayerForMove(player *Player, options []int, playerError *P
 		move.handleTruco(player)
 	case ACEPTAR_TRUCO:
 		move.handleTruco(player)
+	case RECHAZAR_TRUCO:
+		move.trucoState = RECHAZAR_TRUCO
 	}
 	if option == ACEPTAR_TRUCO && len(move.cardsPlayed)%2 != 0 {
 		return TIRAR_CARTA, err

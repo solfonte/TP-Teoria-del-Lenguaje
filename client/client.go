@@ -68,7 +68,7 @@ func processGameloop(socket net.Conn) {
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Tu oponente") {
 			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "aceptaste") {
+		} else if strings.Contains(messageServer, "aceptaste") || strings.Contains(messageServer, "Rechazaste") {
 			common.Send(socket, "OK")
 		} else {
 			messageClient, _ := promptReader.ReadString('\n')
