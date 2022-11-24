@@ -8,7 +8,7 @@ import (
 )
 
 func sendMenu(player Player) (string, error) {
-	common.Send(player.socket, "Bienvenido al truco "+player.name)
+	common.Send(player.socket, string("\033[31m")+"Bienvenido al truco "+player.name+string("\033[0m"))
 	messagePlayer, error := common.Receive(player.socket)
 	common.Send(player.socket, "Las reglas del juego son sencillas: .....")
 	messagePlayer, error = common.Receive(player.socket)
@@ -17,7 +17,7 @@ func sendMenu(player Player) (string, error) {
 	messagePlayer, error = common.Receive(player.socket)
 	fmt.Println(messagePlayer)
 	response := strings.ToUpper(messagePlayer)
-	fmt.Println(response)
+	fmt.Println("RESPONSE QUE ME LLEGA ", response)
 
 	for (response != "CREATE") && (response != "JOIN") {
 		common.Send(player.socket, "Error: ingrese CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada")
