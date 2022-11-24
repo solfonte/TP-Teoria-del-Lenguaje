@@ -113,3 +113,9 @@ func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser s
 	common.Send(loser.socket, msgLoser)
 	common.Receive(loser.socket)
 }
+
+func sendWelcomeMessage(player *Player) {
+	msg := "*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★* BIENVENIDO AL TRUCO *★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*\n"
+	common.Send(player.socket, msg)
+	common.Receive(player.socket)
+}
