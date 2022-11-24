@@ -1,18 +1,21 @@
 package common
 
 import (
-	"bufio"
-	"fmt"
 	"net"
 	"strings"
 )
 
 func Receive(connection net.Conn) (string, error) {
-	str, error := bufio.NewReader(connection).ReadString('\n')
-	return strings.TrimSpace(str), error
+	buffer := make([]byte, 4096)
+	mLen, err := connection.Read(buffer)
+	msg := ""
+	if mLen > 0 {
+		msg = string(buffer[:mLen])
+	}
+	return msg, err
 }
 
 func Send(connection net.Conn, message string) error {
-	_, error := fmt.Fprintf(connection, message+"\n")
+	_, error := connection.Write([]byte(strings.TrimRight(message, "\n")))
 	return error
 }
