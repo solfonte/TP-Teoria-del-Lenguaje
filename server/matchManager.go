@@ -17,7 +17,7 @@ type MatchManager struct {
 }
 
 func (matchManager *MatchManager) process_player(player *Player) {
-	player.askPlayerName()
+	player.welcomePlayer()
 	messageClient, _ := sendMenu(*player)
 	requestedmatch := processRequest(*player, messageClient)
 	if requestedmatch["create"] == 0 {

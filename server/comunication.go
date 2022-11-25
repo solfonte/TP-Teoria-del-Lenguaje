@@ -8,13 +8,14 @@ import (
 )
 
 func sendMenu(player Player) (string, error) {
-	common.Send(player.socket, string("\033[31m")+"Bienvenido al truco "+player.name+string("\033[0m"))
-	messagePlayer, error := common.Receive(player.socket)
-	common.Send(player.socket, "Las reglas del juego son sencillas: .....")
-	messagePlayer, error = common.Receive(player.socket)
-	common.Send(player.socket, "ingresa CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada")
+	msgCreate := common.GREEN + "CREATE" + common.NONE
+	//fmt.Println(msgCreate)
+	msgJoin := common.BLUE + "JOIN" + common.NONE
+	//fmt.Println(msgJoin)
+	message := "ingresa " + msgCreate + " para crear un juego O ingresa " + msgJoin + " para unirte a una partida ya creada"
+	common.Send(player.socket, message)
 	// receives its answer
-	messagePlayer, error = common.Receive(player.socket)
+	messagePlayer, error := common.Receive(player.socket)
 	fmt.Println(messagePlayer)
 	response := strings.ToUpper(messagePlayer)
 	fmt.Println("RESPONSE QUE ME LLEGA ", response)
@@ -92,13 +93,28 @@ func sendOtherPlayDisconnection(player Player, msg string) {
 	fmt.Println(message)
 }
 
+func getCardColors(card string) string {
+	if strings.Contains(card, "oro") {
+		return (common.YELLOW + card + common.NONE)
+	} else if strings.Contains(card, "espada") {
+		return (common.CYAN + card + common.NONE)
+	} else if strings.Contains(card, "basto") {
+		return (common.GREEN + card + common.NONE)
+	} else {
+		return (common.RED + card + common.NONE)
+	}
+}
+
 func sendInfoCards(player Player) {
 
 	//TODO: ver si no conviene que sea dinamico para cuando le queden dos o una?
 	cards := player.getCards()
-	card1 := cards[0].getFullName()
-	card2 := cards[1].getFullName()
-	card3 := cards[2].getFullName()
+	card1 := getCardColors(cards[0].getFullName())
+	fmt.Println(card1)
+	card2 := getCardColors(cards[1].getFullName())
+	fmt.Println(card2)
+	card3 := getCardColors(cards[2].getFullName())
+	fmt.Println(card3)
 	common.Send(player.socket, "Estas son tus cartas: "+card1+" "+card2+" "+card3)
 	message, _ := common.Receive(player.socket)
 	fmt.Println(message)
@@ -116,8 +132,10 @@ func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser s
 	fmt.Println(msg)
 }
 
-func sendWelcomeMessage(player *Player) {
-	msg := "*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★* BIENVENIDO AL TRUCO *★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*\n"
-	common.Send(player.socket, msg)
+func SendWelcomeMessage(player *Player) {
+	msg := "*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★* BIENVENIDO AL TRUCO *★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*"
+	common.Send(player.socket, common.YELLOW+msg+common.NONE)
+	common.Receive(player.socket)
+	common.Send(player.socket, "Las reglas del juego son: ")
 	common.Receive(player.socket)
 }

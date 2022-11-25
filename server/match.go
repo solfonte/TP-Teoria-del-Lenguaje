@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"truco/app/common"
 )
 
 type Match struct {
@@ -112,12 +113,12 @@ func (match Match) process_winner_and_loser() {
 	if match.players[match.initialPlayerId].points >= match.players[match.waiterPlayerId].points {
 		sendInfoPlayers(match.players[match.initialPlayerId],
 			match.players[match.waiterPlayerId],
-			"Ganaste la partida :)",
-			"Perdiste la partida :(")
+			common.BGreen+"Ganaste la partida :)"+common.NONE,
+			common.BRed+"Perdiste la partida :("+common.NONE)
 	} else {
 		sendInfoPlayers(match.players[match.waiterPlayerId],
 			match.players[match.initialPlayerId],
-			"Ganaste la partida :)",
-			"Perdiste la partida :(")
+			common.BGreen+"Ganaste la partida :)"+common.NONE,
+			common.BRed+"Perdiste la partida :("+common.NONE)
 	}
 }

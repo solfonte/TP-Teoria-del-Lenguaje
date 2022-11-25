@@ -41,7 +41,6 @@ func processMenuOptions(socket net.Conn, messageServer string) {
 }
 
 func sendMenuResponses(socket net.Conn) {
-	sendPlayerName(socket)
 	i := 0
 	messageServer := ""
 	for i < 2 {
@@ -51,6 +50,7 @@ func sendMenuResponses(socket net.Conn) {
 		common.Send(socket, "Ok")
 		i++
 	}
+	sendPlayerName(socket)
 	messageServer, err := common.Receive(socket)
 	checkErrorServer(err)
 	fmt.Println(messageServer)
@@ -63,9 +63,8 @@ func startGame(socket net.Conn) {
 	for i < 2 {
 		messageServer, err := common.Receive(socket)
 		checkErrorServer(err)
-		fmt.Println("Message server: ", messageServer)
+		fmt.Println(common.BWhite+messageServer+common.NONE)
 		common.Send(socket, "Ok")
 		i++
 	}
-
 }

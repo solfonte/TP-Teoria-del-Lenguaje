@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"math"
+	"truco/app/common"
 )
 
 type Round struct {
@@ -48,8 +49,8 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 	}
 	fmt.Println("Gano ronda ", round.currentPlayer)
 	fmt.Println("Puntos ronda", round.points)
-	msgWinner := "Ganaste la ronda"
-	msgLoser := "Perdiste la ronda"
+	msgWinner := common.BGreen+"Ganaste la ronda"+common.NONE
+	msgLoser := common.BRed+"Perdiste la ronda"+common.NONE
 	sendInfoPlayers(round.currentPlayer, round.waitingPlayer, msgWinner, msgLoser)
 	return round.points
 }

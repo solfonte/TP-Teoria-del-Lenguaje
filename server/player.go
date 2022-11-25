@@ -35,8 +35,13 @@ func (player *Player) verifyEnvidoWinnerAgainst(opponent *Player) *Player {
 	return opponent
 }
 
+func (player *Player) welcomePlayer() {
+	SendWelcomeMessage(player)
+	player.askPlayerName()
+}
+
 func (player *Player) askPlayerName() {
-	common.Send(player.socket, "Podes ingresar tu nombre")
+	common.Send(player.socket, "Porfavor ingrese su nombre")
 	playerName, error := common.Receive(player.socket)
 	if error != nil {
 		fmt.Println("Error reciving from client: ", error.Error())
