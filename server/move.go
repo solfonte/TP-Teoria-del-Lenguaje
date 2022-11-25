@@ -186,7 +186,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	for !moveFinished && err != -1 {
 		waitingChannelPlayer2 := make(chan int)
 		msg := ""
-		move.askPlayerForWait(waitingChannelPlayer2, player2, playerError)
+		go move.askPlayerForWait(waitingChannelPlayer2, player2, playerError)
 		move.setAlreadySangTruco(player1, player2)
 		if err != -1 {
 			//moveFinished = move.handleResult(option1, option2, player1, player2, finish)
@@ -194,13 +194,12 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			option1, err = move.askPlayerForMove(player1, options, playerError, &msg)
 		}
 		fmt.Println("jugador salido de elegir opicion ", player1.name)
-		//waitingChannelPlayer2 <- STOP //TODO: no estamos captando los errores
+		waitingChannelPlayer2 <- STOP //TODO: no estamos captando los errores
 		if err != -1 {
 			fmt.Println("handle primer result")
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 		}
 		waitingChannelPlayer1 := make(chan int)
-
 		if err != -1 {
 			go move.askPlayerForWait(waitingChannelPlayer1, player1, playerError)
 		}
@@ -210,7 +209,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			option2, err = move.askPlayerForMove(player2, options, playerError, &msg)
 			fmt.Println("me llego la opcion ", option2)
 		}
-		//waitingChannelPlayer1 <- STOP
+		waitingChannelPlayer1 <- STOP
 		if err != -1 {
 			fmt.Println("handle segundo result")
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
@@ -321,13 +320,13 @@ func (move *Move) askPlayerForWait(waitingChannel chan int, player *Player, play
 		return -1
 	}
 
-	// go move.handlePlayerActivity(waitingChannel, player)
+	go move.handlePlayerActivity(waitingChannel, player)
 
-	// if err != nil {
-	// 	playerError.player = player
-	// 	playerError.err = err
-	// 	return -1
-	// }
+	if err != nil {
+		playerError.player = player
+		playerError.err = err
+		return -1
+	}
 
 	return 0
 }
