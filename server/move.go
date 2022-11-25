@@ -6,8 +6,6 @@ import (
 	"net"
 	"strconv"
 	"truco/app/common"
-	"strings"
-
 )
 
 const (
@@ -126,6 +124,7 @@ func (move *Move) handleEnvidoResult(option1 int, option2 int, actual *Player, o
 		}
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
 		envidoWinner.sumPoints(pointsToBeSummed)
+		fmt.Println("player who won envido is " + envidoWinner.name)
 	} else if option1 == NO_QUERER_ENVIDO || option1 == NO_QUERER_ENVIDO_ENVIDO {
 		pointsToBeSummed := 1
 		if option1 == NO_QUERER_ENVIDO_ENVIDO {
@@ -143,8 +142,20 @@ func (move *Move) handleEnvidoResult(option1 int, option2 int, actual *Player, o
 	}
 }
 
+func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
+	options := []int{CANTAR_ENVIDO, QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO}
+
+	for _, option := range options {
+		if playerOption == option || anotherPlayerOption == option {
+			fmt.Println("envido related option " + strconv.Itoa(option))
+			return true
+		}
+	}
+	return false
+}
+
 func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) bool {
-	if strings.Contains(option1,'ENVIDO') || strings.Contains(option2,'ENVIDO'){
+	if envidoRelatedOptions(option1, option2){
 		move.handleEnvidoResult(option1, option2, actual, opponent, finish);
 		return false
 	} else if option1 == CANTAR_TRUCO || option2 == CANTAR_TRUCO {
@@ -184,6 +195,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 		}
 		waitingChannelPlayer2 <- STOP //TODO: no estamos captando los errores
 		if err != -1 {
+			fmt.Println("handle primer result")
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 		}
 		waitingChannelPlayer1 := make(chan int)
@@ -197,6 +209,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 		}
 		waitingChannelPlayer1 <- STOP
 		if err != -1 {
+			fmt.Println("handle segundo result")
 			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 		}
 		option1 = 0
