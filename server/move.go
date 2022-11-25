@@ -6,6 +6,8 @@ import (
 	"net"
 	"strconv"
 	"truco/app/common"
+	"strings"
+
 )
 
 const (
@@ -114,7 +116,7 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 	return true
 }
 
-func (move *Move) handleEnvidoResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) bool {
+func (move *Move) handleEnvidoResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) {
 	if option1 == QUERER_ENVIDO || option2 == QUERER_ENVIDO || option1 == QUERER_ENVIDO_ENVIDO || option2 == QUERER_ENVIDO_ENVIDO {
 		//TODO: el oponent es el q no es mano???? importante
 		pointsToBeSummed := 2
@@ -136,13 +138,13 @@ func (move *Move) handleEnvidoResult(option1 int, option2 int, actual *Player, o
 			pointsToBeSummed = 2
 		}
 		actual.sumPoints(pointsToBeSummed)
-	} else if option1 == CANTAR_ENVIDO || option2 == CANTAR_ENVIDO {
-		fmt.Print("alguno pidio envido")
+	/*} else if option1 == CANTAR_ENVIDO || option2 == CANTAR_ENVIDO {
+		fmt.Print("alguno pidio envido")*/
 	}
 }
 
 func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) bool {
-	if option1.Contains('ENVIDO'){
+	if strings.Contains(option1,'ENVIDO') || strings.Contains(option2,'ENVIDO'){
 		move.handleEnvidoResult(option1, option2, actual, opponent, finish);
 		return false
 	} else if option1 == CANTAR_TRUCO || option2 == CANTAR_TRUCO {
