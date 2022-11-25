@@ -115,16 +115,29 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 }
 
 func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) bool {
-	if option1 == QUERER_ENVIDO || option2 == QUERER_ENVIDO {
+	if option1 == QUERER_ENVIDO || option2 == QUERER_ENVIDO || option1 == QUERER_ENVIDO_ENVIDO || option2 == QUERER_ENVIDO_ENVIDO {
 		//TODO: el oponent es el q no es mano???? importante
+		pointsToBeSummed := 2
+		if option1 == QUERER_ENVIDO_ENVIDO || option2 == QUERER_ENVIDO_ENVIDO {
+			//nota para mi: esto contempla que quizas alguna de las dos opciones sea quiero_envido porque el envido envido se canta despues
+			pointsToBeSummed = 4
+		}
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
-		envidoWinner.sumPoints(2)
+		envidoWinner.sumPoints(pointsToBeSummed)
 		return false
-	} else if option1 == NO_QUERER_ENVIDO {
-		opponent.sumPoints(1)
+	} else if option1 == NO_QUERER_ENVIDO || option1 == NO_QUERER_ENVIDO_ENVIDO {
+		pointsToBeSummed := 1
+		if option1 == NO_QUERER_ENVIDO_ENVIDO {
+			pointsToBeSummed = 2
+		}
+		opponent.sumPoints(pointsToBeSummed)
 		return false
-	} else if option2 == NO_QUERER_ENVIDO {
-		actual.sumPoints(1)
+	} else if option2 == NO_QUERER_ENVIDO || option2 == NO_QUERER_ENVIDO_ENVIDO{
+		pointsToBeSummed := 1
+		if option2 == NO_QUERER_ENVIDO_ENVIDO {
+			pointsToBeSummed = 2
+		}
+		actual.sumPoints(pointsToBeSummed)
 		return false
 	} else if option1 == CANTAR_TRUCO || option2 == CANTAR_TRUCO {
 		fmt.Println("alguno canto truco")
