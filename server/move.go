@@ -192,7 +192,7 @@ func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan in
 
 		}else if moveOrder == PLAY {
 			options := move.definePlayerPossibleOptions(opponentOption)
-			actualPlayerOption = move.askPlayerToWait(player, options, &playerError, &msg)
+			actualPlayerOption, _ := move.askPlayerToMove(player, options, &playerError, &msg)
 			movesChannel <- actualPlayerOption
 		}
 
