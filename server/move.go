@@ -9,20 +9,20 @@ import (
 )
 
 const (
-	opponentMessageForEnvido 	= "Tu oponente canto envido. Tus opciones son: (1) Quiero (2) Quiero envido envido (3) No quiero"
+	opponentMessageForEnvido    = "Tu oponente canto envido. Tus opciones son: (1) Quiero (2) Quiero envido envido (3) No quiero"
 	RETURN_FROM_WAITING_OPTIONS = 0
-	TIRAR_CARTA              	= 4
-	CANTAR_ENVIDO            	= 5
-	CANTAR_TRUCO             	= 6
-	QUERER_ENVIDO            	= 7
-	QUERER_ENVIDO_ENVIDO     	= 8
-	NO_QUERER_ENVIDO_ENVIDO  	= 9
-	NO_QUERER_ENVIDO         	= 10
-	IRSE_AL_MAZO             	= 11
-	VER_MIS_CARTAS           	= 12
-	WAIT                     	= 80
-	STOP                     	= 81
-	PLAY					 	= 82
+	TIRAR_CARTA                 = 4
+	CANTAR_ENVIDO               = 5
+	CANTAR_TRUCO                = 6
+	QUERER_ENVIDO               = 7
+	QUERER_ENVIDO_ENVIDO        = 8
+	NO_QUERER_ENVIDO_ENVIDO     = 9
+	NO_QUERER_ENVIDO            = 10
+	IRSE_AL_MAZO                = 11
+	VER_MIS_CARTAS              = 12
+	WAIT                        = 80
+	STOP                        = 81
+	PLAY                        = 82
 )
 
 const (
@@ -106,9 +106,9 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 	winner.points += 1
 	*finish = true
 	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
-	msgwinner := common.BGreen + "Ganaste la jugada " + strconv.Itoa(move.typeMove) + common.NONE
-	msgLoser := common.BRed + "Perdiste la jugada " + strconv.Itoa(move.typeMove) + common.NONE
-	sendInfoPlayers(winner, loser, msgwinner, msgLoser)
+	// msgwinner := common.BGreen + "Ganaste la jugada " + strconv.Itoa(move.typeMove) + common.NONE
+	// msgLoser := common.BRed + "Perdiste la jugada " + strconv.Itoa(move.typeMove) + common.NONE
+	sendInfoPlayers(winner, loser, common.GetWinningMessage(move.typeMove), common.GetLossingMessage(move.typeMove))
 	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
 
 	fmt.Println("termino jugada")
@@ -178,31 +178,31 @@ func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponen
 	return true
 }
 
-func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan int, player *Player){
+func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan int, player *Player) {
 	var moveOrder int = -1
 	var playerError PlayerError
 	msg := " "
 	var opponentOption int = 0
 	for moveOrder != STOP {
-		moveOrder = <- orderChannel
+		moveOrder = <-orderChannel
 
 		if moveOrder == WAIT {
 			move.askPlayerToWait(orderChannel, player, &playerError)
-			opponentOption = <- movesChannel
+			opponentOption = <-movesChannel
 
-		}else if moveOrder == PLAY {
+		} else if moveOrder == PLAY {
 			options := move.definePlayerPossibleOptions(opponentOption)
 			actualPlayerOption, _ := move.askPlayerToMove(player, options, &playerError, &msg)
 			movesChannel <- actualPlayerOption
 		}
 
 	}
-	
+
 }
 
 func (move *Move) start_move(player1 *Player, player2 *Player, playerError *PlayerError, finish *bool) int {
 	fmt.Println("entra a start_move")
-	
+
 	err := 0
 	var moveFinished bool
 	var option1 int = 0
@@ -218,16 +218,16 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	for !moveFinished && err != -1 {
 		orderChannel1 <- PLAY
 		orderChannel2 <- WAIT
-		move.setAlreadySangTruco(player1, player2)  //TODO:chequear si va aca
+		move.setAlreadySangTruco(player1, player2) //TODO:chequear si va aca
 
-		option1 = <- movesChannel1
+		option1 = <-movesChannel1
 		fmt.Println("leo que la opcion ingresada por el jugador 1 es" + strconv.Itoa(option1))
 		moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 		movesChannel2 <- option1 //al jugador 2 le mando la jugada del jugador 1
 		orderChannel1 <- WAIT
 		orderChannel2 <- PLAY
 
-		option2 = <- movesChannel2
+		option2 = <-movesChannel2
 		moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 		movesChannel1 <- option2 //al jugador 2 le mando la jugada del jugador 1
 		//ver si hay que resettear alguna opcion
@@ -240,46 +240,46 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	return err
 
 	/*
-	var moveFinished bool
-	err := 0
-	var option1 int = 0
-	var option2 int = 0
+		var moveFinished bool
+		err := 0
+		var option1 int = 0
+		var option2 int = 0
 
-	for !moveFinished && err != -1 {
-		waitingChannelPlayer2 := make(chan int)
-		msg := ""
-		go move.askPlayerForWait(waitingChannelPlayer2, player2, playerError)
-		move.setAlreadySangTruco(player1, player2)
-		if err != -1 {
-			//moveFinished = move.handleResult(option1, option2, player1, player2, finish)
-			options := move.definePlayerPossibleOptions(option2)
-			option1, err = move.askPlayerForMove(player1, options, playerError, &msg)
+		for !moveFinished && err != -1 {
+			waitingChannelPlayer2 := make(chan int)
+			msg := ""
+			go move.askPlayerForWait(waitingChannelPlayer2, player2, playerError)
+			move.setAlreadySangTruco(player1, player2)
+			if err != -1 {
+				//moveFinished = move.handleResult(option1, option2, player1, player2, finish)
+				options := move.definePlayerPossibleOptions(option2)
+				option1, err = move.askPlayerForMove(player1, options, playerError, &msg)
+			}
+			fmt.Println("jugador salido de elegir opicion ", player1.name)
+			waitingChannelPlayer2 <- STOP //TODO: no estamos captando los errores
+			if err != -1 {
+				fmt.Println("handle primer result")
+				moveFinished = move.handleResult(option1, option2, player1, player2, finish)
+			}
+			waitingChannelPlayer1 := make(chan int)
+			if err != -1 {
+				go move.askPlayerForWait(waitingChannelPlayer1, player1, playerError)
+			}
+			if err != -1 {
+				options := move.definePlayerPossibleOptions(option1)
+				fmt.Println("llege hasta definir opinicon")
+				option2, err = move.askPlayerForMove(player2, options, playerError, &msg)
+				fmt.Println("me llego la opcion ", option2)
+			}
+			waitingChannelPlayer1 <- STOP
+			if err != -1 {
+				fmt.Println("handle segundo result")
+				moveFinished = move.handleResult(option1, option2, player1, player2, finish)
+			}
+			option1 = 0
 		}
-		fmt.Println("jugador salido de elegir opicion ", player1.name)
-		waitingChannelPlayer2 <- STOP //TODO: no estamos captando los errores
-		if err != -1 {
-			fmt.Println("handle primer result")
-			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
-		}
-		waitingChannelPlayer1 := make(chan int)
-		if err != -1 {
-			go move.askPlayerForWait(waitingChannelPlayer1, player1, playerError)
-		}
-		if err != -1 {
-			options := move.definePlayerPossibleOptions(option1)
-			fmt.Println("llege hasta definir opinicon")
-			option2, err = move.askPlayerForMove(player2, options, playerError, &msg)
-			fmt.Println("me llego la opcion ", option2)
-		}
-		waitingChannelPlayer1 <- STOP
-		if err != -1 {
-			fmt.Println("handle segundo result")
-			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
-		}
-		option1 = 0
-	}
-	//TODO:err podria ser bool
-	return err*/
+		//TODO:err podria ser bool
+		return err*/
 }
 
 func (move *Move) assingWinner(result int, player1 *Player, player2 *Player, finish *bool) bool {
@@ -362,7 +362,7 @@ func (move *Move) handlePlayerActivity(orderChannel chan int, player *Player) {
 		status = receiveWaitingRequests(player.socket)
 	}
 	if len(orderChannel) == 1 {
-		fmt.Println("me llego una orden para el jugador "+player.name)
+		fmt.Println("me llego una orden para el jugador " + player.name)
 	}
 }
 

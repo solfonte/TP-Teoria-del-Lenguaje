@@ -41,7 +41,7 @@ func (player *Player) welcomePlayer() {
 }
 
 func (player *Player) askPlayerName() {
-	common.Send(player.socket, "Porfavor ingrese su nombre")
+	common.Send(player.socket, common.AskPlayerName)
 	playerName, error := common.Receive(player.socket)
 	if error != nil {
 		fmt.Println("Error reciving from client: ", error.Error())
