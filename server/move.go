@@ -498,7 +498,7 @@ func (move *Move) sendInfoMove(player *Player, options []int, playerError *Playe
 	return option, 0
 }
 
-func (move *Move) askPlayerForMove(player *Player, options []int, playerError *PlayerError, msg *string) (int, int) {
+func (move *Move) askPlayerToMove(player *Player, options []int, playerError *PlayerError, msg *string) (int, int) {
 	option := 0
 	var err int
 	if len(move.cardsPlayed) > 0 {
