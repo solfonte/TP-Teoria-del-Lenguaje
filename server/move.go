@@ -187,12 +187,12 @@ func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan in
 		moveOrder = <- orderChannel
 
 		if moveOrder == WAIT {
-			move.askPlayerForWait(orderChannel, player, &playerError)
+			move.askPlayerToWait(orderChannel, player, &playerError)
 			opponentOption = <- movesChannel
 
 		}else if moveOrder == PLAY {
 			options := move.definePlayerPossibleOptions(opponentOption)
-			actualPlayerOption, _ := move.askPlayerForMove(player, options, &playerError, &msg)
+			actualPlayerOption = move.askPlayerToWait(player, options, &playerError, &msg)
 			movesChannel <- actualPlayerOption
 		}
 
@@ -361,9 +361,12 @@ func (move *Move) handlePlayerActivity(orderChannel chan int, player *Player) {
 		move.handleWaitingOptions(status, player)
 		status = receiveWaitingRequests(player.socket)
 	}
+	if len(orderChannel) == 1 {
+		fmt.Println("me llego una orden para el jugador "+player.name)
+	}
 }
 
-func (move *Move) askPlayerForWait(orderChannel chan int, player *Player, playerError *PlayerError) int {
+func (move *Move) askPlayerToWait(orderChannel chan int, player *Player, playerError *PlayerError) int {
 	common.Send(player.socket, common.BBlue+"Espera a que juegue tu oponente..."+common.NONE+"\n")
 	_, err := common.Receive(player.socket)
 	if err != nil {
