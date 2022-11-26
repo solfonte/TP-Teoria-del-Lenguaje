@@ -11,18 +11,19 @@ import (
 const (
 	opponentMessageForEnvido    = "Tu oponente canto envido. Tus opciones son: (1) Quiero (2) Quiero envido envido (3) No quiero"
 	RETURN_FROM_WAITING_OPTIONS = 0
-	TIRAR_CARTA                 = 4
-	CANTAR_ENVIDO               = 5
-	CANTAR_TRUCO                = 6
-	QUERER_ENVIDO               = 7
-	QUERER_ENVIDO_ENVIDO        = 8
-	NO_QUERER_ENVIDO_ENVIDO     = 9
-	NO_QUERER_ENVIDO            = 10
-	IRSE_AL_MAZO                = 11
-	VER_MIS_CARTAS              = 12
-	WAIT                        = 80
-	STOP                        = 81
-	PLAY                        = 82
+	TIRAR_CARTA              	= 4
+	CANTAR_ENVIDO            	= 5
+	CANTAR_TRUCO             	= 6
+	QUERER_ENVIDO            	= 7
+	CANTAR_ENVIDO_ENVIDO     	= 8
+	NO_QUERER_ENVIDO_ENVIDO  	= 9
+	NO_QUERER_ENVIDO         	= 10
+	QUERER_ENVIDO_ENVIDO		= 13
+	IRSE_AL_MAZO             	= 11
+	VER_MIS_CARTAS           	= 12
+	WAIT                     	= 80
+	STOP                     	= 81
+	PLAY					 	= 82
 )
 
 const (
@@ -70,13 +71,13 @@ func (move *Move) definePlayerPossibleOptions(opponentOption int) []int {
 		}
 	} else if opponentOption == CANTAR_ENVIDO {
 		options = append(options, QUERER_ENVIDO)
-		options = append(options, QUERER_ENVIDO_ENVIDO)
+		options = append(options, CANTAR_ENVIDO_ENVIDO)
 		options = append(options, NO_QUERER_ENVIDO)
 	} else if opponentOption == QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO {
 		options = append(options, TIRAR_CARTA)
 		options = append(options, CANTAR_TRUCO)
-	} else if opponentOption == QUERER_ENVIDO_ENVIDO {
-		options = append(options, TIRAR_CARTA)
+	} else if opponentOption == CANTAR_ENVIDO_ENVIDO {
+		options = append(options, QUERER_ENVIDO_ENVIDO)
 		options = append(options, NO_QUERER_ENVIDO)
 	} else if opponentOption == CANTAR_TRUCO {
 		options = append(options, ACEPTAR_TRUCO)
@@ -117,38 +118,27 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 }
 
 func (move *Move) handleEnvidoResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) {
-	if option1 == QUERER_ENVIDO || option2 == QUERER_ENVIDO || option1 == QUERER_ENVIDO_ENVIDO || option2 == QUERER_ENVIDO_ENVIDO {
-		//TODO: el oponent es el q no es mano???? importante
-		pointsToBeSummed := 2
-		if option1 == QUERER_ENVIDO_ENVIDO || option2 == QUERER_ENVIDO_ENVIDO {
-			//nota para mi: esto contempla que quizas alguna de las dos opciones sea quiero_envido porque el envido envido se canta despues
-			pointsToBeSummed = 4
-		}
+	fmt.Println(" me llegan las opciones "+strconv.Itoa(option1) + " y " +strconv.Itoa(option2))
+	if (option1 == CANTAR_ENVIDO || option2 == CANTAR_ENVIDO) && (option1 == QUERER_ENVIDO || option2 == QUERER_ENVIDO) {
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
-		envidoWinner.sumPoints(pointsToBeSummed)
-		fmt.Println("player who won envido is " + envidoWinner.name)
-	} else if option1 == NO_QUERER_ENVIDO || option1 == NO_QUERER_ENVIDO_ENVIDO {
-		pointsToBeSummed := 1
-		if option1 == NO_QUERER_ENVIDO_ENVIDO {
-			pointsToBeSummed = 2
-		}
-		opponent.sumPoints(pointsToBeSummed)
-	} else if option2 == NO_QUERER_ENVIDO || option2 == NO_QUERER_ENVIDO_ENVIDO {
-		pointsToBeSummed := 1
-		if option2 == NO_QUERER_ENVIDO_ENVIDO {
-			pointsToBeSummed = 2
-		}
-		actual.sumPoints(pointsToBeSummed)
-		/*} else if option1 == CANTAR_ENVIDO || option2 == CANTAR_ENVIDO {
-		fmt.Print("alguno pidio envido")*/
+		envidoWinner.sumPoints(2)
+		fmt.Println("sume puntos por envido a " + envidoWinner.name)
+	} else if (option1 == CANTAR_ENVIDO || option2 == CANTAR_ENVIDO) && (option1 == NO_QUERER_ENVIDO || option2 == NO_QUERER_ENVIDO) {
+		opponent.sumPoints(1)
+		fmt.Println("sume puntos por envido no querido a " + opponent.name)
+	} else if (option1 == CANTAR_ENVIDO_ENVIDO || option2 == CANTAR_ENVIDO_ENVIDO) && (option1 == NO_QUERER_ENVIDO_ENVIDO || option2 == NO_QUERER_ENVIDO_ENVIDO) {
+		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
+		envidoWinner.sumPoints(4)
+		fmt.Println("sume puntos por envido envido a " + envidoWinner.name)
 	}
 }
 
 func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
-	options := []int{CANTAR_ENVIDO, QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO}
+	options := []int{CANTAR_ENVIDO, QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO}
 
 	for _, option := range options {
 		if playerOption == option || anotherPlayerOption == option {
+			fmt.Println("opcion de envido identificada")
 			return true
 		}
 	}
@@ -157,6 +147,7 @@ func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
 
 func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) bool {
 	if envidoRelatedOptions(option1, option2) {
+		fmt.Println("identifique envido")
 		move.handleEnvidoResult(option1, option2, actual, opponent, finish)
 		return false
 	} else if option1 == CANTAR_TRUCO || option2 == CANTAR_TRUCO {
@@ -216,12 +207,12 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	fmt.Println("start_move lanza los hilos")
 
 	for !moveFinished && err != -1 {
+		moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 		orderChannel1 <- PLAY
 		orderChannel2 <- WAIT
 		move.setAlreadySangTruco(player1, player2) //TODO:chequear si va aca
 
-		option1 = <-movesChannel1
-		fmt.Println("leo que la opcion ingresada por el jugador 1 es" + strconv.Itoa(option1))
+		option1 = <- movesChannel1
 		moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 		movesChannel2 <- option1 //al jugador 2 le mando la jugada del jugador 1
 		orderChannel1 <- WAIT
@@ -465,14 +456,17 @@ func (move *Move) sendInfoMove(player *Player, options []int, playerError *Playe
 			message += "(" + strconv.Itoa(CANTAR_TRUCO) + ") Cantar" + common.BRed + " truco " + common.NONE + "\n"
 		} else if possibleOption == QUERER_ENVIDO {
 			message += "(" + strconv.Itoa(QUERER_ENVIDO) + ")" + common.GREEN + " Quiero envido " + common.NONE + "\n"
-		} else if possibleOption == QUERER_ENVIDO_ENVIDO {
-			message += "(" + strconv.Itoa(QUERER_ENVIDO_ENVIDO) + ")" + common.GREEN + " Quiero envido envido" + common.NONE + "\n"
+		} else if possibleOption == CANTAR_ENVIDO_ENVIDO {
+			message += "(" + strconv.Itoa(CANTAR_ENVIDO_ENVIDO) + ")" + common.GREEN + " Cantar envido envido" + common.NONE + "\n"
 		} else if possibleOption == NO_QUERER_ENVIDO {
 			message += "(" + strconv.Itoa(NO_QUERER_ENVIDO) + ")" + common.RED + " No quiero envido " + common.NONE + "\n"
 		} else if possibleOption == ACEPTAR_TRUCO {
 			message += "(" + strconv.Itoa(ACEPTAR_TRUCO) + ")" + common.GREEN + " Quiero truco " + common.NONE + "\n"
 		} else if possibleOption == RECHAZAR_TRUCO {
 			message += "(" + strconv.Itoa(RECHAZAR_TRUCO) + ")" + common.RED + " Rechazar truco " + common.NONE + "\n"
+		}else if possibleOption == QUERER_ENVIDO_ENVIDO {
+			message += "(" + strconv.Itoa(QUERER_ENVIDO_ENVIDO) + ")" + common.RED + " Quiero envido envido " + common.NONE + "\n"
+
 		}
 	}
 	//esto va en otra funcion
