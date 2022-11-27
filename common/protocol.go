@@ -53,3 +53,6 @@ func GetLossingMoveMessage(number int) string {
 	return BRed + "Perdiste la jugada " + strconv.Itoa(number) + NONE
 }
 
+func GetPointsMessage(player1Points int, player2Points int) string {
+	return BPurple + "Tus puntos son: " + strconv.Itoa(player1Points) + " Y los de tu oponente son: " + strconv.Itoa(player2Points) + NONE
+}

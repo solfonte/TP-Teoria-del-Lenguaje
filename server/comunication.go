@@ -147,3 +147,11 @@ func GetCardsToThrow(cards []Card) (string, []int) {
 	return message, maxOptionsSelected
 
 }
+
+func sendInfoPointsPlayers(player1 *Player, player2 *Player) {
+
+	common.Send(player1.socket, common.GetPointsMessage(player1.points, player2.points))
+	common.Receive(player1.socket)
+	common.Send(player2.socket, common.GetPointsMessage(player2.points, player1.points))
+	common.Receive(player2.socket)
+}

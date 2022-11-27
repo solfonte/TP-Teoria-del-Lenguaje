@@ -47,14 +47,15 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 
 		round.decide_hand_players(move.winner.id, move.loser.id)
 
-		round.points += round.getMatchPointsPlayers(initialCurrentId, initialWaitingId)
 		fmt.Println("Puntos ronda", round.points)
 	}
 	fmt.Println("Gano ronda ", round.currentPlayer)
 	fmt.Println("Puntos ronda", round.points)
-	// msgWinner := common.BGreen + "Ganaste la ronda" + common.NONE
-	// msgLoser := common.BRed + "Perdiste la ronda" + common.NONE
+
+	round.points = round.getMatchPointsPlayers(initialCurrentId, initialWaitingId)
+	fmt.Println("Puntos ronda: ", round.points)
 	sendInfoPlayers(round.currentPlayer, round.waitingPlayer, common.GetWinningRoundMessage(round.number), common.GetLossingRoundMessage(round.number))
+	sendInfoPointsPlayers(round.currentPlayer, round.waitingPlayer)
 	return round.points
 }
 

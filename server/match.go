@@ -103,6 +103,7 @@ func (match *Match) beginGame() {
 			match.handle_disconnection_player(playerError)
 			return
 		}
+		fmt.Println("puntos que va el partido: ", match.points)
 		numberRound += 1
 		match.changeInitialPlayerForRounds()
 		match.deal_cards(match.players)

@@ -13,7 +13,7 @@ import (
 
 const (
 	SERVER_HOST = "localhost"
-	SERVER_PORT = "9983"
+	SERVER_PORT = "9982"
 	SERVER_TYPE = "tcp"
 )
 
@@ -71,6 +71,8 @@ func processGameloop(socket net.Conn) {
 		} else if strings.Contains(messageServer, "Aceptaste") || strings.Contains(messageServer, "Rechazaste") {
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Bienvenido") {
+			common.Send(socket, "OK")
+		} else if strings.Contains(messageServer, "Tus puntos son") {
 			common.Send(socket, "OK")
 		} else {
 			messageClient, _ := promptReader.ReadString('\n')
