@@ -117,19 +117,30 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 	return true
 }
 
-func (move *Move) handleEnvidoResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) {
-	fmt.Println(" me llegan las opciones "+strconv.Itoa(option1) + " y " +strconv.Itoa(option2))
-	if (option1 == CANTAR_ENVIDO || option2 == CANTAR_ENVIDO) && (option1 == QUERER_ENVIDO || option2 == QUERER_ENVIDO) {
+func (move *Move) handleEnvidoResult(actualOption int, opponentOption int, actual *Player, opponent *Player, finish *bool) {
+	fmt.Println(" me llegan las opciones "+strconv.Itoa(actualOption) + " y " +strconv.Itoa(opponentOption))
+	if (actualOption == CANTAR_ENVIDO || opponentOption == CANTAR_ENVIDO) && (actualOption == QUERER_ENVIDO || opponentOption == QUERER_ENVIDO) {
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
 		envidoWinner.sumPoints(2)
 		fmt.Println("sume puntos por envido a " + envidoWinner.name)
-	} else if (option1 == CANTAR_ENVIDO || option2 == CANTAR_ENVIDO) && (option1 == NO_QUERER_ENVIDO || option2 == NO_QUERER_ENVIDO) {
-		opponent.sumPoints(1)
-		fmt.Println("sume puntos por envido no querido a " + opponent.name)
-	} else if (option1 == CANTAR_ENVIDO_ENVIDO || option2 == CANTAR_ENVIDO_ENVIDO) && (option1 == NO_QUERER_ENVIDO_ENVIDO || option2 == NO_QUERER_ENVIDO_ENVIDO) {
+	} else if (actualOption == CANTAR_ENVIDO || opponentOption == CANTAR_ENVIDO) && (actualOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO) {
+		playerToSumPoints := actual
+		if opponentOption == CANTAR_ENVIDO{
+			playerToSumPoints = opponent
+		}
+		playerToSumPoints.sumPoints(1)
+		fmt.Println("sume puntos por envido no querido a " + playerToSumPoints.name)
+	} else if (actualOption == CANTAR_ENVIDO_ENVIDO || opponentOption == CANTAR_ENVIDO_ENVIDO) && (actualOption == QUERER_ENVIDO_ENVIDO || opponentOption == QUERER_ENVIDO_ENVIDO) {
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
-		envidoWinner.sumPoints(4)
+		envidoWinner.sumPoints(2)
 		fmt.Println("sume puntos por envido envido a " + envidoWinner.name)
+	}else if (actualOption == CANTAR_ENVIDO_ENVIDO || opponentOption == CANTAR_ENVIDO_ENVIDO) && (actualOption == NO_QUERER_ENVIDO_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO) {
+		playerToSumPoints := actual
+		if opponentOption == CANTAR_ENVIDO{
+			playerToSumPoints = opponent
+		}
+		playerToSumPoints.sumPoints(1)
+		fmt.Println("sume puntos por envido envido a " + playerToSumPoints.name)
 	}
 }
 
@@ -145,24 +156,24 @@ func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
 	return false
 }
 
-func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) bool {
-	if envidoRelatedOptions(option1, option2) {
+func (move *Move) handleResult(actualoption int, opponentOption int, actual *Player, opponent *Player, finish *bool) bool {
+	if envidoRelatedOptions(actualoption, opponentOption) {
 		fmt.Println("identifique envido")
-		move.handleEnvidoResult(option1, option2, actual, opponent, finish)
+		move.handleEnvidoResult(actualoption, opponentOption, actual, opponent, finish)
 		return false
-	} else if option1 == CANTAR_TRUCO || option2 == CANTAR_TRUCO {
+	} else if actualoption == CANTAR_TRUCO || opponentOption == CANTAR_TRUCO {
 		fmt.Println("alguno canto truco")
 		return false
-	} else if option1 == TIRAR_CARTA && option2 == TIRAR_CARTA {
+	} else if actualoption == TIRAR_CARTA && opponentOption == TIRAR_CARTA {
 		result := move.cardsPlayed[0].compareCards(move.cardsPlayed[1])
 		return move.assingWinner(result, actual, opponent, finish)
-	} else if option1 == ACEPTAR_TRUCO || option2 == ACEPTAR_TRUCO {
+	} else if actualoption == ACEPTAR_TRUCO || opponentOption == ACEPTAR_TRUCO {
 		fmt.Println("alguno quiere truco")
 		return false
-	} else if option2 == RECHAZAR_TRUCO {
+	} else if opponentOption == RECHAZAR_TRUCO {
 		fmt.Println("No quiere truco")
 		return move.finish_round(actual, opponent, finish)
-	} else if option1 == RECHAZAR_TRUCO {
+	} else if actualoption == RECHAZAR_TRUCO {
 		fmt.Println("No quiere truco")
 		return move.finish_round(opponent, actual, finish)
 	}
@@ -207,7 +218,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	fmt.Println("start_move lanza los hilos")
 
 	for !moveFinished && err != -1 {
-		moveFinished = move.handleResult(option1, option2, player1, player2, finish)
+		//moveFinished = move.handleResult(option2, option1, player1, player2, finish)
 		orderChannel1 <- PLAY
 		orderChannel2 <- WAIT
 		move.setAlreadySangTruco(player1, player2)  //TODO:chequear si va aca
@@ -219,9 +230,10 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 		orderChannel2 <- PLAY
 
 		option2 = <- movesChannel2
-		moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 		movesChannel1 <- option2 //al jugador 2 le mando la jugada del jugador 1
 		//ver si hay que resettear alguna opcion
+		moveFinished = move.handleResult(option2, option1, player1, player2, finish)
+
 	}
 	fmt.Println("---------------------salgo del for de start_move--------------------------")
 
