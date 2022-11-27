@@ -52,3 +52,4 @@ func GetLossingRoundMessage(number int) string {
 func GetLossingMoveMessage(number int) string {
 	return BRed + "Perdiste la jugada " + strconv.Itoa(number) + NONE
 }
+

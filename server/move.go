@@ -107,8 +107,7 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 	winner.points += 1
 	*finish = true
 	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
-	// msgwinner := common.BGreen + "Ganaste la jugada " + strconv.Itoa(move.typeMove) + common.NONE
-	// msgLoser := common.BRed + "Perdiste la jugada " + strconv.Itoa(move.typeMove) + common.NONE
+
 	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove))
 	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
 
@@ -405,71 +404,18 @@ func containsOption(option int, options []int) bool {
 
 func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int {
 
-	message := "Que carta queres tirar? "
 	playerCards := player.getCards()
+	message, options := GetCardsToThrow(playerCards)
 
-	var maxOptionsSelected []int
-	for index, card := range playerCards {
-		number := strconv.Itoa(index+1) + ") "
-		message += number
-		message += getCardColors(card.getFullName()) + " "
-		maxOptionsSelected = append(maxOptionsSelected, index+1)
-	}
-	option := 0
-	msgError := ""
-	for !containsOption(option, maxOptionsSelected) {
-		common.Send(player.socket, msgError+message+". Seleccione un numero:")
-
-		jugada, err := common.Receive(player.socket)
-		if err != nil {
-			fmt.Println("entre a error de receive")
-			playerError.player = player
-			playerError.err = err
-			return -1
-		}
-		option, _ = strconv.Atoi(jugada)
-		msgError = "Error: no elegiste una opcion valida. "
-	}
-
+	option, err := loopSendOptionsToPlayer(options, player, playerError, message)
 	move.cardsPlayed = append(move.cardsPlayed, playerCards[option-1])
 	player.removeCardSelected(option - 1)
-	return 0
+	return err
 }
-
-func (move *Move) sendInfoMove(player *Player, options []int, playerError *PlayerError) (int, int) {
-	fmt.Println("mando info")
-	message := "Es tu turno, podes hacer las siguientes jugadas: " + "\n"
-	for _, possibleOption := range options {
-		if possibleOption == TIRAR_CARTA {
-			message += "(" + strconv.Itoa(TIRAR_CARTA) + ") " + common.CYAN + "Tirar" + common.NONE + " una carta" + "\n"
-		} else if possibleOption == CANTAR_ENVIDO {
-			message += "(" + strconv.Itoa(CANTAR_ENVIDO) + ") Cantar" + common.BYellow + " envido" + common.NONE + "\n"
-		} else if possibleOption == CANTAR_TRUCO && move.trucoState < ACEPTAR_TRUCO {
-			message += "(" + strconv.Itoa(CANTAR_TRUCO) + ") Cantar" + common.BRed + " truco " + common.NONE + "\n"
-		} else if possibleOption == QUERER_ENVIDO {
-			message += "(" + strconv.Itoa(QUERER_ENVIDO) + ")" + common.GREEN + " Quiero envido " + common.NONE + "\n"
-		} else if possibleOption == CANTAR_ENVIDO_ENVIDO {
-			message += "(" + strconv.Itoa(CANTAR_ENVIDO_ENVIDO) + ")" + common.GREEN + " Cantar envido envido" + common.NONE + "\n"
-		} else if possibleOption == NO_QUERER_ENVIDO {
-			message += "(" + strconv.Itoa(NO_QUERER_ENVIDO) + ")" + common.RED + " No quiero envido " + common.NONE + "\n"
-		} else if possibleOption == ACEPTAR_TRUCO {
-			message += "(" + strconv.Itoa(ACEPTAR_TRUCO) + ")" + common.GREEN + " Quiero truco " + common.NONE + "\n"
-		} else if possibleOption == RECHAZAR_TRUCO {
-			message += "(" + strconv.Itoa(RECHAZAR_TRUCO) + ")" + common.RED + " Rechazar truco " + common.NONE + "\n"
-		} else if possibleOption == QUERER_ENVIDO_ENVIDO {
-			message += "(" + strconv.Itoa(QUERER_ENVIDO_ENVIDO) + ")" + common.RED + " Quiero envido envido " + common.NONE + "\n"
-
-		}
-	}
-	//esto va en otra funcion
+func loopSendOptionsToPlayer(options []int, player *Player, playerError *PlayerError, message string) (int, int) {
 	option := 0
 	msgError := ""
-	//TODO: tanto en sendInfo move como en handlethwro se hace el mismo loop, ver de meterlos
-	// en una misma funcion.(recibea mensaje y cant de optiones y devuelvan la opcion elegida)
-	fmt.Println("todavia no entre al for")
-
 	for !containsOption(option, options) {
-
 		common.Send(player.socket, msgError+message)
 		jugada, err := common.Receive(player.socket)
 		if err != nil {
@@ -482,6 +428,39 @@ func (move *Move) sendInfoMove(player *Player, options []int, playerError *Playe
 		fmt.Println("El jugador "+player.name+" mando la opcion: ", option)
 	}
 	return option, 0
+}
+
+func (move *Move) sendInfoMove(player *Player, options []int, playerError *PlayerError) (int, int) {
+	fmt.Println("mando info")
+	message := "Es tu turno, podes hacer las siguientes jugadas: " + "\n"
+	for _, possibleOption := range options {
+		if possibleOption == TIRAR_CARTA {
+			message += common.BOLD + "(" + strconv.Itoa(TIRAR_CARTA) + ") " + common.NONE + common.CYAN + "Tirar" + common.NONE + " una carta" + "\n"
+		} else if possibleOption == CANTAR_ENVIDO {
+			message += common.BOLD + "(" + strconv.Itoa(CANTAR_ENVIDO) + ") " + common.NONE + "Cantar" + common.BYellow + " envido" + common.NONE + "\n"
+		} else if possibleOption == CANTAR_TRUCO && move.trucoState < ACEPTAR_TRUCO {
+			message += common.BOLD + "(" + strconv.Itoa(CANTAR_TRUCO) + ") " + common.NONE + "Cantar" + common.BRed + " truco " + common.NONE + "\n"
+		} else if possibleOption == QUERER_ENVIDO {
+			message += common.BOLD + "(" + strconv.Itoa(QUERER_ENVIDO) + ")" + common.NONE + common.GREEN + " Quiero envido " + common.NONE + "\n"
+		} else if possibleOption == CANTAR_ENVIDO_ENVIDO {
+			message += common.BOLD + "(" + strconv.Itoa(CANTAR_ENVIDO_ENVIDO) + ")" + common.NONE + common.GREEN + " Cantar envido envido" + common.NONE + "\n"
+		} else if possibleOption == NO_QUERER_ENVIDO {
+			message += common.BOLD + "(" + strconv.Itoa(NO_QUERER_ENVIDO) + ")" + common.NONE + common.RED + " No quiero envido " + common.NONE + "\n"
+		} else if possibleOption == ACEPTAR_TRUCO {
+			message += common.BOLD + "(" + strconv.Itoa(ACEPTAR_TRUCO) + ")" + common.NONE + common.GREEN + " Quiero truco " + common.NONE + "\n"
+		} else if possibleOption == RECHAZAR_TRUCO {
+			message += common.BOLD + "(" + strconv.Itoa(RECHAZAR_TRUCO) + ")" + common.NONE + common.RED + " Rechazar truco " + common.NONE + "\n"
+		} else if possibleOption == QUERER_ENVIDO_ENVIDO {
+			message += common.BOLD + "(" + strconv.Itoa(QUERER_ENVIDO_ENVIDO) + ")" + common.NONE + common.RED + " Quiero envido envido " + common.NONE + "\n"
+
+		}
+	}
+	//TODO: tanto en sendInfo move como en handlethwro se hace el mismo loop, ver de meterlos
+	// en una misma funcion.(recibea mensaje y cant de optiones y devuelvan la opcion elegida)
+	fmt.Println("todavia no entre al for")
+	option, err := loopSendOptionsToPlayer(options, player, playerError, message)
+
+	return option, err
 }
 
 func (move *Move) askPlayerToMove(player *Player, options []int, playerError *PlayerError) (int, int) {

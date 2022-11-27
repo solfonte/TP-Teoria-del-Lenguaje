@@ -132,3 +132,18 @@ func SendWelcomeMessage(player *Player) {
 	common.Send(player.socket, "Las reglas del juego son: ")
 	common.Receive(player.socket)
 }
+
+func GetCardsToThrow(cards []Card) (string, []int) {
+
+	message := common.BWhite + "Que carta queres tirar? " + "\n" + common.NONE
+
+	var maxOptionsSelected []int
+	for index, card := range cards {
+		number := common.BOLD + strconv.Itoa(index+1) + ") " + common.NONE
+		message += number
+		message += getCardColors(card.getFullName()) + "\n"
+		maxOptionsSelected = append(maxOptionsSelected, index+1)
+	}
+	return message, maxOptionsSelected
+
+}
