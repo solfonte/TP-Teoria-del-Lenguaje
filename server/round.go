@@ -14,6 +14,7 @@ type Round struct {
 	envido        bool
 	cardsPlayed   []Card
 	points        int
+	number        int
 }
 
 func (Round *Round) initialize(players map[int](*Player)) {
@@ -21,12 +22,14 @@ func (Round *Round) initialize(players map[int](*Player)) {
 	Round.moves = 0
 	Round.envido = false
 	Round.points = 0
+	Round.number = 0
 }
 
-func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playerError *PlayerError) int {
+func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playerError *PlayerError, roundNumber int) int {
 	completeRound := 1
 	finish := false
 	round.moves = 0
+	round.number = roundNumber
 	round.decide_hand_players(initialCurrentId, initialWaitingId)
 	round.currentPlayer.winsPerPlay = 0
 	round.waitingPlayer.winsPerPlay = 0
@@ -49,9 +52,9 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 	}
 	fmt.Println("Gano ronda ", round.currentPlayer)
 	fmt.Println("Puntos ronda", round.points)
-	msgWinner := common.BGreen+"Ganaste la ronda"+common.NONE
-	msgLoser := common.BRed+"Perdiste la ronda"+common.NONE
-	sendInfoPlayers(round.currentPlayer, round.waitingPlayer, msgWinner, msgLoser)
+	// msgWinner := common.BGreen + "Ganaste la ronda" + common.NONE
+	// msgLoser := common.BRed + "Perdiste la ronda" + common.NONE
+	sendInfoPlayers(round.currentPlayer, round.waitingPlayer, common.GetWinningRoundMessage(round.number), common.GetLossingRoundMessage(round.number))
 	return round.points
 }
 

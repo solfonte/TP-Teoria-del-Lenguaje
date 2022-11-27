@@ -17,17 +17,38 @@ const (
 	AskPlayerName       = BWhite + "Porfavor Ingrese su nombre: " + NONE
 	RequestMatchMessage = BWhite + "Ingresa " + BGreen + "CREATE" + BWhite + " para creare un juego o ingresa " + BBlue + "JOIN" + BWhite + " para unirte a una partida ya creada" + NONE
 
-	AmountOfMembersMessage = BWhite + "ingrese cantidad integrantes: " + BCyan + "2 " + BWhite + "o " + BCyan + "4" + NONE
-	DurationOfMatchMessage = BWhite + "Ingrese duracion de partida partida:" + BCyan + "15 " + BWhite + "o " + BCyan + "30 " + BWhite + "puntos" + NONE
-	CreateMatchMessage     = BWhite + "OK, Partida creada, esperando a que se una el resto de los jugadores" + NONE
-	JoinMatchMessage       = BWhite + "OK, Partida solicitada, se esta buscando una partida" + NONE
-	GameStartedMessage     = BWhite + "El juego comenzó" + NONE
+	AmountOfMembersMessage  = BWhite + "ingrese cantidad integrantes: " + BCyan + "2 " + BWhite + "o " + BCyan + "4" + NONE
+	DurationOfMatchMessage  = BWhite + "Ingrese duracion de partida partida:" + BCyan + "15 " + BWhite + "o " + BCyan + "30 " + BWhite + "puntos" + NONE
+	CreateMatchMessage      = BWhite + "OK, Partida creada, esperando a que se una el resto de los jugadores" + NONE
+	JoinMatchMessage        = BWhite + "OK, Partida solicitada, se esta buscando una partida" + NONE
+	GameStartedMessage      = BWhite + "El juego comenzó" + NONE
+	WaitingOptionsPlayer    = BWhite + "Mientras esperas a que sea tu turno, podes realizar las siguientes acciones" + "\n" + "(11) Irse al mazo" + "\n" + "(12) Consultar Cartas." + "\n" + "Ingresa (0) si no queres realizar ninguna de estas acciones" + NONE
+	CardsMessage            = BWhite + "Estas son tus cartas: " + NONE
+	WaitPlayerToPlayMessage = BBlue + "Espera a que juegue tu oponente..." + NONE + "\n"
+	SingEnvido              = BPurple + "Cantaste ENVIDO" + NONE
+	SingTruco               = BPurple + "Cantaste Truco" + NONE
+	AcceptEnvido            = BPurple + "Aceptaste ENVIDO" + NONE
+	AcceptTruco             = BPurple + "Aceptaste TRUCO" + NONE
+	OpponentSingTruco       = BBlue + "Tu oponente canto TRUCO" + NONE + "\n"
+	OpponetSingEnvido       = BBlue + "Tu oponente canto ENVIDO" + NONE + "\n"
+	OpponetAcceptTruco      = BBlue + "Tu oponente Acepto el TRUCO" + NONE + "\n"
+	OpponetRejectTruco      = BBlue + "Tu oponente Rechazo el TRUCO" + NONE + "\n"
+	WinMatchMessage         = BGreen + "Ganaste la partida :)" + NONE
+	LoseMatchMessage        = BRed + "Perdiste la partida :(" + NONE
 )
 
-func GetWinningMessage(number int) string {
+func GetWinningMoveMessage(number int) string {
 	return BGreen + "Ganaste la jugada " + strconv.Itoa(number) + NONE
 }
 
-func GetLossingMessage(number int) string {
+func GetWinningRoundMessage(number int) string {
+	return BGreen + "Ganaste la ronda " + strconv.Itoa(number) + NONE
+}
+
+func GetLossingRoundMessage(number int) string {
+	return BRed + "Perdiste la ronda " + strconv.Itoa(number) + NONE
+}
+
+func GetLossingMoveMessage(number int) string {
 	return BRed + "Perdiste la jugada " + strconv.Itoa(number) + NONE
 }

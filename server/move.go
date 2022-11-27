@@ -11,19 +11,19 @@ import (
 const (
 	opponentMessageForEnvido    = "Tu oponente canto envido. Tus opciones son: (1) Quiero (2) Quiero envido envido (3) No quiero"
 	RETURN_FROM_WAITING_OPTIONS = 0
-	TIRAR_CARTA              	= 4
-	CANTAR_ENVIDO            	= 5
-	CANTAR_TRUCO             	= 6
-	QUERER_ENVIDO            	= 7
-	CANTAR_ENVIDO_ENVIDO     	= 8
-	NO_QUERER_ENVIDO_ENVIDO  	= 9
-	NO_QUERER_ENVIDO         	= 10
-	QUERER_ENVIDO_ENVIDO		= 13
-	IRSE_AL_MAZO             	= 11
-	VER_MIS_CARTAS           	= 12
-	WAIT                     	= 80
-	STOP                     	= 81
-	PLAY					 	= 82
+	TIRAR_CARTA                 = 4
+	CANTAR_ENVIDO               = 5
+	CANTAR_TRUCO                = 6
+	QUERER_ENVIDO               = 7
+	CANTAR_ENVIDO_ENVIDO        = 8
+	NO_QUERER_ENVIDO_ENVIDO     = 9
+	NO_QUERER_ENVIDO            = 10
+	QUERER_ENVIDO_ENVIDO        = 13
+	IRSE_AL_MAZO                = 11
+	VER_MIS_CARTAS              = 12
+	WAIT                        = 80
+	STOP                        = 81
+	PLAY                        = 82
 )
 
 const (
@@ -109,7 +109,7 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
 	// msgwinner := common.BGreen + "Ganaste la jugada " + strconv.Itoa(move.typeMove) + common.NONE
 	// msgLoser := common.BRed + "Perdiste la jugada " + strconv.Itoa(move.typeMove) + common.NONE
-	sendInfoPlayers(winner, loser, common.GetWinningMessage(move.typeMove), common.GetLossingMessage(move.typeMove))
+	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove))
 	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
 
 	fmt.Println("termino jugada")
@@ -118,7 +118,7 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 }
 
 func (move *Move) handleEnvidoResult(option1 int, option2 int, actual *Player, opponent *Player, finish *bool) {
-	fmt.Println(" me llegan las opciones "+strconv.Itoa(option1) + " y " +strconv.Itoa(option2))
+	fmt.Println(" me llegan las opciones " + strconv.Itoa(option1) + " y " + strconv.Itoa(option2))
 	if (option1 == CANTAR_ENVIDO || option2 == CANTAR_ENVIDO) && (option1 == QUERER_ENVIDO || option2 == QUERER_ENVIDO) {
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
 		envidoWinner.sumPoints(2)
@@ -172,7 +172,6 @@ func (move *Move) handleResult(option1 int, option2 int, actual *Player, opponen
 func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan int, player *Player) {
 	var moveOrder int = -1
 	var playerError PlayerError
-	msg := " "
 	var opponentOption int = 0
 	for moveOrder != STOP {
 		moveOrder = <-orderChannel
@@ -183,7 +182,7 @@ func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan in
 
 		} else if moveOrder == PLAY {
 			options := move.definePlayerPossibleOptions(opponentOption)
-			actualPlayerOption, _ := move.askPlayerToMove(player, options, &playerError, &msg)
+			actualPlayerOption, _ := move.askPlayerToMove(player, options, &playerError)
 			movesChannel <- actualPlayerOption
 		}
 
@@ -212,7 +211,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 		orderChannel2 <- WAIT
 		move.setAlreadySangTruco(player1, player2) //TODO:chequear si va aca
 
-		option1 = <- movesChannel1
+		option1 = <-movesChannel1
 		moveFinished = move.handleResult(option1, option2, player1, player2, finish)
 		movesChannel2 <- option1 //al jugador 2 le mando la jugada del jugador 1
 		orderChannel1 <- WAIT
@@ -305,9 +304,8 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 	}
 
 	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
-	msgwinner := "Ganaste la jugada " + strconv.Itoa(move.typeMove)
-	msgLoser := "Perdiste la jugada" + strconv.Itoa(move.typeMove)
-	sendInfoPlayers(winner, loser, msgwinner, msgLoser)
+
+	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove))
 	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
 	if winner.winsPerPlay == 2 {
 		fmt.Println("termino jugada")
@@ -321,7 +319,7 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 }
 
 func receiveWaitingRequests(socket net.Conn) int {
-	common.Send(socket, "Mientras esperas a que sea tu turno, podes realizar las siguientes acciones (11) Irse al mazo (12) Consultar Cartas. Ingresa (0) si no queres realizar ninguna de estas acciones")
+	common.Send(socket, common.WaitingOptionsPlayer)
 	message, err := common.Receive(socket)
 	fmt.Println("el hilo de receive waiting requests recibio " + message)
 	fmt.Println(message)
@@ -336,12 +334,7 @@ func receiveWaitingRequests(socket net.Conn) int {
 func (move *Move) handleWaitingOptions(status int, player *Player) {
 	if status == VER_MIS_CARTAS {
 		//tenemos las card played pero faltaria decir quien tiro que
-		message := "Estas son tus cartas actuales: "
-		for _, card := range player.getCards() {
-			message += card.getFullName() + " | "
-		}
-		common.Send(player.socket, message)
-		common.Receive(player.socket) //receive de patch (ok)
+		sendInfoCards(*player)
 	}
 	return
 }
@@ -358,7 +351,7 @@ func (move *Move) handlePlayerActivity(orderChannel chan int, player *Player) {
 }
 
 func (move *Move) askPlayerToWait(orderChannel chan int, player *Player, playerError *PlayerError) int {
-	common.Send(player.socket, common.BBlue+"Espera a que juegue tu oponente..."+common.NONE+"\n")
+	common.Send(player.socket, common.WaitPlayerToPlayMessage)
 	_, err := common.Receive(player.socket)
 	if err != nil {
 		playerError.player = player
@@ -379,19 +372,19 @@ func (move *Move) askPlayerToWait(orderChannel chan int, player *Player, playerE
 
 func (move *Move) handleEnvido(player *Player) {
 
-	common.Send(player.socket, "Cantaste ENVIDO")
+	common.Send(player.socket, common.SingEnvido)
 	common.Receive(player.socket)
 	move.alreadySangEnvido = true
 }
 
 func (move *Move) handleTruco(player *Player) {
 	if move.trucoState == CANTO_TRUCO {
-		common.Send(player.socket, "aceptaste TRUCO")
+		common.Send(player.socket, common.AcceptTruco)
 		common.Receive(player.socket)
 		move.trucoState = ACEPTAR_TRUCO
 		//luego hacer lo de tirar carta
 	} else {
-		common.Send(player.socket, "Cantaste TRUCO")
+		common.Send(player.socket, common.SingTruco)
 		common.Receive(player.socket)
 		move.trucoState = CANTO_TRUCO
 		move.alreadySangTruco = true
@@ -410,7 +403,7 @@ func containsOption(option int, options []int) bool {
 	return result
 }
 
-func (move *Move) handleThrowACard(player *Player, playerError *PlayerError, msg *string) int {
+func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int {
 
 	message := "Que carta queres tirar? "
 	playerCards := player.getCards()
@@ -439,7 +432,6 @@ func (move *Move) handleThrowACard(player *Player, playerError *PlayerError, msg
 	}
 
 	move.cardsPlayed = append(move.cardsPlayed, playerCards[option-1])
-	*msg = "Tiraste la carta " + playerCards[option-1].getFullName() + "."
 	player.removeCardSelected(option - 1)
 	return 0
 }
@@ -464,7 +456,7 @@ func (move *Move) sendInfoMove(player *Player, options []int, playerError *Playe
 			message += "(" + strconv.Itoa(ACEPTAR_TRUCO) + ")" + common.GREEN + " Quiero truco " + common.NONE + "\n"
 		} else if possibleOption == RECHAZAR_TRUCO {
 			message += "(" + strconv.Itoa(RECHAZAR_TRUCO) + ")" + common.RED + " Rechazar truco " + common.NONE + "\n"
-		}else if possibleOption == QUERER_ENVIDO_ENVIDO {
+		} else if possibleOption == QUERER_ENVIDO_ENVIDO {
 			message += "(" + strconv.Itoa(QUERER_ENVIDO_ENVIDO) + ")" + common.RED + " Quiero envido envido " + common.NONE + "\n"
 
 		}
@@ -492,7 +484,7 @@ func (move *Move) sendInfoMove(player *Player, options []int, playerError *Playe
 	return option, 0
 }
 
-func (move *Move) askPlayerToMove(player *Player, options []int, playerError *PlayerError, msg *string) (int, int) {
+func (move *Move) askPlayerToMove(player *Player, options []int, playerError *PlayerError) (int, int) {
 	option := 0
 	var err int
 	if len(move.cardsPlayed) > 0 {
@@ -502,25 +494,25 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 		fmt.Println("====respuesta de oponente tiro una carta", msg)
 	}
 	if move.trucoState == CANTO_TRUCO {
-		message := common.BBlue + "Tu oponente canto TRUCO" + common.NONE + "\n"
-		common.Send(player.socket, message)
+
+		common.Send(player.socket, common.OpponentSingTruco)
 		/*chequear errores*/ common.Receive(player.socket)
 	}
 	if move.trucoState == CANTAR_ENVIDO {
-		message := common.BBlue + "Tu oponente canto ENVIDO" + common.NONE + "\n"
-		common.Send(player.socket, message)
+
+		common.Send(player.socket, common.OpponetSingEnvido)
 		/*chequear errores*/ common.Receive(player.socket)
 	}
 	if move.trucoState == ACEPTAR_TRUCO && !move.alreadyAceptedTruco {
 		move.alreadyAceptedTruco = true
-		message := common.BBlue + "Tu oponente Acepto el TRUCO" + common.NONE + "\n"
-		common.Send(player.socket, message)
+
+		common.Send(player.socket, common.OpponetAcceptTruco)
 		/*chequear errores*/ common.Receive(player.socket)
 	}
 	if move.trucoState == RECHAZAR_TRUCO && !move.alreadyAceptedTruco {
 		move.alreadyAceptedTruco = true
-		message := common.BBlue + "Tu oponente Rechazo el TRUCO" + common.NONE + "\n"
-		common.Send(player.socket, message)
+
+		common.Send(player.socket, common.OpponetRejectTruco)
 		/*chequear errores*/ common.Receive(player.socket)
 		return TERMINAR_PARTIDA, err
 	}
@@ -529,13 +521,11 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	if err == -1 {
 		return -1, -1
 	}
-
 	switch option {
 	case TIRAR_CARTA:
-		err = move.handleThrowACard(player, playerError, msg)
+		err = move.handleThrowACard(player, playerError)
 	case CANTAR_ENVIDO:
 		move.handleEnvido(player)
-		*msg = "Cantaste envido."
 	case CANTAR_TRUCO:
 		fmt.Println("canto truco")
 		move.handleTruco(player)

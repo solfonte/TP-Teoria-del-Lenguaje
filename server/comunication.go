@@ -107,17 +107,12 @@ func getCardColors(card string) string {
 
 func sendInfoCards(player Player) {
 
-	//TODO: ver si no conviene que sea dinamico para cuando le queden dos o una?
-	cards := player.getCards()
-	card1 := getCardColors(cards[0].getFullName())
-	card2 := getCardColors(cards[1].getFullName())
-	card3 := getCardColors(cards[2].getFullName())
-
-	common.Send(player.socket, "Estas son tus cartas: "+card1+" "+card2+" "+card3)
-	message, _ := common.Receive(player.socket)
-	fmt.Println(message)
-	fmt.Println("cartas: "+card1, card2, card3)
-
+	message := ""
+	for _, card := range player.getCards() {
+		message += getCardColors(card.getFullName()) + common.BWhite + " | " + common.NONE
+	}
+	common.Send(player.socket, common.CardsMessage+message)
+	common.Receive(player.socket) //receive de patch (ok)
 }
 
 func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser string) {
@@ -131,7 +126,7 @@ func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser s
 }
 
 func SendWelcomeMessage(player *Player) {
-	//msg := "*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★* BIENVENIDO AL TRUCO *★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*"
+
 	common.Send(player.socket, common.WelcomeMessage)
 	common.Receive(player.socket)
 	common.Send(player.socket, "Las reglas del juego son: ")
