@@ -15,6 +15,7 @@ type Player struct {
 	cardSelected Card
 	winsPerPlay  int
 	hasSagnTruco bool
+	lastMove 	 int
 }
 
 func (player *Player) clearCards() {

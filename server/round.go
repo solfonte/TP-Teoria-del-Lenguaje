@@ -46,6 +46,8 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 		completeRound += 1
 
 		round.decide_hand_players(move.winner.id, move.loser.id)
+		fmt.Println("Jugador 1: ", round.currentPlayer)
+		fmt.Println("Jugador 2: ", round.waitingPlayer)
 
 		fmt.Println("Puntos ronda", round.points)
 	}
