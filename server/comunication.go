@@ -8,12 +8,12 @@ import (
 )
 
 func sendMenu(player Player) (string, error) {
-	msgCreate := common.GREEN + "CREATE" + common.NONE
-	//fmt.Println(msgCreate)
-	msgJoin := common.BLUE + "JOIN" + common.NONE
-	//fmt.Println(msgJoin)
-	message := "ingresa " + msgCreate + " para crear un juego O ingresa " + msgJoin + " para unirte a una partida ya creada"
-	common.Send(player.socket, message)
+	// msgCreate := common.GREEN + "CREATE" + common.NONE
+	// //fmt.Println(msgCreate)
+	// msgJoin := common.BLUE + "JOIN" + common.NONE
+	// //fmt.Println(msgJoin)
+	// message := "ingresa " + msgCreate + " para crear un juego O ingresa " + msgJoin + " para unirte a una partida ya creada"
+	common.Send(player.socket, common.RequestMatchMessage)
 	// receives its answer
 	messagePlayer, error := common.Receive(player.socket)
 	fmt.Println(messagePlayer)
@@ -30,7 +30,7 @@ func sendMenu(player Player) (string, error) {
 
 func getAmountOfPlayers(player Player) int {
 
-	common.Send(player.socket, "ingrese cantidad integrantes; 2 o 4")
+	common.Send(player.socket, common.AmountOfMembersMessage)
 	members, _ := common.Receive(player.socket)
 	amount_members, _ := strconv.Atoi(members)
 
@@ -43,7 +43,7 @@ func getAmountOfPlayers(player Player) int {
 }
 
 func getAmountOfPoints(player Player) int {
-	common.Send(player.socket, "Ingrese duracion de partida partida: 15 o 30 puntos")
+	common.Send(player.socket, common.DurationOfMatchMessage)
 	duration, _ := common.Receive(player.socket)
 	amout_duration_points, _ := strconv.Atoi(duration)
 
@@ -62,12 +62,12 @@ func processRequest(player Player, message string) map[string]int {
 	if message == "CREATE" {
 		match["create"] = 0
 		getMatchParameters(match, player)
-		common.Send(player.socket, "OK, Partida creada, esperando a que se una el resto de los jugadores")
+		common.Send(player.socket, common.CreateMatchMessage)
 		return match
 	} else {
 		match["create"] = 1
 		getMatchParameters(match, player)
-		common.Send(player.socket, "OK, Partida solicitada, se esta buscando una partida")
+		common.Send(player.socket, common.JoinMatchMessage)
 		return match
 	}
 
@@ -81,7 +81,7 @@ func getMatchParameters(match map[string]int, player Player) {
 }
 
 func startGame(player Player) {
-	common.Send(player.socket, "El juego comenzó")
+	common.Send(player.socket, common.GameStartedMessage)
 	message, _ := common.Receive(player.socket)
 	fmt.Println(message)
 
@@ -107,19 +107,12 @@ func getCardColors(card string) string {
 
 func sendInfoCards(player Player) {
 
-	//TODO: ver si no conviene que sea dinamico para cuando le queden dos o una?
-	cards := player.getCards()
-	card1 := getCardColors(cards[0].getFullName())
-	fmt.Println(card1)
-	card2 := getCardColors(cards[1].getFullName())
-	fmt.Println(card2)
-	card3 := getCardColors(cards[2].getFullName())
-	fmt.Println(card3)
-	common.Send(player.socket, "Estas son tus cartas: "+card1+" "+card2+" "+card3)
-	message, _ := common.Receive(player.socket)
-	fmt.Println(message)
-	fmt.Println("cartas: "+card1, card2, card3)
-
+	message := ""
+	for _, card := range player.getCards() {
+		message += getCardColors(card.getFullName()) + common.BWhite + " | " + common.NONE
+	}
+	common.Send(player.socket, common.CardsMessage+message)
+	common.Receive(player.socket) //receive de patch (ok)
 }
 
 func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser string) {
@@ -133,9 +126,32 @@ func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser s
 }
 
 func SendWelcomeMessage(player *Player) {
-	msg := "*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★* BIENVENIDO AL TRUCO *★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*:;;;;;:*★*"
-	common.Send(player.socket, common.YELLOW+msg+common.NONE)
+
+	common.Send(player.socket, common.WelcomeMessage)
 	common.Receive(player.socket)
 	common.Send(player.socket, "Las reglas del juego son: ")
 	common.Receive(player.socket)
+}
+
+func GetCardsToThrow(cards []Card) (string, []int) {
+
+	message := common.BWhite + "Que carta queres tirar? " + "\n" + common.NONE
+
+	var maxOptionsSelected []int
+	for index, card := range cards {
+		number := common.BOLD + strconv.Itoa(index+1) + ") " + common.NONE
+		message += number
+		message += getCardColors(card.getFullName()) + "\n"
+		maxOptionsSelected = append(maxOptionsSelected, index+1)
+	}
+	return message, maxOptionsSelected
+
+}
+
+func sendInfoPointsPlayers(player1 *Player, player2 *Player) {
+
+	common.Send(player1.socket, common.GetPointsMessage(player1.points, player2.points))
+	common.Receive(player1.socket)
+	common.Send(player2.socket, common.GetPointsMessage(player2.points, player1.points))
+	common.Receive(player2.socket)
 }

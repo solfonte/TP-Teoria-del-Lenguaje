@@ -90,18 +90,21 @@ func (match *Match) beginGame() {
 		fmt.Println("comenzo juego")
 		startGame(*player)
 	}
+	numberRound := 0
 	for match.points < 6 {
 		for _, player := range match.players {
 			player.setHasSangTruco(false)
 		}
 		sendInfoCards(*match.players[match.initialPlayerId])
 		sendInfoCards(*match.players[match.waiterPlayerId])
-		match.points = round.startRound(match.initialPlayerId, match.waiterPlayerId, &playerError)
+		match.points = round.startRound(match.initialPlayerId, match.waiterPlayerId, &playerError, numberRound)
 		if playerError.err != nil {
 			fmt.Println(playerError.err)
 			match.handle_disconnection_player(playerError)
 			return
 		}
+		fmt.Println("puntos que va el partido: ", match.points)
+		numberRound += 1
 		match.changeInitialPlayerForRounds()
 		match.deal_cards(match.players)
 	}
@@ -113,12 +116,12 @@ func (match Match) process_winner_and_loser() {
 	if match.players[match.initialPlayerId].points >= match.players[match.waiterPlayerId].points {
 		sendInfoPlayers(match.players[match.initialPlayerId],
 			match.players[match.waiterPlayerId],
-			common.BGreen+"Ganaste la partida :)"+common.NONE,
-			common.BRed+"Perdiste la partida :("+common.NONE)
+			common.WinMatchMessage,
+			common.LoseMatchMessage)
 	} else {
 		sendInfoPlayers(match.players[match.waiterPlayerId],
 			match.players[match.initialPlayerId],
-			common.BGreen+"Ganaste la partida :)"+common.NONE,
-			common.BRed+"Perdiste la partida :("+common.NONE)
+			common.WinMatchMessage,
+			common.LoseMatchMessage)
 	}
 }
