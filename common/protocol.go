@@ -14,6 +14,15 @@ const (
    |_.__/|_|\___|_| |_|\_/ \___|_| |_|_|\__,_|\___/   \__,_|_|  \__|_|   \__,_|\___\___/ 
 																						 																				 
   ` + NONE
+	FinishGame = YELLOW + `
+	███████ ██ ███    ██ ██ ███████ ██   ██      ██████   █████  ███    ███ ███████ 
+	██      ██ ████   ██ ██ ██      ██   ██     ██       ██   ██ ████  ████ ██      
+	█████   ██ ██ ██  ██ ██ ███████ ███████     ██   ███ ███████ ██ ████ ██ █████   
+	██      ██ ██  ██ ██ ██      ██ ██   ██     ██    ██ ██   ██ ██  ██  ██ ██      
+	██      ██ ██   ████ ██ ███████ ██   ██      ██████  ██   ██ ██      ██ ███████ 
+																					
+																					
+	` + NONE
 	AskPlayerName       = BWhite + "Porfavor Ingrese su nombre: " + NONE
 	RequestMatchMessage = BWhite + "Ingresa " + BGreen + "CREATE" + BWhite + " para creare un juego o ingresa " + BBlue + "JOIN" + BWhite + " para unirte a una partida ya creada" + NONE
 

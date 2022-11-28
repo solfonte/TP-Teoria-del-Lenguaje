@@ -6,16 +6,6 @@ import (
 	"time"
 )
 
-// func Receive(connection net.Conn) (string, error) {
-// 	str, err := bufio.NewReader(connection).ReadString('\n')
-// 	return strings.TrimSpace(str), err
-// }
-
-// func Send(connection net.Conn, message string) error {
-// 	_, err := fmt.Fprintf(connection, message+"\n")
-// 	return err
-// }
-
 func Set_deadline(connection net.Conn) {
 	connection.SetReadDeadline(time.Now().Add(1 * time.Second))
 }

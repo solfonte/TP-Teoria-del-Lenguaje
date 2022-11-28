@@ -79,7 +79,15 @@ func (match *Match) handle_disconnection_player(playerError PlayerError) {
 	match.finish = true
 }
 
+func (match *Match) DisconnectMatch() {
+
+	for _, player := range match.players {
+		player.stop()
+	}
+}
+
 func (match *Match) beginGame() {
+	defer match.DisconnectMatch()
 	match.deal_cards(match.players)
 	fmt.Println("Entre a comenzo juego")
 
@@ -109,6 +117,15 @@ func (match *Match) beginGame() {
 		match.deal_cards(match.players)
 	}
 	match.process_winner_and_loser()
+	match.FinishMatch()
+
+}
+
+func (match *Match) FinishMatch() {
+	for _, player := range match.players {
+		common.Send(player.socket, common.FinishGame)
+		common.Receive(player.socket)
+	}
 	match.finish = true
 }
 
@@ -124,4 +141,5 @@ func (match Match) process_winner_and_loser() {
 			common.WinMatchMessage,
 			common.LoseMatchMessage)
 	}
+
 }

@@ -13,13 +13,13 @@ import (
 
 const (
 	SERVER_HOST = "localhost"
-	SERVER_PORT = "9980"
+	SERVER_PORT = "9977"
 	SERVER_TYPE = "tcp"
+	QUIT        = "Q"
 )
 
 func Start() {
 
-	// connect to server
 	socket, err := net.Dial(SERVER_TYPE, SERVER_HOST+":"+SERVER_PORT)
 	if err != nil {
 		fmt.Println("Fail connect to server")
@@ -28,7 +28,6 @@ func Start() {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println("", err)
-
 		}
 		socket.Close()
 	}()
@@ -37,17 +36,16 @@ func Start() {
 
 func runClient(socket net.Conn) {
 	sendMenuResponses(socket)
-	//este receive deberia bloquearse esperando a que empiece la partida.
+
 	startGame(socket)
-	//loop juego
+
 	processGameloop(socket)
 }
 
 func processGameloop(socket net.Conn) {
 	// loop de server manda algo cliente responde
 	promptReader := bufio.NewReader(os.Stdin)
-	// falta desconexion tanto cliente como servidor
-	//handlear ctrl c
+
 	for {
 		messageServer, err := common.Receive(socket)
 		checkErrorServer(err)
@@ -70,12 +68,18 @@ func processGameloop(socket net.Conn) {
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Aceptaste") || strings.Contains(messageServer, "Rechazaste") {
 			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "Bienvenido") {
-			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Tus puntos son") {
 			common.Send(socket, "OK")
+		} else if strings.Contains(messageServer, common.FinishGame) {
+			fmt.Println("termino el juego")
+			common.Send(socket, "OK")
+			return
 		} else {
 			messageClient, _ := promptReader.ReadString('\n')
+			if strings.TrimSpace(messageClient) == QUIT {
+				fmt.Println("entre a quit")
+				return
+			}
 			common.Send(socket, messageClient)
 		}
 	}
