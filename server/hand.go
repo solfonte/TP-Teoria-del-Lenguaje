@@ -20,7 +20,7 @@ func (hand *Hand) removeCardSelected(posTodelete int) {
 	hand.cardsNotSelected = append(hand.cardsNotSelected[:posTodelete], hand.cardsNotSelected[posTodelete+1:]...)
 }
 
-func (hand *Hand) distributeSuits() [4][]Card {  
+func (hand *Hand) distributeSuits() [4][]Card {
 	var basto []Card
 	var oro []Card
 	var copa []Card
@@ -47,7 +47,6 @@ func (hand *Hand) pointsForSuit() (int, []Card) {
 	var repeatedSuit []Card
 	points := 0
 	suits := hand.distributeSuits()
-
 
 	for _, suit := range suits {
 		if len(suit) >= 2 {
@@ -86,11 +85,11 @@ func (hand *Hand) pointsForNumberEnvido(repeatedSuit []Card) int {
 			}
 		}
 		points += greatestCardNumber + secondGreatestCardNumber
-	}else{
+	} else {
 		greatestCardNumber := hand.cards[0].value
 		for _, card := range hand.cards {
 			if card.value > greatestCardNumber {
-				greatestCardNumber = card.value 
+				greatestCardNumber = card.value
 			}
 		}
 		points = greatestCardNumber
@@ -98,10 +97,10 @@ func (hand *Hand) pointsForNumberEnvido(repeatedSuit []Card) int {
 	return points
 }
 
-func (hand *Hand) calculatePointsEnvido () int {
+func (hand *Hand) calculatePointsEnvido() int {
 	pointsForSuit, repeatedSuit := hand.pointsForSuit()
 	pointsForNumber := hand.pointsForNumberEnvido(repeatedSuit)
-	return  pointsForNumber + pointsForSuit
+	return pointsForNumber + pointsForSuit
 }
 
 func (hand *Hand) winsEnvidoOver(otherHand Hand) bool {

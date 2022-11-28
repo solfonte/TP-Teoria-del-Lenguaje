@@ -10,7 +10,7 @@ import (
 
 const (
 	HOST                  = "localhost"
-	PORT                  = "9982"
+	PORT                  = "9980"
 	TYPE                  = "tcp"
 	ShutdownServerCommand = "Q"
 )

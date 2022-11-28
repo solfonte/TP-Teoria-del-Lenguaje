@@ -32,6 +32,7 @@ const (
 	OpponentSingTruco       = BBlue + "Tu oponente canto TRUCO" + NONE + "\n"
 	OpponetSingEnvido       = BBlue + "Tu oponente canto ENVIDO" + NONE + "\n"
 	OpponetAcceptTruco      = BBlue + "Tu oponente Acepto el TRUCO" + NONE + "\n"
+	OpponetAcceptEnvido     = BBlue + "Tu oponente Acepto el ENVIDO" + NONE + "\n"
 	OpponetRejectTruco      = BBlue + "Tu oponente Rechazo el TRUCO" + NONE + "\n"
 	WinMatchMessage         = BGreen + "Ganaste la partida :)" + NONE
 	LoseMatchMessage        = BRed + "Perdiste la partida :(" + NONE
@@ -55,4 +56,14 @@ func GetLossingMoveMessage(number int) string {
 
 func GetPointsMessage(player1Points int, player2Points int) string {
 	return BPurple + "Tus puntos son: " + strconv.Itoa(player1Points) + " Y los de tu oponente son: " + strconv.Itoa(player2Points) + NONE
+}
+
+func GetWinningEnvidoMessage(player1Points int, player2Points int) string {
+	message := BPurple + "Ganaste el Envido con " + strconv.Itoa(player1Points) + " puntos"
+	return message + " y tu oponente perdio con " + strconv.Itoa(player2Points) + " puntos"
+}
+
+func GetLossingEnvidoMessage(player1Points int, player2Points int) string {
+	message := BPurple + "Perdiste el Envido con " + strconv.Itoa(player1Points) + " puntos"
+	return message + " y tu oponente gano con " + strconv.Itoa(player2Points) + " puntos"
 }

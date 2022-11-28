@@ -15,7 +15,7 @@ type Player struct {
 	cardSelected Card
 	winsPerPlay  int
 	hasSagnTruco bool
-	lastMove 	 int
+	lastMove     int
 }
 
 func (player *Player) clearCards() {
@@ -29,10 +29,14 @@ func (player *Player) getCards() []Card {
 
 func (player *Player) verifyEnvidoWinnerAgainst(opponent *Player) *Player {
 	if player.hand.winsEnvidoOver(opponent.hand) {
-		sendInfoPlayers(player, opponent, "Ganaste el envido", "Perdiste el envido")
+		msgWinning := common.GetWinningEnvidoMessage(player.hand.calculatePointsEnvido(), opponent.hand.calculatePointsEnvido())
+		msgLossing := common.GetLossingEnvidoMessage(opponent.hand.calculatePointsEnvido(), player.hand.calculatePointsEnvido())
+		sendInfoPlayers(player, opponent, msgWinning, msgLossing)
 		return player
 	}
-	sendInfoPlayers(opponent, player, "Ganaste el envido", "Perdiste el envido")
+	msgWinning := common.GetWinningEnvidoMessage(opponent.hand.calculatePointsEnvido(), player.hand.calculatePointsEnvido())
+	msgLossing := common.GetLossingEnvidoMessage(player.hand.calculatePointsEnvido(), opponent.hand.calculatePointsEnvido())
+	sendInfoPlayers(opponent, player, msgWinning, msgLossing)
 	return opponent
 }
 
