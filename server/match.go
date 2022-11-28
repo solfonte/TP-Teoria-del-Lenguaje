@@ -69,20 +69,33 @@ func (match *Match) changeInitialPlayerForRounds() {
 }
 
 func (match *Match) handle_disconnection_player(playerError PlayerError) {
+	fmt.Println("--------------------desconecto jugadores-------------------------")
+
 	msg := "Tu oponente se desconecto"
 	if playerError.player.id == match.initialPlayerId {
 		sendOtherPlayDisconnection(*match.players[match.waiterPlayerId], msg)
 	} else {
 		sendOtherPlayDisconnection(*match.players[match.initialPlayerId], msg)
 	}
-	playerError.player.stop()
+	match.DisconnectMatch()
 	match.finish = true
 }
 
 func (match *Match) DisconnectMatch() {
+	fmt.Println("--------termiandoooooooooooooooo---")
 
 	for _, player := range match.players {
 		player.stop()
+	}
+}
+
+func (match *Match) handleConnections(stop *bool, playerError *PlayerError){
+	for *stop == false {
+		if playerError.err != nil {
+			fmt.Println("desconecto")
+			match.handle_disconnection_player(*playerError)
+			return
+		}
 	}
 }
 
@@ -93,24 +106,22 @@ func (match *Match) beginGame() {
 
 	var round = Round{}
 	var playerError = PlayerError{err: nil, player: nil}
+	var stop bool = false
 	round.initialize(match.players)
 	for _, player := range match.players {
 		fmt.Println("comenzo juego")
 		startGame(*player)
 	}
+	go match.handleConnections(&stop, &playerError)
 	numberRound := 0
 	for match.points < 6 {
 		for _, player := range match.players {
 			player.setHasSangTruco(false)
 		}
-		sendInfoCards(*match.players[match.initialPlayerId])
-		sendInfoCards(*match.players[match.waiterPlayerId])
+		sendInfoCards(*match.players[match.initialPlayerId], &playerError)
+		sendInfoCards(*match.players[match.waiterPlayerId], &playerError)
 		match.points = round.startRound(match.initialPlayerId, match.waiterPlayerId, &playerError, numberRound)
-		if playerError.err != nil {
-			fmt.Println(playerError.err)
-			match.handle_disconnection_player(playerError)
-			return
-		}
+		
 		fmt.Println("puntos que va el partido: ", match.points)
 		numberRound += 1
 		match.changeInitialPlayerForRounds()

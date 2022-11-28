@@ -199,26 +199,35 @@ func (move *Move) handleResult(actualoption int, opponentOption int, actual *Pla
 	return false
 }
 
-func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan int, player *Player) {
+func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan int, player *Player, playerError *PlayerError) {
 	var moveOrder int = -1
-	var playerError PlayerError
 	var opponentOption int = 0
 	for moveOrder != STOP {
 		moveOrder = <-orderChannel
 
 		if moveOrder == WAIT {
-			move.askPlayerToWait(orderChannel, player, &playerError)
-			opponentOption = <-movesChannel
+			move.askPlayerToWait(player, playerError)
+			if (playerError.err != nil){
+				fmt.Println("//////////////////////////salgo de handelear al jugador " + player.name + "//////////////////////////////")
 
+				return 
+			}else{
+				opponentOption = <-movesChannel
+			}
 		} else if moveOrder == PLAY {
 			options := move.definePlayerPossibleOptions(player.lastMove, opponentOption)
-			actualPlayerOption, _ := move.askPlayerToMove(player, options, &playerError)
-			player.lastMove = actualPlayerOption
-			movesChannel <- actualPlayerOption
+			actualPlayerOption, _ := move.askPlayerToMove(player, options, playerError)
+			if (playerError.err != nil){
+				fmt.Println("//////////////////////////salgo de handelear al jugador " + player.name + "//////////////////////////////")
+
+				return 
+			} else {
+				player.lastMove = actualPlayerOption
+				movesChannel <- actualPlayerOption
+			}
 		}
 
 	}
-	fmt.Println("//////////////////////////salgo de handelear al jugador " + player.name + "//////////////////////////////")
 }
 
 func isTurnOfPlayer(player *Player) bool {
@@ -236,14 +245,15 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	orderChannel2 := make(chan int)
 	movesChannel1 := make(chan int)
 	movesChannel2 := make(chan int)
-	go move.handlePlayersMoves(orderChannel1, movesChannel1, player1)
-	go move.handlePlayersMoves(orderChannel2, movesChannel2, player2)
+	//TODO: el player error va con mutex
+	go move.handlePlayersMoves(orderChannel1, movesChannel1, player1, playerError)
+	go move.handlePlayersMoves(orderChannel2, movesChannel2, player2, playerError)
 	fmt.Println("start_move lanza los hilos")
 	fmt.Println("--------------------estoy entrando a la jugada " + strconv.Itoa(move.typeMove) + "-----------------------")
-	for !moveFinished && err != -1 {
+	for !moveFinished && playerError.err == nil {
 
 		move.setAlreadySangTruco(player1, player2) //TODO:chequear si va aca
-		if isTurnOfPlayer(player1) && !moveFinished {
+		if isTurnOfPlayer(player1) && !moveFinished && playerError.err == nil {
 			orderChannel1 <- PLAY
 			orderChannel2 <- WAIT
 			option1 = <-movesChannel1
@@ -252,7 +262,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			movesChannel2 <- option1 //al jugador 2 le mando la jugada del jugador 1
 		}
 
-		if isTurnOfPlayer(player2) && !moveFinished {
+		if isTurnOfPlayer(player2) && !moveFinished && playerError.err == nil{
 			orderChannel1 <- WAIT
 			orderChannel2 <- PLAY
 
@@ -320,39 +330,42 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 	return true
 }
 
-func receiveWaitingRequests(socket net.Conn) int {
+func receiveWaitingRequests(socket net.Conn) (int, error) {
 	common.Send(socket, common.WaitingOptionsPlayer)
 	message, err := common.Receive(socket)
+	if err != nil {
+		return -1, err
+	}
 	fmt.Println("el hilo de receive waiting requests recibio " + message)
 	fmt.Println(message)
-	if err != nil {
-		return -1
-	}
 	fmt.Println("pase waiting requests")
 	option, _ := strconv.Atoi(message)
-	return option
+	return option, nil
 }
 
-func (move *Move) handleWaitingOptions(status int, player *Player) {
+func (move *Move) handleWaitingOptions(status int, player *Player, playerError *PlayerError) {
 	if status == VER_MIS_CARTAS {
 		//tenemos las card played pero faltaria decir quien tiro que
-		sendInfoCards(*player)
+		sendInfoCards(*player, playerError)
 	}
 	return
 }
 
-func (move *Move) handlePlayerActivity(orderChannel chan int, player *Player) {
+func (move *Move) handlePlayerActivity(player *Player, playerError *PlayerError) {
 	status := WAIT
-	for status != RETURN_FROM_WAITING_OPTIONS && len(orderChannel) == 0 && status != -1 {
-		move.handleWaitingOptions(status, player)
-		status = receiveWaitingRequests(player.socket)
-	}
-	if len(orderChannel) == 1 {
-		fmt.Println("me llego una orden para el jugador " + player.name)
+	var err error
+	for status != RETURN_FROM_WAITING_OPTIONS && status != -1 {
+		move.handleWaitingOptions(status, player, playerError)
+		status, err = receiveWaitingRequests(player.socket)
+		if err != nil {
+			fmt.Println("detecte error del q espera")
+			playerError.player = player
+			playerError.err = err
+		}
 	}
 }
 
-func (move *Move) askPlayerToWait(orderChannel chan int, player *Player, playerError *PlayerError) int {
+func (move *Move) askPlayerToWait(player *Player, playerError *PlayerError) int {
 	common.Send(player.socket, common.WaitPlayerToPlayMessage)
 	_, err := common.Receive(player.socket)
 	if err != nil {
@@ -361,7 +374,7 @@ func (move *Move) askPlayerToWait(orderChannel chan int, player *Player, playerE
 		return -1
 	}
 
-	move.handlePlayerActivity(orderChannel, player)
+	move.handlePlayerActivity(player, playerError)
 
 	if err != nil {
 		playerError.player = player
@@ -426,11 +439,13 @@ func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int
 func loopSendOptionsToPlayer(options []int, player *Player, playerError *PlayerError, message string) (int, int) {
 	option := 0
 	msgError := ""
-	for !containsOption(option, options) {
+	for !containsOption(option, options) && playerError.err == nil {
 		fmt.Println("loop options player: entre a mandarle la info a los jugadores")
 		common.Send(player.socket, msgError+message)
 		jugada, err := common.Receive(player.socket)
+		fmt.Println(err)
 		if err != nil {
+			fmt.Println("ERROR EN EL LOOP")
 			playerError.player = player
 			playerError.err = err
 			return -1, -1
@@ -510,7 +525,7 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	}
 	option, err = move.sendInfoMove(player, options, playerError)
 
-	if err == -1 {
+	if playerError.err != nil {
 		return -1, -1
 	}
 	switch option {

@@ -105,14 +105,19 @@ func getCardColors(card string) string {
 	}
 }
 
-func sendInfoCards(player Player) {
+func sendInfoCards(player Player, playerError *PlayerError) {
 
 	message := ""
 	for _, card := range player.getCards() {
 		message += getCardColors(card.getFullName()) + common.BWhite + " | " + common.NONE
 	}
 	common.Send(player.socket, common.CardsMessage+message)
-	common.Receive(player.socket) //receive de patch (ok)
+	_, err := common.Receive(player.socket) //receive de patch (ok)
+
+	if err != nil {
+		playerError.player = &player
+		playerError.err = err
+	}
 }
 
 func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser string) {
