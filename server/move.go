@@ -27,10 +27,9 @@ const (
 )
 
 const (
-	CANTO_TRUCO      = 20
-	ACEPTAR_TRUCO    = 21
-	RECHAZAR_TRUCO   = 22
-	TERMINAR_PARTIDA = 100
+	CANTO_TRUCO    = 20
+	ACEPTAR_TRUCO  = 21
+	RECHAZAR_TRUCO = 22
 )
 
 type InfoPlayer struct {
@@ -189,7 +188,7 @@ func (move *Move) handleResult(actualoption int, opponentOption int, actual *Pla
 	} else if actualoption == ACEPTAR_TRUCO || opponentOption == ACEPTAR_TRUCO {
 		fmt.Println("alguno quiere truco")
 		return false
-	} else if opponentOption == RECHAZAR_TRUCO {
+	} else if opponentOption == RECHAZAR_TRUCO || opponentOption == IRSE_AL_MAZO {
 		fmt.Println("No quiere truco")
 		return move.finish_round(actual, opponent, finish)
 	} else if actualoption == RECHAZAR_TRUCO {
@@ -401,6 +400,10 @@ func (move *Move) handleTruco(player *Player) {
 	}
 }
 
+func (move *Move) handleFinishRound() {
+	// si se canto truco/envido/envidoenvido, se cuenta el punto
+}
+
 func containsOption(option int, options []int) bool {
 	var result bool = false
 	for _, x := range options {
@@ -464,7 +467,8 @@ func (move *Move) sendInfoMove(player *Player, options []int, playerError *Playe
 			message += common.BOLD + "(" + strconv.Itoa(RECHAZAR_TRUCO) + ")" + common.NONE + common.RED + " Rechazar truco " + common.NONE + "\n"
 		} else if possibleOption == QUERER_ENVIDO_ENVIDO {
 			message += common.BOLD + "(" + strconv.Itoa(QUERER_ENVIDO_ENVIDO) + ")" + common.NONE + common.GREEN + " Quiero envido envido " + common.NONE + "\n"
-
+		} else if possibleOption == IRSE_AL_MAZO {
+			message += common.BOLD + "(" + strconv.Itoa(IRSE_AL_MAZO) + ")" + common.NONE + common.BWhite + " Irse al mazo " + common.NONE + "\n"
 		}
 	}
 
@@ -501,7 +505,7 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 
 		common.Send(player.socket, common.OpponetRejectTruco)
 		/*chequear errores*/ common.Receive(player.socket)
-		return TERMINAR_PARTIDA, err
+		return IRSE_AL_MAZO, err
 	} else if len(move.cardsPlayed) > 0 {
 		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[0].getFullName() + common.NONE + "\n"
 		common.Send(player.socket, message)
@@ -514,6 +518,9 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 		return -1, -1
 	}
 	switch option {
+	case IRSE_AL_MAZO:
+		move.handleFinishRound()
+		return IRSE_AL_MAZO, err
 	case TIRAR_CARTA:
 		err = move.handleThrowACard(player, playerError)
 	case CANTAR_ENVIDO:
