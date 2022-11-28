@@ -155,3 +155,8 @@ func sendInfoPointsPlayers(player1 *Player, player2 *Player) {
 	common.Send(player2.socket, common.GetPointsMessage(player2.points, player1.points))
 	common.Receive(player2.socket)
 }
+
+func sendPlayerCardPlayed(player *Player, card Card) {
+	common.Send(player.socket, common.GetCardPlayed(getCardColors(card.getFullName())))
+
+}

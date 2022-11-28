@@ -419,6 +419,7 @@ func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int
 
 	option, err := loopSendOptionsToPlayer(options, player, playerError, message)
 	move.cardsPlayed = append(move.cardsPlayed, playerCards[option-1])
+	sendPlayerCardPlayed(player, playerCards[option-1])
 	player.removeCardSelected(option - 1)
 	return err
 }
