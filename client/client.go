@@ -14,7 +14,7 @@ import (
 
 const (
 	SERVER_HOST = "localhost"
-	SERVER_PORT = "9963"
+	SERVER_PORT = "9964"
 	SERVER_TYPE = "tcp"
 	QUIT        = "Q"
 )
@@ -46,13 +46,13 @@ func runClient(socket net.Conn) {
 func processGameloop(socket net.Conn) {
 	// loop de server manda algo cliente responde
 	reader := bufio.NewReader(os.Stdin)
+	ch := make(chan string)
+	go ProcessResponseClient(ch, reader)
 	for {
 		fmt.Println("voy a procesar")
 		messageServer, err := common.Receive(socket)
 		checkErrorServer(err)
 		fmt.Println(messageServer)
-		ch := make(chan string)
-		go ProcessResponseClient(ch, reader)
 		if strings.Contains(messageServer, "Espera a que juegue tu oponente...") {
 			fmt.Println("entre a aca")
 			common.Send(socket, "OK")
@@ -110,6 +110,12 @@ func processGameloop(socket net.Conn) {
 
 			}
 			fmt.Println("sali de procesar")
+			// messageClient, _ := reader.ReadString('\n')
+			// if strings.TrimSpace(messageClient) == QUIT {
+			// 	fmt.Println("entre a quit")
+			// 	return
+			// }
+			// common.Send(socket, messageClient)
 		}
 	}
 }
