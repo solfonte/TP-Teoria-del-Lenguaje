@@ -4,29 +4,6 @@ import (
 	"strconv"
 )
 
-// todo: hacer un file de constantes y mover esto:
-/*
-const RANGO_I_TRES = 4
-const RANGO_F_TRES = 7
-const RANGO_I_DOS = 8
-const RANGO_F_DOS = 11
-const RANGO_I_UNO = 12
-const RANGO_F_UNO = 13
-const RANGO_I_DOCE = 14
-const RANGO_F_DOCE = 17
-const RANGO_I_ONCE = 18
-const RANGO_F_ONCE = 21
-const RANGO_I_DIEZ = 22
-const RANGO_F_DIEZ = 25
-const RANGO_I_SIETE = 26
-const RANGO_F_SIETE = 27
-const RANGO_I_SEIS = 28
-const RANGO_F_SEIS = 31
-const RANGO_I_CINCO = 32
-const RANGO_F_CINCO = 35
-const RANGO_I_CUATRO = 36
-const RANGO_F_CUATRO = 39
-*/
 type Card struct {
 	id    int
 	value int
@@ -39,6 +16,7 @@ func (Card Card) getFullName() string {
 
 // Devuelve 1 si la carta es mejor que la otra, 0 si son de igual jerarquia o -1 si es menor que la otra.
 func (Card Card) compareCards(anotherCard Card) int {
+	//TODO: Si me tiran el 1 de espada vs el 3 de espada?
 	if Card.id >= RANGO_I_TRES && Card.id <= RANGO_F_TRES && anotherCard.id >= RANGO_I_TRES && anotherCard.id <= RANGO_F_TRES {
 		return 0
 	}

@@ -11,13 +11,42 @@ type Player struct {
 	name         string
 	socket       net.Conn
 	points       int
-	cards        []Card
+	hand         Hand
 	cardSelected Card
 	winsPerPlay  int
+	hasSagnTruco bool
+	lastMove     int
+}
+
+func (player *Player) clearCards() {
+	var cards []Card
+	player.hand = Hand{cards: cards, cardsNotSelected: cards}
+}
+
+func (player *Player) getCards() []Card {
+	return player.hand.cardsNotSelected
+}
+
+func (player *Player) verifyEnvidoWinnerAgainst(opponent *Player) *Player {
+	if player.hand.winsEnvidoOver(opponent.hand) {
+		msgWinning := common.GetWinningEnvidoMessage(player.hand.calculatePointsEnvido(), opponent.hand.calculatePointsEnvido())
+		msgLossing := common.GetLossingEnvidoMessage(opponent.hand.calculatePointsEnvido(), player.hand.calculatePointsEnvido())
+		sendInfoPlayers(player, opponent, msgWinning, msgLossing)
+		return player
+	}
+	msgWinning := common.GetWinningEnvidoMessage(opponent.hand.calculatePointsEnvido(), player.hand.calculatePointsEnvido())
+	msgLossing := common.GetLossingEnvidoMessage(player.hand.calculatePointsEnvido(), opponent.hand.calculatePointsEnvido())
+	sendInfoPlayers(opponent, player, msgWinning, msgLossing)
+	return opponent
+}
+
+func (player *Player) welcomePlayer() {
+	SendWelcomeMessage(player)
+	player.askPlayerName()
 }
 
 func (player *Player) askPlayerName() {
-	common.Send(player.socket, "Podes ingresar tu nombre")
+	common.Send(player.socket, common.AskPlayerName)
 	playerName, error := common.Receive(player.socket)
 	if error != nil {
 		fmt.Println("Error reciving from client: ", error.Error())
@@ -27,11 +56,23 @@ func (player *Player) askPlayerName() {
 }
 
 func (player *Player) dealCards(cards []Card) {
-	player.cards = cards
-	fmt.Println("cards jugador: ", player.cards)
+	player.hand = Hand{cards: cards, cardsNotSelected: cards}
 }
 
-func (player *Player) removeCardSelected(posTodelete int) {
-	player.cards = append(player.cards[:posTodelete], player.cards[posTodelete+1:]...)
+func (player *Player) removeCardSelected(posToDelete int) {
+	player.hand.removeCardSelected(posToDelete)
+}
 
+func (player *Player) sumPoints(points int) {
+	fmt.Println("SUME PUNTOS POR ENVIDO ", points)
+	player.points += points
+}
+
+func (player *Player) stop() {
+	fmt.Println("player disconnect", player.name)
+	player.socket.Close()
+}
+
+func (player *Player) setHasSangTruco(truco bool) {
+	player.hasSagnTruco = truco
 }

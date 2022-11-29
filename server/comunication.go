@@ -8,17 +8,17 @@ import (
 )
 
 func sendMenu(player Player) (string, error) {
-	common.Send(player.socket, "Bienvenido al truco "+player.name)
-	messagePlayer, error := common.Receive(player.socket)
-	common.Send(player.socket, "Las reglas del juego son sencillas: .....")
-	messagePlayer, error = common.Receive(player.socket)
-	common.Send(player.socket, "ingresa CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada")
-	fmt.Println("paso")
+	// msgCreate := common.GREEN + "CREATE" + common.NONE
+	// //fmt.Println(msgCreate)
+	// msgJoin := common.BLUE + "JOIN" + common.NONE
+	// //fmt.Println(msgJoin)
+	// message := "ingresa " + msgCreate + " para crear un juego O ingresa " + msgJoin + " para unirte a una partida ya creada"
+	common.Send(player.socket, common.RequestMatchMessage)
 	// receives its answer
-	messagePlayer, error = common.Receive(player.socket)
+	messagePlayer, error := common.Receive(player.socket)
 	fmt.Println(messagePlayer)
 	response := strings.ToUpper(messagePlayer)
-	fmt.Println(response)
+	fmt.Println("RESPONSE QUE ME LLEGA ", response)
 
 	for (response != "CREATE") && (response != "JOIN") {
 		common.Send(player.socket, "Error: ingrese CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada")
@@ -30,7 +30,7 @@ func sendMenu(player Player) (string, error) {
 
 func getAmountOfPlayers(player Player) int {
 
-	common.Send(player.socket, "ingrese cantidad integrantes; 2 o 4")
+	common.Send(player.socket, common.AmountOfMembersMessage)
 	members, _ := common.Receive(player.socket)
 	amount_members, _ := strconv.Atoi(members)
 
@@ -43,7 +43,7 @@ func getAmountOfPlayers(player Player) int {
 }
 
 func getAmountOfPoints(player Player) int {
-	common.Send(player.socket, "Ingrese duracion de partida partida: 15 o 30 puntos")
+	common.Send(player.socket, common.DurationOfMatchMessage)
 	duration, _ := common.Receive(player.socket)
 	amout_duration_points, _ := strconv.Atoi(duration)
 
@@ -62,12 +62,12 @@ func processRequest(player Player, message string) map[string]int {
 	if message == "CREATE" {
 		match["create"] = 0
 		getMatchParameters(match, player)
-		common.Send(player.socket, "OK, Partida creada, esperando a que se una el resto de los jugadores")
+		common.Send(player.socket, common.CreateMatchMessage)
 		return match
 	} else {
 		match["create"] = 1
 		getMatchParameters(match, player)
-		common.Send(player.socket, "OK, Partida solicitada, se esta buscando una partida")
+		common.Send(player.socket, common.JoinMatchMessage)
 		return match
 	}
 
@@ -81,30 +81,87 @@ func getMatchParameters(match map[string]int, player Player) {
 }
 
 func startGame(player Player) {
-
-	fmt.Println(player.cards[0].suit)
-
-	common.Send(player.socket, "El juego comenzó")
+	common.Send(player.socket, common.GameStartedMessage)
 	message, _ := common.Receive(player.socket)
 	fmt.Println(message)
 
 }
 
-func sendInfoCards(player Player) {
-	card1 := player.cards[0].getFullName()
-	card2 := player.cards[1].getFullName()
-	card3 := player.cards[2].getFullName()
-	common.Send(player.socket, "Estas son tus cartas: "+card1+" "+card2+" "+card3)
+func sendOtherPlayDisconnection(player Player, msg string) {
+	common.Send(player.socket, msg)
 	message, _ := common.Receive(player.socket)
 	fmt.Println(message)
-	fmt.Println("cartas: "+card1, card2, card3)
+}
 
+func getCardColors(card string) string {
+	if strings.Contains(card, "oro") {
+		return (common.YELLOW + card + common.NONE)
+	} else if strings.Contains(card, "espada") {
+		return (common.CYAN + card + common.NONE)
+	} else if strings.Contains(card, "basto") {
+		return (common.GREEN + card + common.NONE)
+	} else {
+		return (common.RED + card + common.NONE)
+	}
+}
+
+func sendInfoCards(player Player, playerError *PlayerError) {
+
+	message := ""
+	for _, card := range player.getCards() {
+		message += getCardColors(card.getFullName()) + common.BWhite + " | " + common.NONE
+	}
+	common.Send(player.socket, common.CardsMessage+message)
+	_, err := common.Receive(player.socket) //receive de patch (ok)
+
+	if err != nil {
+		playerError.player = &player
+		playerError.err = err
+	}
 }
 
 func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser string) {
 	common.Send(winner.socket, msgWinner)
-	common.Receive(winner.socket)
+	msg, _ := common.Receive(winner.socket)
+	fmt.Println(msg)
 
 	common.Send(loser.socket, msgLoser)
-	common.Receive(loser.socket)
+	msg, _ = common.Receive(loser.socket)
+	fmt.Println(msg)
+}
+
+func SendWelcomeMessage(player *Player) {
+
+	common.Send(player.socket, common.WelcomeMessage)
+	common.Receive(player.socket)
+	common.Send(player.socket, "Las reglas del juego son: ")
+	common.Receive(player.socket)
+}
+
+func GetCardsToThrow(cards []Card) (string, []int) {
+
+	message := common.BWhite + "Que carta queres tirar? " + "\n" + common.NONE
+
+	var maxOptionsSelected []int
+	for index, card := range cards {
+		number := common.BOLD + strconv.Itoa(index+1) + ") " + common.NONE
+		message += number
+		message += getCardColors(card.getFullName()) + "\n"
+		maxOptionsSelected = append(maxOptionsSelected, index+1)
+	}
+	return message, maxOptionsSelected
+
+}
+
+func sendInfoPointsPlayers(player1 *Player, player2 *Player) {
+
+	common.Send(player1.socket, common.GetPointsMessage(player1.points, player2.points))
+	common.Receive(player1.socket)
+	common.Send(player2.socket, common.GetPointsMessage(player2.points, player1.points))
+	common.Receive(player2.socket)
+}
+
+func sendPlayerCardPlayed(player *Player, card Card) {
+	common.Send(player.socket, common.GetCardPlayed(getCardColors(card.getFullName())))
+
 }

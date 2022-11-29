@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"truco/app/client"
+	"truco/app/common"
 )
 
 func main() {
-	fmt.Printf("hola")
+	common.CallClearScreen()
 	client.Start()
 }

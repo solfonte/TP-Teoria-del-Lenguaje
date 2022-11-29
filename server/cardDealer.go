@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"path/filepath"
+
+	//"path/filepath"
 	"strconv"
 	"time"
 
@@ -20,6 +21,7 @@ func (cardDealer *CardDealer) initialize() {
 	err := godotenv.Load(".env")
 	if err != nil {
 		fmt.Println("error loading .env")
+		//return err
 	}
 	for i := range cardDealer.cards {
 		cardDealer.cards[i] = 1
@@ -27,8 +29,8 @@ func (cardDealer *CardDealer) initialize() {
 }
 
 func (cardDealer *CardDealer) assignCards(player *Player) {
-	absPath, _ := filepath.Abs(os.Getenv("FILENAME"))
-	cardNames := readCSV(absPath)
+	//absPath, _ := filepath.Abs(os.Getenv("FILENAME"))
+	cardNames := readCSV("../TP-Teoria-del-Lenguaje/server/cards.csv")
 
 	rand.Seed(time.Now().UnixNano())
 	var amountOfCards int = 0
