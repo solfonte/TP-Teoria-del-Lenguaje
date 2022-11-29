@@ -8,12 +8,13 @@ import (
 	"net"
 	"os"
 	"strings"
+	"time"
 	"truco/app/common"
 )
 
 const (
 	SERVER_HOST = "localhost"
-	SERVER_PORT = "9973"
+	SERVER_PORT = "9963"
 	SERVER_TYPE = "tcp"
 	QUIT        = "Q"
 )
@@ -44,13 +45,16 @@ func runClient(socket net.Conn) {
 
 func processGameloop(socket net.Conn) {
 	// loop de server manda algo cliente responde
-	promptReader := bufio.NewReader(os.Stdin)
-
+	reader := bufio.NewReader(os.Stdin)
 	for {
+		fmt.Println("voy a procesar")
 		messageServer, err := common.Receive(socket)
 		checkErrorServer(err)
 		fmt.Println(messageServer)
+		ch := make(chan string)
+		go ProcessResponseClient(ch, reader)
 		if strings.Contains(messageServer, "Espera a que juegue tu oponente...") {
+			fmt.Println("entre a aca")
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Tu oponente tiro una carta") {
 			common.Send(socket, "OK")
@@ -78,12 +82,46 @@ func processGameloop(socket net.Conn) {
 		} else if strings.Contains(messageServer, common.WinMatchMessage) || strings.Contains(messageServer, common.LoseMatchMessage) {
 			common.Send(socket, "OK")
 		} else {
-			messageClient, _ := promptReader.ReadString('\n')
-			if strings.TrimSpace(messageClient) == QUIT {
-				fmt.Println("entre a quit")
-				return
+			finish := false
+			for !finish {
+				select {
+				case stdin, ok := <-ch:
+					fmt.Println("lo que mando ", stdin)
+					if !ok {
+						break
+					} else {
+						fmt.Println("Read input from stdin:", stdin)
+
+						if strings.TrimSpace(stdin) == QUIT {
+							fmt.Println("entre a quit")
+							return
+						}
+						fmt.Println("lo que mando ", stdin)
+						common.Send(socket, stdin)
+						finish = true
+					}
+				case <-time.After(6 * time.Second):
+					if strings.Contains(messageServer, "Mientras esperas a que sea tu turno") {
+						common.Send(socket, "0")
+						finish = true
+					}
+
+				}
+
 			}
-			common.Send(socket, messageClient)
+			fmt.Println("sali de procesar")
 		}
+	}
+}
+
+func ProcessResponseClient(ch chan string, reader *bufio.Reader) {
+	for {
+		s, err := reader.ReadString('\n')
+		if err != nil {
+			close(ch)
+			return
+		}
+		fmt.Println("recibo: ", s)
+		ch <- s
 	}
 }

@@ -43,7 +43,7 @@ const (
 	GameStartedMessage      = BWhite + "El juego comenzó" + NONE
 	WaitingOptionsPlayer    = "Mientras esperas a que sea tu turno, podes realizar las siguientes acciones" + "\n" + GRAY + "(11) " + BYellow + "Irse" + NONE + " al mazo" + "\n" + GRAY + "(12) " + BGreen + "Consultar Cartas." + NONE + "\n" + "Ingresa " + GRAY + "(0)" + NONE + " si no queres realizar ninguna de estas acciones" + NONE
 	CardsMessage            = BWhite + "Estas son tus cartas: " + NONE
-	WaitPlayerToPlayMessage = BBlue + "Espera a que juegue tu oponente..." + NONE + "\n"
+	WaitPlayerToPlayMessage = BBlue + "Espera a que juegue tu oponente..." + NONE
 	SingEnvido              = BPurple + "Cantaste ENVIDO" + NONE + "\n"
 	SingTruco               = BPurple + "Cantaste Truco" + NONE + "\n"
 	AcceptEnvido            = BPurple + "Aceptaste ENVIDO" + NONE + "\n"

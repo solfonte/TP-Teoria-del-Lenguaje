@@ -207,20 +207,20 @@ func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan in
 
 		if moveOrder == WAIT {
 			move.askPlayerToWait(player, playerError)
-			if (playerError.err != nil){
+			if playerError.err != nil {
 				fmt.Println("//////////////////////////salgo de handelear al jugador " + player.name + "//////////////////////////////")
 
-				return 
-			}else{
+				return
+			} else {
 				opponentOption = <-movesChannel
 			}
 		} else if moveOrder == PLAY {
 			options := move.definePlayerPossibleOptions(player.lastMove, opponentOption)
 			actualPlayerOption, _ := move.askPlayerToMove(player, options, playerError)
-			if (playerError.err != nil){
+			if playerError.err != nil {
 				fmt.Println("//////////////////////////salgo de handelear al jugador " + player.name + "//////////////////////////////")
 
-				return 
+				return
 			} else {
 				player.lastMove = actualPlayerOption
 				movesChannel <- actualPlayerOption
@@ -262,7 +262,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			movesChannel2 <- option1 //al jugador 2 le mando la jugada del jugador 1
 		}
 
-		if isTurnOfPlayer(player2) && !moveFinished && playerError.err == nil{
+		if isTurnOfPlayer(player2) && !moveFinished && playerError.err == nil {
 			orderChannel1 <- WAIT
 			orderChannel2 <- PLAY
 
@@ -367,7 +367,8 @@ func (move *Move) handlePlayerActivity(player *Player, playerError *PlayerError)
 
 func (move *Move) askPlayerToWait(player *Player, playerError *PlayerError) int {
 	common.Send(player.socket, common.WaitPlayerToPlayMessage)
-	_, err := common.Receive(player.socket)
+	message, err := common.Receive(player.socket)
+	fmt.Println("mESNAJE QUE ME LLEGA EN AK PLAYER TO WAIT: ", message)
 	if err != nil {
 		playerError.player = player
 		playerError.err = err
@@ -442,6 +443,7 @@ func loopSendOptionsToPlayer(options []int, player *Player, playerError *PlayerE
 	for !containsOption(option, options) && playerError.err == nil {
 		fmt.Println("loop options player: entre a mandarle la info a los jugadores")
 		common.Send(player.socket, msgError+message)
+		fmt.Println("mande info a cliente")
 		jugada, err := common.Receive(player.socket)
 		fmt.Println(err)
 		if err != nil {
@@ -528,6 +530,7 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	if playerError.err != nil {
 		return -1, -1
 	}
+
 	switch option {
 	case TIRAR_CARTA:
 		err = move.handleThrowACard(player, playerError)
