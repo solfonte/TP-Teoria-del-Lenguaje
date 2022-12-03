@@ -24,6 +24,6 @@ func Receive(connection net.Conn) (string, error) {
 }
 
 func Send(connection net.Conn, message string) error {
-	_, error := connection.Write([]byte(strings.TrimRight(message, "\n")))
-	return error
+	_, err := connection.Write([]byte(strings.TrimRight(message, "\n")))
+	return err
 }
