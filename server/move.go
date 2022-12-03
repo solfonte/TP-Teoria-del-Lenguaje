@@ -48,6 +48,7 @@ type Move struct {
 	alreadyAceptedTruco bool
 	alreadySangTruco    bool
 	envidoState         int
+	hasSangFinishRound  bool
 }
 
 func (move *Move) canSingEnvido() bool {
@@ -112,6 +113,8 @@ func (move *Move) definePlayerPossibleOptions(actualOption int, opponentOption i
 			options = append(options, CANTAR_TRUCO)
 		}
 	}
+
+	options = append(options, IRSE_AL_MAZO)
 	return options
 	//TODO: DESPUES SE AGREGA TRUCO
 }
@@ -122,8 +125,14 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 	move.loser.id = loser.id
 	move.loser.points = 0
 	// hay que settear a cero por cada ronda
-	move.winner.points = 1
-	winner.points += 1
+
+	if move.trucoState == ACEPTAR_TRUCO {
+		move.winner.points = 2
+		winner.points += 2
+	} else {
+		move.winner.points = 1
+		winner.points += 1
+	}
 	*finish = true
 	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
 
@@ -179,6 +188,12 @@ func (move *Move) handleResult(actualoption int, opponentOption int, actual *Pla
 		fmt.Println("identifique envido")
 		move.handleEnvidoResult(actualoption, opponentOption, actual, opponent, finish)
 		return false
+	} else if opponentOption == IRSE_AL_MAZO {
+		fmt.Println("OPONENTE SE VA AL MAZO")
+		return move.finish_round(actual, opponent, finish)
+	} else if actualoption == IRSE_AL_MAZO {
+		fmt.Println("ACTUAL SE VA AL MAZO")
+		return move.finish_round(opponent, actual, finish)
 	} else if actualoption == CANTAR_TRUCO || opponentOption == CANTAR_TRUCO {
 		fmt.Println("alguno canto truco")
 		return false
@@ -191,7 +206,7 @@ func (move *Move) handleResult(actualoption int, opponentOption int, actual *Pla
 	} else if opponentOption == RECHAZAR_TRUCO || opponentOption == IRSE_AL_MAZO {
 		fmt.Println("No quiere truco")
 		return move.finish_round(actual, opponent, finish)
-	} else if actualoption == RECHAZAR_TRUCO {
+	} else if actualoption == RECHAZAR_TRUCO || actualoption == IRSE_AL_MAZO {
 		fmt.Println("No quiere truco")
 		return move.finish_round(opponent, actual, finish)
 	}
@@ -291,24 +306,26 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 	move.loser.id = loser.id
 	move.loser.points = 0
 	// hay que settear a cero por cada ronda
-	winner.winsPerPlay += 1
-	if move.typeMove == 3 || winner.winsPerPlay >= 2 {
-		if winner.hasSagnTruco || loser.hasSagnTruco {
-			move.winner.points = 2
-			winner.points += 2
+	if !move.hasSangFinishRound {
+		winner.winsPerPlay += 1
+		if move.typeMove == 3 || winner.winsPerPlay >= 2 {
+			if winner.hasSagnTruco || loser.hasSagnTruco {
+				move.winner.points = 2
+				winner.points += 2
+			} else {
+				move.winner.points = 1
+				winner.points += 1
+			}
 		} else {
-			move.winner.points = 1
-			winner.points += 1
+			move.winner.points = 0
 		}
-	} else {
-		move.winner.points = 0
 	}
 
 	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
 
 	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove))
 	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
-	if winner.winsPerPlay == 2 {
+	if winner.winsPerPlay == 2 || move.hasSangFinishRound {
 		fmt.Println("termino jugada")
 		*finish = true
 	} else {
@@ -400,8 +417,10 @@ func (move *Move) handleTruco(player *Player) {
 	}
 }
 
-func (move *Move) handleFinishRound() {
-	// si se canto truco/envido/envidoenvido, se cuenta el punto
+func (move *Move) handleFinishRound(player *Player) {
+	common.Send(player.socket, common.SingFinishRound)
+	common.Receive(player.socket)
+	move.hasSangFinishRound = true
 }
 
 func containsOption(option int, options []int) bool {
@@ -416,7 +435,6 @@ func containsOption(option int, options []int) bool {
 }
 
 func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int {
-
 	playerCards := player.getCards()
 	message, options := GetCardsToThrow(playerCards)
 
@@ -426,6 +444,7 @@ func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int
 	player.removeCardSelected(option - 1)
 	return err
 }
+
 func loopSendOptionsToPlayer(options []int, player *Player, playerError *PlayerError, message string) (int, int) {
 	option := 0
 	msgError := ""
@@ -511,6 +530,9 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 		common.Send(player.socket, message)
 		msg, _ := common.Receive(player.socket)
 		fmt.Println("====respuesta de oponente tiro una carta", msg)
+	} else if move.hasSangFinishRound {
+		common.Send(player.socket, common.OpponetHasSangFinishRound)
+		/*chequear errores*/ common.Receive(player.socket)
 	}
 	option, err = move.sendInfoMove(player, options, playerError)
 
@@ -519,7 +541,7 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	}
 	switch option {
 	case IRSE_AL_MAZO:
-		move.handleFinishRound()
+		move.handleFinishRound(player)
 		return IRSE_AL_MAZO, err
 	case TIRAR_CARTA:
 		err = move.handleThrowACard(player, playerError)

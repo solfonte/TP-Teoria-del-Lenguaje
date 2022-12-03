@@ -71,6 +71,8 @@ func processGameloop(socket net.Conn) {
 			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, "Tus puntos son") {
 			common.Send(socket, "OK")
+		} else if strings.Contains(messageServer, "Te fuiste al MAZO") {
+			common.Send(socket, "OK")
 		} else if strings.Contains(messageServer, common.FinishGame) {
 			fmt.Println("termino el juego")
 			common.Send(socket, "OK")
