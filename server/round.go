@@ -42,7 +42,7 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 		if err == -1 {
 			return -1
 		}
-		//TODO: CAMBIAR EL RETURN PARA NO CORTAR EL FOR
+		
 		completeRound += 1
 
 		round.decide_hand_players(move.winner.id, move.loser.id)
