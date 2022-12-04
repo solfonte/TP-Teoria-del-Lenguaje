@@ -30,6 +30,7 @@ const (
 	CANTO_TRUCO    = 20
 	ACEPTAR_TRUCO  = 21
 	RECHAZAR_TRUCO = 22
+	CANTAR_RETRUCO = 23
 )
 
 type InfoPlayer struct {
@@ -102,6 +103,7 @@ func (move *Move) definePlayerPossibleOptions(actualOption int, opponentOption i
 	} else if opponentOption == CANTAR_TRUCO {
 		options = append(options, ACEPTAR_TRUCO)
 		options = append(options, RECHAZAR_TRUCO)
+		options = append(options, CANTAR_RETRUCO)
 	} else if opponentOption == ACEPTAR_TRUCO {
 		options = append(options, TIRAR_CARTA)
 	} else {
