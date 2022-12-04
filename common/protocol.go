@@ -57,6 +57,8 @@ const (
 	OpponetAcceptEnvido       = BBlue + "Tu oponente Acepto el ENVIDO" + NONE + "\n"
 	OpponetRejectTruco        = BBlue + "Tu oponente Rechazo el TRUCO" + NONE + "\n"
 	OpponetHasSangFinishRound = BBlue + "Tu oponente se fue AL MAZO" + NONE + "\n"
+	OpponetRejectRetruco        = BBlue + "Tu oponente Rechazo el RETRUCO" + NONE + "\n"
+
 )
 
 func GetWinningMoveMessage(number int) string {

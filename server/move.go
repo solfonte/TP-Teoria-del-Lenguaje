@@ -131,17 +131,28 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 	move.loser.id = loser.id
 	move.loser.points = 0
 
-	if move.hasSangFinishRound && move.trucoState != ACEPTAR_TRUCO && move.envidoState != QUERER_ENVIDO && move.envidoState != QUERER_ENVIDO_ENVIDO {
+	if move.hasSangFinishRound && move.trucoState != ACEPTAR_TRUCO && move.envidoState != QUERER_ENVIDO && move.envidoState != QUERER_ENVIDO_ENVIDO && move.trucoState != RECHAZAR_RETRUCO && move.trucoState != CANTAR_RETRUCO {
 		move.winner.points = 1
 		winner.points += 1
+		fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   1")
 	} else {
 		if move.trucoState == ACEPTAR_TRUCO || move.envidoState == QUERER_ENVIDO {
 			move.winner.points = 2
 			winner.points += 2
+			fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  2")
+
 		} else if move.envidoState == QUERER_ENVIDO_ENVIDO {
 			move.winner.points = 4
 			winner.points += 4
+			fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  3")
+
+		} else if move.trucoState == RECHAZAR_RETRUCO || (move.hasSangFinishRound && move.trucoState == CANTAR_RETRUCO){
+			move.winner.points = 2
+			winner.points += 2
+			fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  4")
+
 		} else {
+			fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  5")
 			move.winner.points = 1
 			winner.points += 1
 		}
@@ -225,10 +236,10 @@ func (move *Move) handleResult(actualoption int, opponentOption int, actual *Pla
 	} else if actualoption == ACEPTAR_TRUCO || opponentOption == ACEPTAR_TRUCO {
 		fmt.Println("alguno quiere truco")
 		return false
-	} else if opponentOption == RECHAZAR_TRUCO {
+	} else if opponentOption == RECHAZAR_TRUCO || opponentOption == RECHAZAR_RETRUCO {
 		fmt.Println("No quiere truco")
 		return move.finish_round(actual, opponent, finish)
-	} else if actualoption == RECHAZAR_TRUCO {
+	} else if actualoption == RECHAZAR_TRUCO || actualoption == RECHAZAR_RETRUCO{
 		fmt.Println("No quiere truco")
 		return move.finish_round(opponent, actual, finish)
 	}
@@ -464,7 +475,11 @@ func (move *Move) handleTruco(player *Player, option int) {
 		common.Send(player.socket, common.SingRetruco)
 		common.Receive(player.socket)
 		move.trucoState = CANTAR_RETRUCO
-	} else if move.trucoState == CANTO_TRUCO {
+	} else if option == RECHAZAR_TRUCO {
+		move.trucoState = RECHAZAR_TRUCO
+	} else if option == RECHAZAR_RETRUCO {
+		move.trucoState = RECHAZAR_RETRUCO
+	}else if move.trucoState == CANTO_TRUCO {
 		common.Send(player.socket, common.AcceptTruco)
 		common.Receive(player.socket)
 		move.trucoState = ACEPTAR_TRUCO
@@ -593,6 +608,10 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 		common.Send(player.socket, common.OpponetRejectTruco)
 		/*chequear errores*/ common.Receive(player.socket)
 		return IRSE_AL_MAZO, err
+	} else if move.trucoState == RECHAZAR_RETRUCO {
+		common.Send(player.socket, common.OpponetRejectTruco)
+		/*chequear errores*/ common.Receive(player.socket)
+		return IRSE_AL_MAZO, err
 	} else if len(move.cardsPlayed) > 0 {
 		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[0].getFullName() + common.NONE + "\n"
 		common.Send(player.socket, message)
@@ -616,16 +635,15 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	case QUERER_ENVIDO:
 		move.handleEnvido(player)
 	case CANTAR_TRUCO:
-		fmt.Println("canto truco")
 		move.handleTruco(player, option)
 	case CANTAR_RETRUCO:
-		fmt.Println("canto REtruco")
 		move.handleTruco(player, option)
-
 	case ACEPTAR_TRUCO:
 		move.handleTruco(player, option)
 	case RECHAZAR_TRUCO:
-		move.trucoState = RECHAZAR_TRUCO
+		move.handleTruco(player, option)
+	case RECHAZAR_RETRUCO:
+		move.handleTruco(player, option)
 	}
 	if option == ACEPTAR_TRUCO && len(move.cardsPlayed)%2 != 0 {
 		return TIRAR_CARTA, err
