@@ -123,7 +123,7 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 	move.winner.points = 0
 	move.loser.id = loser.id
 	move.loser.points = 0
-	// hay que settear a cero por cada ronda
+
 	if move.hasSangFinishRound && move.trucoState != ACEPTAR_TRUCO && move.envidoState != QUERER_ENVIDO && move.envidoState != QUERER_ENVIDO_ENVIDO {
 		move.winner.points = 1
 		winner.points += 1
