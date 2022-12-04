@@ -14,7 +14,7 @@ import (
 
 const (
 	SERVER_HOST = "localhost"
-	SERVER_PORT = "9964"
+	SERVER_PORT = "9973"
 	SERVER_TYPE = "tcp"
 	QUIT        = "Q"
 )
