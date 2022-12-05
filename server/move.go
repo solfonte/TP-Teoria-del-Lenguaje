@@ -45,21 +45,22 @@ type CardPlayer struct {
 }
 
 type Move struct {
-	winner              InfoPlayer
-	loser               InfoPlayer
-	points              int
-	typeMove            int
-	cardsPlayed         []CardPlayer
-	alreadySangEnvido   bool
-	trucoState          int //20 canto truco, 21 se acepto truco, 22 se rechaza truco
-	alreadyAceptedTruco bool
-	alreadySangTruco    bool
-	envidoState         int
-	hasSangFinishRound  bool
+	winner                InfoPlayer
+	loser                 InfoPlayer
+	points                int
+	typeMove              int
+	cardsPlayed           []CardPlayer
+	alreadySangEnvido     bool
+	trucoState            int //20 canto truco, 21 se acepto truco, 22 se rechaza truco
+	alreadyAceptedTruco   bool
+	alreadyAceptedRetruco bool
+	alreadySangTruco      bool
+	envidoState           int
+	hasSangFinishRound    bool
 }
 
 func (move *Move) canSingEnvido() bool {
-	return move.typeMove == 1 && !move.alreadySangEnvido && !move.alreadyAceptedTruco
+	return move.typeMove == 1 && !move.alreadySangEnvido && !move.alreadyAceptedTruco && !move.alreadyAceptedRetruco
 }
 
 // luego sumar aca mismo otros tipo re truco y eso
@@ -137,10 +138,9 @@ func (move *Move) handleResult(actualoption int, opponentOption int, actual *Pla
 	fmt.Println("actual: ", actual.name, " ACTUAL OPTION ", actualoption, "OPPONENT OPTION: ", opponentOption)
 	fmt.Println("oponente: ", opponent.name)
 	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> TRUCO STATE: ", move.trucoState)
-	if actualoption == TIRAR_CARTA && move.trucoState == ACEPTAR_RETRUCO {
+	if actual.hasSagnTruco && actual.lastMove == ACEPTAR_RETRUCO {
 		opponent.lastMove = 0
-	}
-	if opponentOption == TIRAR_CARTA && move.trucoState == ACEPTAR_RETRUCO {
+	} else if opponent.hasSagnTruco && opponent.lastMove == ACEPTAR_RETRUCO {
 		actual.lastMove = 0
 	}
 	if actualoption == IRSE_AL_MAZO {
@@ -235,6 +235,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 
 		move.setAlreadySangTruco(player1, player2) //TODO:chequear si va aca
 		if isTurnOfPlayer(player1) && !moveFinished && playerError.err == nil {
+			fmt.Println("juega jugador 1")
 			orderChannel1 <- PLAY
 			orderChannel2 <- WAIT
 			option1 = <-movesChannel1
@@ -252,6 +253,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 		}
 		fmt.Println("finish move: ", moveFinished)
 		if isTurnOfPlayer(player2) && !moveFinished && playerError.err == nil {
+			fmt.Println("juega jugador 2")
 			fmt.Println("No tengo que entrar si alguien canto irse al mazo")
 			orderChannel1 <- WAIT
 			orderChannel2 <- PLAY
@@ -305,13 +307,11 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 		winner.winsPerPlay += 1
 		if move.typeMove == 3 || winner.winsPerPlay >= 2 {
 			if winner.hasSagnTruco || loser.hasSagnTruco {
-				if move.trucoState >= CANTAR_RETRUCO {
-					move.winner.points = 3
-					winner.points += 3
-				} else {
-					move.winner.points = 2
-					winner.points += 2
-				}
+				move.winner.points = 2
+				winner.points += 2
+			} else if move.alreadyAceptedRetruco {
+				move.winner.points = 3
+				winner.points += 3
 			} else {
 				move.winner.points = 1
 				winner.points += 1
@@ -368,7 +368,6 @@ func (move *Move) askPlayerToWait(player *Player, playerOption *int, playerError
 		playerError.err = err
 		return -1
 	}
-
 	return 0
 }
 
@@ -396,8 +395,8 @@ func (move *Move) handleTruco(player *Player, option int) {
 		SendInfoPlayer(player, common.RejectRetruco)
 	} else if option == ACEPTAR_RETRUCO {
 		move.trucoState = ACEPTAR_RETRUCO
-		sendInfoPlayers(player, common.AcceptRetruco)
-		move.alreadySangTruco = true
+		SendInfoPlayer(player, common.AcceptRetruco)
+		move.alreadyAceptedRetruco = true
 	} else if option == ACEPTAR_TRUCO {
 		SendInfoPlayer(player, common.AcceptTruco)
 		move.trucoState = ACEPTAR_TRUCO
@@ -441,6 +440,8 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 
 	if move.trucoState == CANTO_TRUCO {
 		SendInfoPlayer(player, common.OpponentSingTruco)
+	} else if move.trucoState == CANTAR_RETRUCO {
+		SendInfoPlayer(player, common.OpponentSingRetruco)
 	} else if move.envidoState == CANTAR_ENVIDO {
 		SendInfoPlayer(player, common.OpponetSingEnvido)
 	} else if move.envidoState == QUERER_ENVIDO {
@@ -452,13 +453,13 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	} else if move.trucoState == ACEPTAR_TRUCO && !move.alreadyAceptedTruco {
 		move.alreadyAceptedTruco = true
 		SendInfoPlayer(player, common.OpponetAcceptTruco)
-	} else if move.trucoState == ACEPTAR_RETRUCO {
+	} else if move.trucoState == ACEPTAR_RETRUCO && !move.alreadyAceptedRetruco {
 		SendInfoPlayer(player, common.OpponetAcceptRetruco)
 	} else if move.trucoState == RECHAZAR_TRUCO && !move.alreadyAceptedTruco {
 		move.alreadyAceptedTruco = true
 		SendInfoPlayer(player, common.OpponetRejectTruco)
 		return IRSE_AL_MAZO, err
-	} else if move.trucoState == RECHAZAR_RETRUCO {
+	} else if move.trucoState == RECHAZAR_RETRUCO && !move.alreadyAceptedRetruco {
 		SendInfoPlayer(player, common.OpponetRejectTruco)
 		return IRSE_AL_MAZO, err
 	} else if len(move.cardsPlayed) > 0 {
