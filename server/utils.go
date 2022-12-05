@@ -6,9 +6,9 @@ import (
 	"truco/app/common"
 )
 
-func definePlayerPossibleOptions(move *Move, actualOption int, opponentOption int) []int {
+func definePlayerPossibleOptions(move *Move, player *Player, opponentOption int) []int {
 	var options []int
-	if actualOption == NO_QUERER_ENVIDO || actualOption == QUERER_ENVIDO_ENVIDO {
+	if player.lastMove == NO_QUERER_ENVIDO || player.lastMove == QUERER_ENVIDO_ENVIDO {
 		options = append(options, TIRAR_CARTA)
 		if move.canSingEnvido() {
 			options = append(options, CANTAR_ENVIDO)
@@ -20,12 +20,16 @@ func definePlayerPossibleOptions(move *Move, actualOption int, opponentOption in
 	}
 
 	if opponentOption == TIRAR_CARTA {
+		fmt.Println("Oponente tiro una carta")
 		options = append(options, TIRAR_CARTA)
 		if move.canSingEnvido() {
 			options = append(options, CANTAR_ENVIDO)
 		}
 		if !move.alreadySangTruco {
 			options = append(options, CANTAR_TRUCO)
+		}
+		if move.canSingRetruco(player) {
+			options = append(options, CANTAR_RETRUCO)
 		}
 	} else if opponentOption == CANTAR_ENVIDO {
 		options = append(options, QUERER_ENVIDO)
@@ -57,6 +61,9 @@ func definePlayerPossibleOptions(move *Move, actualOption int, opponentOption in
 		}
 		if !move.alreadySangTruco {
 			options = append(options, CANTAR_TRUCO)
+		}
+		if move.canSingRetruco( player ) {
+			options = append(options, CANTAR_RETRUCO)
 		}
 	}
 
@@ -127,7 +134,7 @@ func getMessageInfoMoveToSend(move *Move, options []int) string {
 			message += common.BOLD + "(" + strconv.Itoa(IRSE_AL_MAZO) + ")" + common.NONE + common.BWhite + " Irse al mazo " + common.NONE + "\n"
 		} else if possibleOption == CANTAR_RETRUCO {
 			message += common.BOLD + "(" + strconv.Itoa(CANTAR_RETRUCO) + ")" + common.NONE + common.GREEN + " Cantar retruco" + common.NONE + "\n"
-		}else if possibleOption == ACEPTAR_RETRUCO {
+		} else if possibleOption == ACEPTAR_RETRUCO {
 			message += common.BOLD + "(" + strconv.Itoa(ACEPTAR_RETRUCO) + ")" + common.NONE + common.GREEN + " Quiero REtruco " + common.NONE + "\n"
 		} else if possibleOption == RECHAZAR_RETRUCO {
 			message += common.BOLD + "(" + strconv.Itoa(RECHAZAR_RETRUCO) + ")" + common.NONE + common.RED + " Rechazar REtruco " + common.NONE + "\n"
