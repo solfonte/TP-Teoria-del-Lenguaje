@@ -73,58 +73,6 @@ func (move *Move) setAlreadySangTruco(player1 *Player, player2 *Player) {
 	move.alreadySangTruco = (player1.hasSagnTruco || player2.hasSagnTruco)
 }
 
-// func (move *Move) definePlayerPossibleOptions(actualOption int, opponentOption int) []int {
-// 	var options []int
-// 	if actualOption == NO_QUERER_ENVIDO || actualOption == QUERER_ENVIDO_ENVIDO {
-// 		options = append(options, TIRAR_CARTA)
-// 		if move.canSingEnvido() {
-// 			options = append(options, CANTAR_ENVIDO)
-// 		}
-// 		if !move.alreadySangTruco {
-// 			options = append(options, CANTAR_TRUCO)
-// 		}
-// 		return options
-// 	}
-
-// 	if opponentOption == TIRAR_CARTA {
-// 		options = append(options, TIRAR_CARTA)
-// 		if move.canSingEnvido() {
-// 			options = append(options, CANTAR_ENVIDO)
-// 		}
-// 		if !move.alreadySangTruco {
-// 			options = append(options, CANTAR_TRUCO)
-// 		}
-// 	} else if opponentOption == CANTAR_ENVIDO {
-// 		options = append(options, QUERER_ENVIDO)
-// 		options = append(options, CANTAR_ENVIDO_ENVIDO)
-// 		options = append(options, NO_QUERER_ENVIDO)
-// 	} else if opponentOption == QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO {
-// 		options = append(options, TIRAR_CARTA)
-// 		if !move.alreadySangTruco {
-// 			options = append(options, CANTAR_TRUCO)
-// 		}
-// 	} else if opponentOption == CANTAR_ENVIDO_ENVIDO {
-// 		options = append(options, QUERER_ENVIDO_ENVIDO)
-// 		options = append(options, NO_QUERER_ENVIDO)
-// 	} else if opponentOption == CANTAR_TRUCO {
-// 		options = append(options, ACEPTAR_TRUCO)
-// 		options = append(options, RECHAZAR_TRUCO)
-// 	} else if opponentOption == ACEPTAR_TRUCO {
-// 		options = append(options, TIRAR_CARTA)
-// 	} else {
-// 		options = append(options, TIRAR_CARTA)
-// 		if move.canSingEnvido() {
-// 			options = append(options, CANTAR_ENVIDO)
-// 		}
-// 		if !move.alreadySangTruco {
-// 			options = append(options, CANTAR_TRUCO)
-// 		}
-// 	}
-
-// 	options = append(options, IRSE_AL_MAZO)
-// 	return options
-// }
-
 func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool {
 	move.winner.id = winner.id
 	move.winner.points = 0
@@ -186,8 +134,15 @@ func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
 }
 
 func (move *Move) handleResult(actualoption int, opponentOption int, actual *Player, opponent *Player, finish *bool) bool {
-	fmt.Println("actual: ", actual.name)
+	fmt.Println("actual: ", actual.name, " ACTUAL OPTION ", actualoption, "OPPONENT OPTION: ", opponentOption)
 	fmt.Println("oponente: ", opponent.name)
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> TRUCO STATE: ", move.trucoState)
+	if actualoption == TIRAR_CARTA && move.trucoState == ACEPTAR_RETRUCO {
+		opponent.lastMove = 0
+	}
+	if opponentOption == TIRAR_CARTA && move.trucoState == ACEPTAR_RETRUCO {
+		actual.lastMove = 0
+	}
 	if actualoption == IRSE_AL_MAZO {
 		SendInfoPlayer(opponent, common.OpponetHasSangFinishRound)
 		fmt.Println("ACTUAL se fue al MAZO")
@@ -219,13 +174,7 @@ func (move *Move) handleResult(actualoption int, opponentOption int, actual *Pla
 		fmt.Println("No quiere truco")
 		return move.finish_round(opponent, actual, finish)
 	}
-
-	if actualoption == TIRAR_CARTA && move.trucoState == ACEPTAR_RETRUCO {
-		opponent.lastMove = 0
-	}
-	if opponentOption == TIRAR_CARTA && move.trucoState == ACEPTAR_RETRUCO {
-		actual.lastMove = 0
-	}
+	
 	return false
 }
 
@@ -357,8 +306,13 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 		winner.winsPerPlay += 1
 		if move.typeMove == 3 || winner.winsPerPlay >= 2 {
 			if winner.hasSagnTruco || loser.hasSagnTruco {
-				move.winner.points = 2
-				winner.points += 2
+				if move.trucoState >= CANTAR_RETRUCO {
+					move.winner.points = 3
+					winner.points += 3
+				} else {
+					move.winner.points = 2
+					winner.points += 2
+				}
 			} else {
 				move.winner.points = 1
 				winner.points += 1
