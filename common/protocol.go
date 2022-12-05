@@ -41,7 +41,7 @@ const (
 	CreateMatchMessage        = BWhite + "OK, Partida creada, esperando a que se una el resto de los jugadores" + NONE
 	JoinMatchMessage          = BWhite + "OK, Partida solicitada, se esta buscando una partida" + NONE
 	GameStartedMessage        = BWhite + "El juego comenzó" + NONE
-	WaitingOptionsPlayer      = "Mientras esperas a que sea tu turno, podes realizar las siguientes acciones" + "\n" + GRAY + "(11) " + BYellow + "Irse" + NONE + " al mazo" + "\n" + GRAY + "(12) " + BGreen + "Consultar Cartas." + NONE + "\n" + "Ingresa " + GRAY + "(0)" + NONE + " si no queres realizar ninguna de estas acciones" + NONE
+	WaitingOptionsPlayer      = "Mientras esperas a que sea tu turno, podes realizar las siguientes acciones" + "\n" + GRAY + "(11) " + BYellow + "Irse" + NONE + " al mazo" + "\n" + GRAY + "(12) " + BGreen + "Consultar Cartas." + NONE + "\n"
 	CardsMessage              = BWhite + "Estas son tus cartas: " + NONE
 	WaitPlayerToPlayMessage   = BBlue + "Espera a que juegue tu oponente..." + NONE + "\n"
 	SingEnvido                = BPurple + "Cantaste ENVIDO" + NONE + "\n"
@@ -60,6 +60,7 @@ const (
 	OpponetHasSangFinishRound = BBlue + "Tu oponente se fue AL MAZO" + NONE + "\n"
 	OpponetRejectRetruco        = BBlue + "Tu oponente Rechazo el RETRUCO" + NONE + "\n"
 	OpponetAcceptRetruco        = BBlue + "Tu oponente Acepto el RETRUCO" + NONE + "\n"
+	OpponetRejectEnvido       = BBlue + "Tu oponente Rechazo el ENVIDO" + NONE + "\n"
 )
 
 func GetWinningMoveMessage(number int) string {
