@@ -117,6 +117,7 @@ func (match *Match) beginGame() {
 	for match.points < 6 {
 		for _, player := range match.players {
 			player.setHasSangTruco(false)
+			player.setHasSangRetruco(false)
 		}
 		sendInfoCards(*match.players[match.initialPlayerId], &playerError)
 		sendInfoCards(*match.players[match.waiterPlayerId], &playerError)
