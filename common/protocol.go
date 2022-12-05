@@ -49,6 +49,7 @@ const (
 	SingRetruco                 = BPurple + "Cantaste RETRUCO" + NONE + "\n"
 	AcceptEnvido              = BPurple + "Aceptaste ENVIDO" + NONE + "\n"
 	AcceptTruco               = BPurple + "Aceptaste TRUCO" + NONE + "\n"
+	AcceptRetruco               = BPurple + "Aceptaste RETRUCO" + NONE + "\n"
 	SingFinishRound           = BPurple + "Te fuiste al MAZO" + NONE + "\n"
 	OpponentSingTruco         = BBlue + "Tu oponente canto TRUCO" + NONE + "\n"
 	OpponentSingRetruco         = BBlue + "Tu oponente canto RETRUCO" + NONE + "\n"
@@ -58,7 +59,7 @@ const (
 	OpponetRejectTruco        = BBlue + "Tu oponente Rechazo el TRUCO" + NONE + "\n"
 	OpponetHasSangFinishRound = BBlue + "Tu oponente se fue AL MAZO" + NONE + "\n"
 	OpponetRejectRetruco        = BBlue + "Tu oponente Rechazo el RETRUCO" + NONE + "\n"
-
+	OpponetAcceptRetruco        = BBlue + "Tu oponente Acepto el RETRUCO" + NONE + "\n"
 )
 
 func GetWinningMoveMessage(number int) string {
