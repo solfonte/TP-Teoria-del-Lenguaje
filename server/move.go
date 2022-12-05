@@ -26,11 +26,11 @@ const (
 )
 
 const (
-	CANTO_TRUCO    = 20
-	ACEPTAR_TRUCO  = 21
-	RECHAZAR_TRUCO = 22
-	CANTAR_RETRUCO = 23
-	ACEPTAR_RETRUCO = 24
+	CANTO_TRUCO      = 20
+	ACEPTAR_TRUCO    = 21
+	RECHAZAR_TRUCO   = 22
+	CANTAR_RETRUCO   = 23
+	ACEPTAR_RETRUCO  = 24
 	RECHAZAR_RETRUCO = 25
 )
 
@@ -94,7 +94,7 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 			winner.points += 4
 			fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  3")
 
-		} else if move.trucoState == RECHAZAR_RETRUCO || (move.hasSangFinishRound && move.trucoState == CANTAR_RETRUCO){
+		} else if move.trucoState == RECHAZAR_RETRUCO || (move.hasSangFinishRound && move.trucoState == CANTAR_RETRUCO) {
 			move.winner.points = 2
 			winner.points += 2
 			fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  4")
@@ -170,11 +170,11 @@ func (move *Move) handleResult(actualoption int, opponentOption int, actual *Pla
 	} else if opponentOption == RECHAZAR_TRUCO || opponentOption == RECHAZAR_RETRUCO {
 		fmt.Println("No quiere truco")
 		return move.finish_round(actual, opponent, finish)
-	} else if actualoption == RECHAZAR_TRUCO || actualoption == RECHAZAR_RETRUCO{
+	} else if actualoption == RECHAZAR_TRUCO || actualoption == RECHAZAR_RETRUCO {
 		fmt.Println("No quiere truco")
 		return move.finish_round(opponent, actual, finish)
 	}
-	
+
 	return false
 }
 
@@ -211,7 +211,6 @@ func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan in
 
 	}
 }
-
 
 func (move *Move) start_move(player1 *Player, player2 *Player, playerError *PlayerError, finish *bool) int {
 	fmt.Println("entra a start_move")
@@ -375,12 +374,10 @@ func (move *Move) askPlayerToWait(player *Player, playerOption *int, playerError
 
 func (move *Move) handleEnvido(player *Player) {
 	if move.envidoState == CANTAR_ENVIDO {
-		common.Send(player.socket, common.AcceptEnvido)
-		common.Receive(player.socket)
+		SendInfoPlayer(player, common.AcceptEnvido)
 		move.envidoState = QUERER_ENVIDO
 	} else {
-		common.Send(player.socket, common.SingEnvido)
-		common.Receive(player.socket)
+		SendInfoPlayer(player, common.SingEnvido)
 		move.envidoState = CANTAR_ENVIDO
 		move.alreadySangEnvido = true
 	}
@@ -388,26 +385,24 @@ func (move *Move) handleEnvido(player *Player) {
 }
 
 func (move *Move) handleTruco(player *Player, option int) {
-	if (option == CANTAR_RETRUCO) {
-		common.Send(player.socket, common.SingRetruco)
-		common.Receive(player.socket)
+	if option == CANTAR_RETRUCO {
+		SendInfoPlayer(player, common.SingRetruco)
 		move.trucoState = CANTAR_RETRUCO
 	} else if option == RECHAZAR_TRUCO {
 		move.trucoState = RECHAZAR_TRUCO
+		SendInfoPlayer(player, common.RejectTruco)
 	} else if option == RECHAZAR_RETRUCO {
 		move.trucoState = RECHAZAR_RETRUCO
+		SendInfoPlayer(player, common.RejectRetruco)
 	} else if option == ACEPTAR_RETRUCO {
 		move.trucoState = ACEPTAR_RETRUCO
-		common.Send(player.socket, common.AcceptRetruco)
-		common.Receive(player.socket)
+		sendInfoPlayers(player, common.AcceptRetruco)
 		move.alreadySangTruco = true
-	}else if option == ACEPTAR_TRUCO {
-		common.Send(player.socket, common.AcceptTruco)
-		common.Receive(player.socket)
+	} else if option == ACEPTAR_TRUCO {
+		SendInfoPlayer(player, common.AcceptTruco)
 		move.trucoState = ACEPTAR_TRUCO
 	} else {
-		common.Send(player.socket, common.SingTruco)
-		common.Receive(player.socket)
+		SendInfoPlayer(player, common.SingTruco)
 		move.trucoState = CANTO_TRUCO
 		move.alreadySangTruco = true
 		player.hasSagnTruco = true
@@ -415,8 +410,7 @@ func (move *Move) handleTruco(player *Player, option int) {
 }
 
 func (move *Move) handleFinishRound(player *Player) {
-	common.Send(player.socket, common.SingFinishRound)
-	common.Receive(player.socket)
+	SendInfoPlayer(player, common.SingFinishRound)
 	move.hasSangFinishRound = true
 }
 
@@ -446,44 +440,30 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	fmt.Println("estado del envido: ", move.envidoState)
 
 	if move.trucoState == CANTO_TRUCO {
-		common.Send(player.socket, common.OpponentSingTruco)
-		/*chequear errores*/ common.Receive(player.socket)
+		SendInfoPlayer(player, common.OpponentSingTruco)
 	} else if move.envidoState == CANTAR_ENVIDO {
-
-		common.Send(player.socket, common.OpponetSingEnvido)
-		/*chequear errores*/ common.Receive(player.socket)
+		SendInfoPlayer(player, common.OpponetSingEnvido)
 	} else if move.envidoState == QUERER_ENVIDO {
-		common.Send(player.socket, common.OpponetAcceptEnvido)
-		common.Receive(player.socket)
+		SendInfoPlayer(player, common.OpponetAcceptEnvido)
 		move.envidoState = 0
 	} else if move.envidoState == NO_QUERER_ENVIDO {
-		common.Send(player.socket, common.OpponetRejectEnvido)
-		/*chequear errores*/ common.Receive(player.socket)
+		SendInfoPlayer(player, common.OpponetRejectEnvido)
 		move.envidoState = 0
 	} else if move.trucoState == ACEPTAR_TRUCO && !move.alreadyAceptedTruco {
 		move.alreadyAceptedTruco = true
-
-		common.Send(player.socket, common.OpponetAcceptTruco)
-		/*chequear errores*/ common.Receive(player.socket)
+		SendInfoPlayer(player, common.OpponetAcceptTruco)
 	} else if move.trucoState == ACEPTAR_RETRUCO {
-
-		common.Send(player.socket, common.OpponetAcceptRetruco)
-		/*chequear errores*/ common.Receive(player.socket)
+		SendInfoPlayer(player, common.OpponetAcceptRetruco)
 	} else if move.trucoState == RECHAZAR_TRUCO && !move.alreadyAceptedTruco {
 		move.alreadyAceptedTruco = true
-
-		common.Send(player.socket, common.OpponetRejectTruco)
-		/*chequear errores*/ common.Receive(player.socket)
+		SendInfoPlayer(player, common.OpponetRejectTruco)
 		return IRSE_AL_MAZO, err
 	} else if move.trucoState == RECHAZAR_RETRUCO {
-		common.Send(player.socket, common.OpponetRejectTruco)
-		/*chequear errores*/ common.Receive(player.socket)
+		SendInfoPlayer(player, common.OpponetRejectTruco)
 		return IRSE_AL_MAZO, err
 	} else if len(move.cardsPlayed) > 0 {
 		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[0].card.getFullName() + common.NONE + "\n"
-		common.Send(player.socket, message)
-		msg, _ := common.Receive(player.socket)
-		fmt.Println("====respuesta de oponente tiro una carta", msg)
+		SendInfoPlayer(player, message)
 	}
 	option, err = move.sendInfoMove(player, options, playerError)
 

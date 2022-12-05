@@ -14,7 +14,7 @@ import (
 
 const (
 	SERVER_HOST = "localhost"
-	SERVER_PORT = "9972"
+	SERVER_PORT = "9922"
 	SERVER_TYPE = "tcp"
 	QUIT        = "Q"
 )
@@ -43,6 +43,27 @@ func runClient(socket net.Conn) {
 	processGameloop(socket)
 }
 
+func contains_message(message string) bool {
+	specificMessages := []string{"Espera a que juegue tu oponente...",
+		"Tu oponente tiro una carta",
+		"Estas son tus cartas",
+		"Tu oponente ",
+		"Ganaste", "Perdiste", "Cantaste ",
+		"Tiraste la carta", "Aceptaste",
+		"Rechazaste", "Tus puntos son",
+		"Te fuiste al MAZO",
+		common.FinishGame, common.WinMatchMessage,
+		common.LoseMatchMessage}
+	find := false
+	for _, msg := range specificMessages {
+		if strings.Contains(message, msg) {
+			find = true
+			break
+		}
+	}
+	return find
+}
+
 func processGameloop(socket net.Conn) {
 	// loop de server manda algo cliente responde
 	reader := bufio.NewReader(os.Stdin)
@@ -53,35 +74,7 @@ func processGameloop(socket net.Conn) {
 		messageServer, err := common.Receive(socket)
 		checkErrorServer(err)
 		fmt.Println(messageServer)
-		if strings.Contains(messageServer, "Espera a que juegue tu oponente...") {
-			fmt.Println("entre a aca")
-			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "Tu oponente tiro una carta") {
-			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "Ganaste") || strings.Contains(messageServer, "Perdiste") {
-			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "Estas son tus cartas") {
-			fmt.Println("Mando un ok")
-			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "Tu oponente se desconecto") {
-			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "Ganaste el envido") || strings.Contains(messageServer, "Perdiste el envido") {
-			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "Cantaste ") || strings.Contains(messageServer, "Tiraste la carta") {
-			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "Tu oponente") {
-			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "Aceptaste") || strings.Contains(messageServer, "Rechazaste") {
-			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "Tus puntos son") {
-			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, "Te fuiste al MAZO") {
-			common.Send(socket, "OK")
-		} else if strings.Contains(messageServer, common.FinishGame) {
-			fmt.Println("termino el juego")
-			common.Send(socket, "OK")
-			return
-		} else if strings.Contains(messageServer, common.WinMatchMessage) || strings.Contains(messageServer, common.LoseMatchMessage) {
+		if contains_message(messageServer) {
 			common.Send(socket, "OK")
 		} else {
 			finish := false
@@ -92,13 +85,12 @@ func processGameloop(socket net.Conn) {
 					if !ok {
 						break
 					} else {
-						fmt.Println("Read input from stdin:", stdin)
-
+						//fmt.Println("Read input from stdin:", stdin)
 						if strings.TrimSpace(stdin) == QUIT {
 							fmt.Println("entre a quit")
 							return
 						}
-						fmt.Println("lo que mando ", stdin)
+						//fmt.Println("lo que mando ", stdin)
 						common.Send(socket, stdin)
 						finish = true
 					}
@@ -107,17 +99,9 @@ func processGameloop(socket net.Conn) {
 						common.Send(socket, "0")
 						finish = true
 					}
-
 				}
-
 			}
 			fmt.Println("sali de procesar")
-			// messageClient, _ := reader.ReadString('\n')
-			// if strings.TrimSpace(messageClient) == QUIT {
-			// 	fmt.Println("entre a quit")
-			// 	return
-			// }
-			// common.Send(socket, messageClient)
 		}
 	}
 }

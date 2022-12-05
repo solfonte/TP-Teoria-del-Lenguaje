@@ -51,6 +51,9 @@ const (
 	AcceptTruco               = BPurple + "Aceptaste TRUCO" + NONE + "\n"
 	AcceptRetruco               = BPurple + "Aceptaste RETRUCO" + NONE + "\n"
 	SingFinishRound           = BPurple + "Te fuiste al MAZO" + NONE + "\n"
+	RejectTruco               = BPurple + "Rechazaste TRUCO" + NONE + "\n"
+	RejectRetruco               = BPurple + "Rechazaste RETRUCO" + NONE + "\n"
+
 	OpponentSingTruco         = BBlue + "Tu oponente canto TRUCO" + NONE + "\n"
 	OpponentSingRetruco         = BBlue + "Tu oponente canto RETRUCO" + NONE + "\n"
 	OpponetSingEnvido         = BBlue + "Tu oponente canto ENVIDO" + NONE + "\n"
