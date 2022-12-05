@@ -122,3 +122,57 @@ func getMessageInfoMoveToSend(move *Move, options []int) string {
 	}
 	return message
 }
+
+func handleWaitingOptions(status int, player *Player, playerMove *int, playerError *PlayerError) {
+
+	if status == VER_MIS_CARTAS {
+		fmt.Println("STATUS ES VER MIS CARTAS")
+		sendInfoCards(*player, playerError)
+	}
+	if status == IRSE_AL_MAZO {
+		*playerMove = IRSE_AL_MAZO
+		common.Send(player.socket, common.SingFinishRound)
+		/* chequear error */ common.Receive(player.socket)
+	}
+	return
+}
+
+func receiveWaitingRequests(player *Player) (int, error) {
+	common.Send(player.socket, common.WaitingOptionsPlayer)
+	message, err := common.Receive(player.socket)
+	if err != nil {
+		return -1, err
+	}
+	fmt.Println("el hilo de receive waiting requests recibio " + message)
+	fmt.Println(message)
+	fmt.Println("pase waiting requests")
+	option, _ := strconv.Atoi(message)
+	return option, nil
+}
+
+func handleEnvidoResult(actualOption int, opponentOption int, actual *Player, opponent *Player, finish *bool) {
+	fmt.Println(" me llegan las opciones " + strconv.Itoa(actualOption) + " y " + strconv.Itoa(opponentOption))
+	if (actualOption == CANTAR_ENVIDO || opponentOption == CANTAR_ENVIDO) && (actualOption == QUERER_ENVIDO || opponentOption == QUERER_ENVIDO) {
+		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
+		envidoWinner.sumPoints(2)
+		fmt.Println("sume puntos por envido a " + envidoWinner.name)
+	} else if (actualOption == CANTAR_ENVIDO || opponentOption == CANTAR_ENVIDO) && (actualOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO) {
+		playerToSumPoints := actual
+		if opponentOption == CANTAR_ENVIDO {
+			playerToSumPoints = opponent
+		}
+		playerToSumPoints.sumPoints(1)
+		fmt.Println("sume puntos por envido no querido a " + playerToSumPoints.name)
+	} else if (actualOption == CANTAR_ENVIDO_ENVIDO || opponentOption == CANTAR_ENVIDO_ENVIDO) && (actualOption == QUERER_ENVIDO_ENVIDO || opponentOption == QUERER_ENVIDO_ENVIDO) {
+		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
+		envidoWinner.sumPoints(2)
+		fmt.Println("sume puntos por envido envido a " + envidoWinner.name)
+	} else if (actualOption == CANTAR_ENVIDO_ENVIDO || opponentOption == CANTAR_ENVIDO_ENVIDO) && (actualOption == NO_QUERER_ENVIDO_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO) {
+		playerToSumPoints := actual
+		if opponentOption == CANTAR_ENVIDO {
+			playerToSumPoints = opponent
+		}
+		playerToSumPoints.sumPoints(1)
+		fmt.Println("sume puntos por envido envido a " + playerToSumPoints.name)
+	}
+}

@@ -8,13 +8,7 @@ import (
 )
 
 func sendMenu(player Player) (string, error) {
-	// msgCreate := common.GREEN + "CREATE" + common.NONE
-	// //fmt.Println(msgCreate)
-	// msgJoin := common.BLUE + "JOIN" + common.NONE
-	// //fmt.Println(msgJoin)
-	// message := "ingresa " + msgCreate + " para crear un juego O ingresa " + msgJoin + " para unirte a una partida ya creada"
 	common.Send(player.socket, common.RequestMatchMessage)
-	// receives its answer
 	messagePlayer, error := common.Receive(player.socket)
 	fmt.Println(messagePlayer)
 	response := strings.ToUpper(messagePlayer)
@@ -164,4 +158,9 @@ func sendInfoPointsPlayers(player1 *Player, player2 *Player) {
 func sendPlayerCardPlayed(player *Player, card Card) {
 	common.Send(player.socket, common.GetCardPlayed(getCardColors(card.getFullName())))
 
+}
+
+func SendInfoPlayer(player *Player, message string) {
+	common.Send(player.socket, message)
+	common.Receive(player.socket)
 }
