@@ -89,7 +89,7 @@ func (match *Match) DisconnectMatch() {
 	}
 }
 
-func (match *Match) handleConnections(stop *bool, playerError *PlayerError){
+func (match *Match) handleConnections(stop *bool, playerError *PlayerError) {
 	for *stop == false {
 		if playerError.err != nil {
 			fmt.Println("desconecto")
@@ -118,11 +118,13 @@ func (match *Match) beginGame() {
 		for _, player := range match.players {
 			player.setHasSangTruco(false)
 			player.setHasSangRetruco(false)
+			player.setNotifyTruco(false)
+			player.setNotifyRetruco(false)
 		}
 		sendInfoCards(*match.players[match.initialPlayerId], &playerError)
 		sendInfoCards(*match.players[match.waiterPlayerId], &playerError)
 		match.points = round.startRound(match.initialPlayerId, match.waiterPlayerId, &playerError, numberRound)
-		
+
 		fmt.Println("puntos que va el partido: ", match.points)
 		numberRound += 1
 		match.changeInitialPlayerForRounds()

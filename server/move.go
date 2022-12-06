@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"math"
-	"strconv"
 	"truco/app/common"
 )
 
@@ -158,12 +157,12 @@ func (move *Move) handleResult(actual *Player, opponent *Player, finish *bool) b
 		return move.finish_round(actual, opponent, finish)
 	} else if envidoRelatedOptions(actual.lastMove, opponent.lastMove) {
 		fmt.Println("identifique envido")
-		handleEnvidoResult(actual.lastMove, opponent.lastMove, actual, opponent, finish)
+		handleEnvidoResult(move, actual, opponent, finish)
 		return false
 	} else if actual.lastMove == CANTAR_TRUCO || opponent.lastMove == CANTAR_TRUCO {
 		fmt.Println("alguno canto truco")
 		return false
-	} else if actual.lastMove == CANTAR_RETRUCO && opponent.lastMove != RECHAZAR_RETRUCO || opponent.lastMove == CANTAR_RETRUCO  && actual.lastMove != RECHAZAR_RETRUCO {
+	} else if actual.lastMove == CANTAR_RETRUCO && opponent.lastMove != RECHAZAR_RETRUCO || opponent.lastMove == CANTAR_RETRUCO && actual.lastMove != RECHAZAR_RETRUCO {
 		fmt.Println("alguno canto REtruco")
 		return false
 	} else if len(move.cardsPlayed) == 2 {
@@ -243,6 +242,10 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			}
 			moveFinished = move.handleResult(player1, player2, finish)
 			movesChannel2 <- option1 //al jugador 2 le mando la jugada del jugador 1
+		} else {
+			fmt.Println("esta bien que entre aca si alguien tiro irse al mazo")
+			option1 = 0
+			player1.lastMove = 0
 		}
 		fmt.Println("finish move: ", moveFinished)
 		if isTurnOfPlayer(player2) && !moveFinished && playerError.err == nil {
@@ -258,10 +261,10 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 
 			moveFinished = move.handleResult(player2, player1, finish)
 			movesChannel1 <- option2
-		}/*creo qe este else no va*/
-		 else {
+		} else {
 			fmt.Println("esta bien que entre aca si alguien tiro irse al mazo")
-			player1.lastMove = 0
+			option2 = 0
+			player2.lastMove = 0
 		}
 	}
 	orderChannel1 <- STOP
@@ -362,11 +365,20 @@ func (move *Move) askPlayerToWait(player *Player, playerOption *int, playerError
 	return 0
 }
 
-func (move *Move) handleEnvido(player *Player) {
-	if move.envidoState == CANTAR_ENVIDO {
+func (move *Move) handleEnvido(player *Player, option int) {
+	if option == CANTAR_ENVIDO_ENVIDO {
+		SendInfoPlayer(player, common.SingEnvidoEnvido)
+		move.envidoState = CANTAR_ENVIDO_ENVIDO
+	} else if option == NO_QUERER_ENVIDO_ENVIDO {
+		SendInfoPlayer(player, common.RejectEnvidoEnvido)
+		move.envidoState = NO_QUERER_ENVIDO_ENVIDO
+	} else if option == NO_QUERER_ENVIDO {
+		SendInfoPlayer(player, common.RejectEnvido)
+		move.envidoState = NO_QUERER_ENVIDO
+	} else if option == QUERER_ENVIDO {
 		SendInfoPlayer(player, common.AcceptEnvido)
 		move.envidoState = QUERER_ENVIDO
-	} else {
+	} else if option == CANTAR_ENVIDO {
 		SendInfoPlayer(player, common.SingEnvido)
 		move.envidoState = CANTAR_ENVIDO
 		move.alreadySangEnvido = true
@@ -389,11 +401,13 @@ func (move *Move) handleTruco(player *Player, option int) {
 		move.trucoState = ACEPTAR_RETRUCO
 		SendInfoPlayer(player, common.AcceptRetruco)
 		move.alreadyAceptedRetruco = true
+		player.setNotifyRetruco(true)
 	} else if option == ACEPTAR_TRUCO {
 		SendInfoPlayer(player, common.AcceptTruco)
 		move.trucoState = ACEPTAR_TRUCO
 		move.alreadyAceptedTruco = true
-	} else {
+		player.setNotifyTruco(true)
+	} else if option == CANTAR_TRUCO {
 		SendInfoPlayer(player, common.SingTruco)
 		move.trucoState = CANTO_TRUCO
 		move.alreadySangTruco = true
@@ -440,19 +454,20 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	} else if move.envidoState == QUERER_ENVIDO {
 		SendInfoPlayer(player, common.OpponetAcceptEnvido)
 		move.envidoState = 0
-	} else if move.envidoState == NO_QUERER_ENVIDO {
-		SendInfoPlayer(player, common.OpponetRejectEnvido)
-		move.envidoState = 0
-	} else if move.trucoState == ACEPTAR_TRUCO && !move.alreadyAceptedTruco {
+	} else if move.envidoState == CANTAR_ENVIDO_ENVIDO {
+		SendInfoPlayer(player, common.OpponentSingEnvidoEnvido)
+	} else if move.trucoState == ACEPTAR_TRUCO && !player.notifyTruco {
 		move.alreadyAceptedTruco = true
+		player.setNotifyTruco(true)
 		SendInfoPlayer(player, common.OpponetAcceptTruco)
-	} else if move.trucoState == ACEPTAR_RETRUCO && !move.alreadyAceptedRetruco {
+	} else if move.trucoState == ACEPTAR_RETRUCO && !player.notifyRetruco {
+		player.setNotifyRetruco(true)
 		SendInfoPlayer(player, common.OpponetAcceptRetruco)
-	} else if move.trucoState == RECHAZAR_TRUCO && !move.alreadyAceptedTruco {
+	} else if move.trucoState == RECHAZAR_TRUCO {
 		move.alreadyAceptedTruco = true
 		SendInfoPlayer(player, common.OpponetRejectTruco)
 		return IRSE_AL_MAZO, err
-	} else if move.trucoState == RECHAZAR_RETRUCO && !move.alreadyAceptedRetruco {
+	} else if move.trucoState == RECHAZAR_RETRUCO {
 		SendInfoPlayer(player, common.OpponetRejectRetruco)
 		return IRSE_AL_MAZO, err
 	} else if len(move.cardsPlayed) > 0 {
@@ -465,30 +480,42 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 		return -1, -1
 	}
 
-	switch option {
-	case IRSE_AL_MAZO:
+	if option == IRSE_AL_MAZO {
 		move.handleFinishRound(player)
 		return IRSE_AL_MAZO, err
-	case TIRAR_CARTA:
+	} else if option == TIRAR_CARTA {
 		err = move.handleThrowACard(player, playerError)
-	case CANTAR_ENVIDO:
-		move.handleEnvido(player)
-	case QUERER_ENVIDO:
-		move.handleEnvido(player)
-	case NO_QUERER_ENVIDO:
-		move.envidoState = NO_QUERER_ENVIDO
-	case CANTAR_TRUCO:
-		move.handleTruco(player, option)
-	case CANTAR_RETRUCO:
-		move.handleTruco(player, option)
-	case ACEPTAR_TRUCO:
-		move.handleTruco(player, option)
-	case RECHAZAR_TRUCO:
-		move.handleTruco(player, option)
-	case RECHAZAR_RETRUCO:
-		move.handleTruco(player, option)
-	case ACEPTAR_RETRUCO:
+	} else {
+		move.handleEnvido(player, option)
 		move.handleTruco(player, option)
 	}
+
+	// switch option {
+	// case IRSE_AL_MAZO:
+	// 	move.handleFinishRound(player)
+	// 	return IRSE_AL_MAZO, err
+	// }
+
+	// case TIRAR_CARTA:
+	// 	err = move.handleThrowACard(player, playerError)
+	// case CANTAR_ENVIDO:
+	// 	move.handleEnvido(player, option)
+	// case QUERER_ENVIDO:
+	// 	move.handleEnvido(player, option)
+	// case NO_QUERER_ENVIDO:
+	// 	move.envidoState = NO_QUERER_ENVIDO
+	// case CANTAR_TRUCO:
+	// 	move.handleTruco(player, option)
+	// case CANTAR_RETRUCO:
+	// 	move.handleTruco(player, option)
+	// case ACEPTAR_TRUCO:
+	// 	move.handleTruco(player, option)
+	// case RECHAZAR_TRUCO:
+	// 	move.handleTruco(player, option)
+	// case RECHAZAR_RETRUCO:
+	// 	move.handleTruco(player, option)
+	// case ACEPTAR_RETRUCO:
+	// 	move.handleTruco(player, option)
+	// }
 	return option, err
 }

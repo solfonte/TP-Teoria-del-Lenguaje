@@ -17,6 +17,8 @@ type Player struct {
 	hasSagnTruco   bool
 	lastMove       int
 	hasSangReTruco bool
+	notifyTruco    bool
+	notifyRetruco  bool
 }
 
 func (player *Player) clearCards() {
@@ -80,4 +82,12 @@ func (player *Player) setHasSangTruco(truco bool) {
 
 func (player *Player) setHasSangRetruco(retruco bool) {
 	player.hasSangReTruco = retruco
+}
+
+func (player *Player) setNotifyTruco(notify bool) {
+	player.notifyTruco = notify
+}
+
+func (player *Player) setNotifyRetruco(notify bool) {
+	player.notifyRetruco = notify
 }
