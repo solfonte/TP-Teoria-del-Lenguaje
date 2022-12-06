@@ -26,7 +26,7 @@ func start_receiver(acceptor Acceptor) {
 			finishChannelStartMatches <- true
 			os.Exit(1)
 		}
-		newPlayer := Player{id: len(acceptor.players) + 1, socket: peer}
+		newPlayer := Player{id: len(acceptor.players) + 1, socket: peer, lastMove: 0}
 		acceptor.players = append(acceptor.players, newPlayer)
 
 		matchManager.delete_finish_matches()

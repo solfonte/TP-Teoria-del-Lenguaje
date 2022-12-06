@@ -140,51 +140,43 @@ func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
 	return false
 }
 
-func (move *Move) handleResult(actualoption int, opponentOption int, actual *Player, opponent *Player, finish *bool) bool {
-	fmt.Println("actual: ", actual.name, " ACTUAL OPTION ", actualoption, "OPPONENT OPTION: ", opponentOption)
-	fmt.Println("oponente: ", opponent.name)
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> TRUCO STATE: ", move.trucoState)
-	fmt.Println("Opponet last Move: ", opponent.lastMove)
-	fmt.Println("actual last Move: ", actual.lastMove)
-
+func (move *Move) handleResult(actual *Player, opponent *Player, finish *bool) bool {
 	if actual.lastMove == TIRAR_CARTA && opponent.lastMove == CANTAR_RETRUCO {
 		fmt.Println("entre actaul tiro una carta le seteo al otro last move en 0")
 		opponent.lastMove = 0
-		opponentOption = 0
 	} else if opponent.lastMove == TIRAR_CARTA && actual.lastMove == CANTAR_RETRUCO {
 		fmt.Println("entre oponente tiro una carta le seteo al otro last move en 0")
 		actual.lastMove = 0
-		actualoption = 0
 	}
-	if actualoption == IRSE_AL_MAZO {
+	if actual.lastMove == IRSE_AL_MAZO {
 		SendInfoPlayer(opponent, common.OpponetHasSangFinishRound)
 		fmt.Println("ACTUAL se fue al MAZO")
 		return move.finish_round(opponent, actual, finish)
-	} else if opponentOption == IRSE_AL_MAZO {
+	} else if opponent.lastMove == IRSE_AL_MAZO {
 		fmt.Println("OPONENT se fue al  MAZO")
 		SendInfoPlayer(actual, common.OpponetHasSangFinishRound)
 		return move.finish_round(actual, opponent, finish)
-	} else if envidoRelatedOptions(actualoption, opponentOption) {
+	} else if envidoRelatedOptions(actual.lastMove, opponent.lastMove) {
 		fmt.Println("identifique envido")
-		handleEnvidoResult(actualoption, opponentOption, actual, opponent, finish)
+		handleEnvidoResult(actual.lastMove, opponent.lastMove, actual, opponent, finish)
 		return false
-	} else if actualoption == CANTAR_TRUCO || opponentOption == CANTAR_TRUCO {
+	} else if actual.lastMove == CANTAR_TRUCO || opponent.lastMove == CANTAR_TRUCO {
 		fmt.Println("alguno canto truco")
 		return false
-	} else if actualoption == CANTAR_RETRUCO && opponentOption != RECHAZAR_RETRUCO || opponentOption == CANTAR_RETRUCO  && actualoption != RECHAZAR_RETRUCO {
+	} else if actual.lastMove == CANTAR_RETRUCO && opponent.lastMove != RECHAZAR_RETRUCO || opponent.lastMove == CANTAR_RETRUCO  && actual.lastMove != RECHAZAR_RETRUCO {
 		fmt.Println("alguno canto REtruco")
 		return false
 	} else if len(move.cardsPlayed) == 2 {
 		fmt.Println("hay dos cartas chequeo quien gana jugada")
 		result := move.cardsPlayed[0].card.compareCards(move.cardsPlayed[1].card)
 		return move.assingWinner(result, move.cardsPlayed[0].player, move.cardsPlayed[1].player, finish)
-	} else if actualoption == ACEPTAR_TRUCO || opponentOption == ACEPTAR_TRUCO {
+	} else if actual.lastMove == ACEPTAR_TRUCO || opponent.lastMove == ACEPTAR_TRUCO {
 		fmt.Println("alguno quiere truco")
 		return false
-	} else if opponentOption == RECHAZAR_TRUCO || opponentOption == RECHAZAR_RETRUCO {
+	} else if opponent.lastMove == RECHAZAR_TRUCO || opponent.lastMove == RECHAZAR_RETRUCO {
 		fmt.Println("No quiere truco")
 		return move.finish_round(actual, opponent, finish)
-	} else if actualoption == RECHAZAR_TRUCO || actualoption == RECHAZAR_RETRUCO {
+	} else if actual.lastMove == RECHAZAR_TRUCO || actual.lastMove == RECHAZAR_RETRUCO {
 		fmt.Println("No quiere truco")
 		return move.finish_round(opponent, actual, finish)
 	}
@@ -201,22 +193,16 @@ func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan in
 
 		if moveOrder == WAIT {
 			move.askPlayerToWait(player, &opponentOption, playerError)
-			fmt.Println("Opponet option ", opponentOption)
 			mazoChannel <- opponentOption
 			if playerError.err != nil {
-				fmt.Println("//////////////////////////salgo de handelear al jugador " + player.name + "//////////////////////////////")
 				return
 			} else {
-				fmt.Println("No me fui al mazo")
 				opponentOption = <-movesChannel
-				fmt.Println("Opcion oponente: ", opponentOption)
-				fmt.Println("lEGGUE HASTA ASIGNAR ")
 			}
 		} else if moveOrder == PLAY {
 			options := definePlayerPossibleOptions(move, player, opponentOption)
 			actualPlayerOption, _ := move.askPlayerToMove(player, options, playerError)
 			if playerError.err != nil {
-				fmt.Println("//////////////////////////salgo de handelear al jugador " + player.name + "//////////////////////////////")
 				return
 			} else {
 				player.lastMove = actualPlayerOption
@@ -228,7 +214,6 @@ func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan in
 }
 
 func (move *Move) start_move(player1 *Player, player2 *Player, playerError *PlayerError, finish *bool) int {
-	fmt.Println("entra a start_move")
 	move.envidoState = 0
 	err := 0
 	var moveFinished bool
@@ -244,54 +229,41 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	//TODO: el player error va con mutex
 	go move.handlePlayersMoves(orderChannel1, movesChannel1, mazoChannell1, player1, playerError)
 	go move.handlePlayersMoves(orderChannel2, movesChannel2, mazoChannell2, player2, playerError)
-	fmt.Println("start_move lanza los hilos")
-	fmt.Println("--------------------estoy entrando a la jugada " + strconv.Itoa(move.typeMove) + "-----------------------")
 	for !moveFinished && playerError.err == nil {
 
 		move.setAlreadySangTruco(player1, player2) //TODO:chequear si va aca
 		if isTurnOfPlayer(player1) && !moveFinished && playerError.err == nil {
-			fmt.Println("juega jugador 1")
 			orderChannel1 <- PLAY
 			orderChannel2 <- WAIT
 			option1 = <-movesChannel1
-			fmt.Println("llegue hasta aca")
 			option_wait = <-mazoChannell2
 			if option_wait == IRSE_AL_MAZO {
-				fmt.Println("fui al mazo")
 				option2 = option_wait
+				player2.lastMove = option_wait
 			}
-			fmt.Println("option jugador1: ", option1)
-			fmt.Println("Option jugador2: ", option2)
-			moveFinished = move.handleResult(option1, option2, player1, player2, finish)
-			fmt.Println("finish move: ", moveFinished)
+			moveFinished = move.handleResult(player1, player2, finish)
 			movesChannel2 <- option1 //al jugador 2 le mando la jugada del jugador 1
 		}
 		fmt.Println("finish move: ", moveFinished)
 		if isTurnOfPlayer(player2) && !moveFinished && playerError.err == nil {
-			fmt.Println("juega jugador 2")
-			//fmt.Println("No tengo que entrar si alguien canto irse al mazo")
 			orderChannel1 <- WAIT
 			orderChannel2 <- PLAY
 
 			option2 = <-movesChannel2
 			option_wait = <-mazoChannell1
 			if option_wait == IRSE_AL_MAZO {
-				fmt.Println("fui al mazo")
 				option1 = option_wait
+				player1.lastMove = option_wait
 			}
-			fmt.Println("option jugador1: ", option1)
-			fmt.Println("Option jugador2: ", option2)
 
-			//ver si hay que resettear alguna opcion
-			moveFinished = move.handleResult(option2, option1, player2, player1, finish)
-			movesChannel1 <- option2 //al jugador 1 le mando la jugada del jugador 2
-			fmt.Println("finish move: ", moveFinished)
-		} else {
+			moveFinished = move.handleResult(player2, player1, finish)
+			movesChannel1 <- option2
+		}/*creo qe este else no va*/
+		 else {
 			fmt.Println("esta bien que entre aca si alguien tiro irse al mazo")
-			option1 = 0
+			player1.lastMove = 0
 		}
 	}
-	fmt.Println("----------------------salgo del for de start move---------------------------------")
 	orderChannel1 <- STOP
 	orderChannel2 <- STOP
 	player1.lastMove = 0
