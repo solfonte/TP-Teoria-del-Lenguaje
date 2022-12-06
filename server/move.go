@@ -449,13 +449,6 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 		SendInfoPlayer(player, common.OpponentSingTruco)
 	} else if move.trucoState == CANTAR_RETRUCO {
 		SendInfoPlayer(player, common.OpponentSingRetruco)
-	} else if move.envidoState == CANTAR_ENVIDO {
-		SendInfoPlayer(player, common.OpponetSingEnvido)
-	} else if move.envidoState == QUERER_ENVIDO {
-		SendInfoPlayer(player, common.OpponetAcceptEnvido)
-		move.envidoState = 0
-	} else if move.envidoState == CANTAR_ENVIDO_ENVIDO {
-		SendInfoPlayer(player, common.OpponentSingEnvidoEnvido)
 	} else if move.trucoState == ACEPTAR_TRUCO && !player.notifyTruco {
 		move.alreadyAceptedTruco = true
 		player.setNotifyTruco(true)
@@ -470,7 +463,7 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	} else if move.trucoState == RECHAZAR_RETRUCO {
 		SendInfoPlayer(player, common.OpponetRejectRetruco)
 		return IRSE_AL_MAZO, err
-	} else if len(move.cardsPlayed) > 0 {
+	} else if len(move.cardsPlayed) > 0 && move.envidoState == 0 {
 		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[0].card.getFullName() + common.NONE + "\n"
 		SendInfoPlayer(player, message)
 	}

@@ -17,6 +17,7 @@ func definePlayerPossibleOptions(move *Move, player *Player, opponentOption int)
 		if !move.alreadySangTruco {
 			options = append(options, CANTAR_TRUCO)
 		}
+		options = append(options, IRSE_AL_MAZO)
 		return options
 	}
 
@@ -36,7 +37,7 @@ func definePlayerPossibleOptions(move *Move, player *Player, opponentOption int)
 		options = append(options, QUERER_ENVIDO)
 		options = append(options, CANTAR_ENVIDO_ENVIDO)
 		options = append(options, NO_QUERER_ENVIDO)
-	} else if opponentOption == QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO {
+	} else if opponentOption == QUERER_ENVIDO_ENVIDO || opponentOption == QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO {
 		options = append(options, TIRAR_CARTA)
 		if !move.alreadySangTruco {
 			options = append(options, CANTAR_TRUCO)
@@ -189,14 +190,14 @@ func handleEnvidoResult(move *Move, actual *Player, opponent *Player, finish *bo
 		fmt.Println("sume puntos por envido no querido a " + playerToSumPoints.name)
 	} else if (actual.lastMove == CANTAR_ENVIDO_ENVIDO || opponent.lastMove == CANTAR_ENVIDO_ENVIDO) && (actual.lastMove == QUERER_ENVIDO_ENVIDO || opponent.lastMove == QUERER_ENVIDO_ENVIDO) {
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
-		envidoWinner.sumPoints(2)
+		envidoWinner.sumPoints(4)
 		fmt.Println("sume puntos por envido envido a " + envidoWinner.name)
 	} else if (actual.lastMove == CANTAR_ENVIDO_ENVIDO || opponent.lastMove == CANTAR_ENVIDO_ENVIDO) && (actual.lastMove == NO_QUERER_ENVIDO_ENVIDO || opponent.lastMove == NO_QUERER_ENVIDO_ENVIDO) {
 		playerToSumPoints := actual
-		if opponent.lastMove == CANTAR_ENVIDO {
+		if opponent.lastMove == CANTAR_ENVIDO_ENVIDO {
 			playerToSumPoints = opponent
 		}
-		playerToSumPoints.sumPoints(1)
+		playerToSumPoints.sumPoints(2)
 		fmt.Println("sume puntos por envido envido a " + playerToSumPoints.name)
 	}
 }
@@ -210,6 +211,14 @@ func sendInfoEnvido(move *Move, actual *Player, opponent *Player) {
 		move.envidoState = 0
 	} else if actual.lastMove == NO_QUERER_ENVIDO {
 		SendInfoPlayer(opponent, common.OpponetRejectEnvido)
+		move.envidoState = 0
+	} else if actual.lastMove == CANTAR_ENVIDO {
+		SendInfoPlayer(opponent, common.OpponetSingEnvido)
+	} else if actual.lastMove == QUERER_ENVIDO {
+		SendInfoPlayer(opponent, common.OpponetAcceptEnvido)
+		move.envidoState = 0
+	} else if actual.lastMove == CANTAR_ENVIDO_ENVIDO {
+		SendInfoPlayer(opponent, common.OpponentSingEnvidoEnvido)
 	}
 
 }
