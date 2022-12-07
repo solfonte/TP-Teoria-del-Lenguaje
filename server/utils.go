@@ -6,43 +6,53 @@ import (
 	"truco/app/common"
 )
 
-func definePlayerPossibleOptions(move *Move, actualOption int, opponentOption int) []int {
+func definePlayerPossibleOptions(move *Move, player *Player, opponentOption int) []int {
 	var options []int
-	if actualOption == NO_QUERER_ENVIDO || actualOption == QUERER_ENVIDO_ENVIDO {
+	fmt.Println("Mis ultimos movimiento: ", player.lastMove)
+	fmt.Println("Opponet ultimo movimiento: ", opponentOption)
+	if (player.lastMove == NO_QUERER_ENVIDO || player.lastMove == NO_QUERER_ENVIDO_ENVIDO || player.lastMove == QUERER_ENVIDO_ENVIDO) && opponentOption != CANTAR_TRUCO {
 		options = append(options, TIRAR_CARTA)
-		if move.canSingEnvido() {
-			options = append(options, CANTAR_ENVIDO)
-		}
 		if !move.alreadySangTruco {
 			options = append(options, CANTAR_TRUCO)
 		}
+		options = append(options, IRSE_AL_MAZO)
+		player.lastMove = 0
 		return options
 	}
-
 	if opponentOption == TIRAR_CARTA {
+		fmt.Println("Oponente tiro una carta")
 		options = append(options, TIRAR_CARTA)
 		if move.canSingEnvido() {
 			options = append(options, CANTAR_ENVIDO)
 		}
 		if !move.alreadySangTruco {
 			options = append(options, CANTAR_TRUCO)
+		}
+		if move.canSingRetruco(player) {
+			options = append(options, CANTAR_RETRUCO)
 		}
 	} else if opponentOption == CANTAR_ENVIDO {
 		options = append(options, QUERER_ENVIDO)
 		options = append(options, CANTAR_ENVIDO_ENVIDO)
 		options = append(options, NO_QUERER_ENVIDO)
-	} else if opponentOption == QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO {
+	} else if opponentOption == QUERER_ENVIDO_ENVIDO || opponentOption == QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO {
 		options = append(options, TIRAR_CARTA)
 		if !move.alreadySangTruco {
 			options = append(options, CANTAR_TRUCO)
 		}
 	} else if opponentOption == CANTAR_ENVIDO_ENVIDO {
 		options = append(options, QUERER_ENVIDO_ENVIDO)
-		options = append(options, NO_QUERER_ENVIDO)
+		options = append(options, NO_QUERER_ENVIDO_ENVIDO)
+	} else if opponentOption == CANTAR_RETRUCO && move.trucoState == ACEPTAR_RETRUCO {
+		options = append(options, TIRAR_CARTA)
 	} else if opponentOption == CANTAR_TRUCO {
 		options = append(options, ACEPTAR_TRUCO)
 		options = append(options, RECHAZAR_TRUCO)
-	} else if opponentOption == ACEPTAR_TRUCO {
+		options = append(options, CANTAR_RETRUCO)
+	} else if opponentOption == CANTAR_RETRUCO {
+		options = append(options, ACEPTAR_RETRUCO)
+		options = append(options, RECHAZAR_RETRUCO)
+	} else if opponentOption == ACEPTAR_TRUCO || opponentOption == ACEPTAR_RETRUCO {
 		options = append(options, TIRAR_CARTA)
 	} else {
 		options = append(options, TIRAR_CARTA)
@@ -52,6 +62,9 @@ func definePlayerPossibleOptions(move *Move, actualOption int, opponentOption in
 		if !move.alreadySangTruco {
 			options = append(options, CANTAR_TRUCO)
 		}
+		if move.canSingRetruco(player) {
+			options = append(options, CANTAR_RETRUCO)
+		}
 	}
 
 	options = append(options, IRSE_AL_MAZO)
@@ -59,7 +72,8 @@ func definePlayerPossibleOptions(move *Move, actualOption int, opponentOption in
 }
 
 func isTurnOfPlayer(player *Player) bool {
-	return !(player.lastMove == CANTAR_ENVIDO_ENVIDO)
+	fmt.Println("999999999999999999999999999999 PLAYER LAST MOVE = ", player.lastMove)
+	return !(player.lastMove == CANTAR_ENVIDO_ENVIDO) && !(player.lastMove == CANTAR_RETRUCO && !player.turn)
 }
 
 func containsOption(option int, options []int) bool {
@@ -118,6 +132,14 @@ func getMessageInfoMoveToSend(move *Move, options []int) string {
 			message += common.BOLD + "(" + strconv.Itoa(QUERER_ENVIDO_ENVIDO) + ")" + common.NONE + common.GREEN + " Quiero envido envido " + common.NONE + "\n"
 		} else if possibleOption == IRSE_AL_MAZO {
 			message += common.BOLD + "(" + strconv.Itoa(IRSE_AL_MAZO) + ")" + common.NONE + common.BWhite + " Irse al mazo " + common.NONE + "\n"
+		} else if possibleOption == CANTAR_RETRUCO {
+			message += common.BOLD + "(" + strconv.Itoa(CANTAR_RETRUCO) + ")" + common.NONE + common.GREEN + " Cantar retruco" + common.NONE + "\n"
+		} else if possibleOption == ACEPTAR_RETRUCO {
+			message += common.BOLD + "(" + strconv.Itoa(ACEPTAR_RETRUCO) + ")" + common.NONE + common.GREEN + " Quiero REtruco " + common.NONE + "\n"
+		} else if possibleOption == RECHAZAR_RETRUCO {
+			message += common.BOLD + "(" + strconv.Itoa(RECHAZAR_RETRUCO) + ")" + common.NONE + common.RED + " Rechazar REtruco " + common.NONE + "\n"
+		} else if possibleOption == NO_QUERER_ENVIDO_ENVIDO {
+			message += common.BOLD + "(" + strconv.Itoa(NO_QUERER_ENVIDO_ENVIDO) + ")" + common.NONE + common.RED + " No quiero envido envido " + common.NONE + "\n"
 		}
 	}
 	return message
@@ -150,29 +172,70 @@ func receiveWaitingRequests(player *Player) (int, error) {
 	return option, nil
 }
 
-func handleEnvidoResult(actualOption int, opponentOption int, actual *Player, opponent *Player, finish *bool) {
-	fmt.Println(" me llegan las opciones " + strconv.Itoa(actualOption) + " y " + strconv.Itoa(opponentOption))
-	if (actualOption == CANTAR_ENVIDO || opponentOption == CANTAR_ENVIDO) && (actualOption == QUERER_ENVIDO || opponentOption == QUERER_ENVIDO) {
+func handleEnvidoResult(move *Move, actual *Player, opponent *Player, finish *bool) {
+	sendInfoEnvido(move, actual, opponent)
+	fmt.Println(" me llegan las opciones " + strconv.Itoa(actual.lastMove) + " y " + strconv.Itoa(opponent.lastMove))
+	if (actual.lastMove == CANTAR_ENVIDO || opponent.lastMove == CANTAR_ENVIDO) && (actual.lastMove == QUERER_ENVIDO || opponent.lastMove == QUERER_ENVIDO) {
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
 		envidoWinner.sumPoints(2)
 		fmt.Println("sume puntos por envido a " + envidoWinner.name)
-	} else if (actualOption == CANTAR_ENVIDO || opponentOption == CANTAR_ENVIDO) && (actualOption == NO_QUERER_ENVIDO || opponentOption == NO_QUERER_ENVIDO) {
+	} else if (actual.lastMove == CANTAR_ENVIDO || opponent.lastMove == CANTAR_ENVIDO) && (actual.lastMove == NO_QUERER_ENVIDO || opponent.lastMove == NO_QUERER_ENVIDO) {
 		playerToSumPoints := actual
-		if opponentOption == CANTAR_ENVIDO {
+		if opponent.lastMove == CANTAR_ENVIDO {
 			playerToSumPoints = opponent
 		}
 		playerToSumPoints.sumPoints(1)
 		fmt.Println("sume puntos por envido no querido a " + playerToSumPoints.name)
-	} else if (actualOption == CANTAR_ENVIDO_ENVIDO || opponentOption == CANTAR_ENVIDO_ENVIDO) && (actualOption == QUERER_ENVIDO_ENVIDO || opponentOption == QUERER_ENVIDO_ENVIDO) {
+	} else if (actual.lastMove == CANTAR_ENVIDO_ENVIDO || opponent.lastMove == CANTAR_ENVIDO_ENVIDO) && (actual.lastMove == QUERER_ENVIDO_ENVIDO || opponent.lastMove == QUERER_ENVIDO_ENVIDO) {
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
-		envidoWinner.sumPoints(2)
+		envidoWinner.sumPoints(4)
 		fmt.Println("sume puntos por envido envido a " + envidoWinner.name)
-	} else if (actualOption == CANTAR_ENVIDO_ENVIDO || opponentOption == CANTAR_ENVIDO_ENVIDO) && (actualOption == NO_QUERER_ENVIDO_ENVIDO || opponentOption == NO_QUERER_ENVIDO_ENVIDO) {
+	} else if (actual.lastMove == CANTAR_ENVIDO_ENVIDO || opponent.lastMove == CANTAR_ENVIDO_ENVIDO) && (actual.lastMove == NO_QUERER_ENVIDO_ENVIDO || opponent.lastMove == NO_QUERER_ENVIDO_ENVIDO) {
 		playerToSumPoints := actual
-		if opponentOption == CANTAR_ENVIDO {
+		if opponent.lastMove == CANTAR_ENVIDO_ENVIDO {
 			playerToSumPoints = opponent
 		}
-		playerToSumPoints.sumPoints(1)
+		playerToSumPoints.sumPoints(2)
 		fmt.Println("sume puntos por envido envido a " + playerToSumPoints.name)
 	}
+}
+
+func sendInfoEnvido(move *Move, actual *Player, opponent *Player) {
+	if actual.lastMove == QUERER_ENVIDO_ENVIDO {
+		SendInfoPlayer(opponent, common.OpponentAcceptEnvidoEnvido)
+		move.envidoState = 0
+	} else if actual.lastMove == NO_QUERER_ENVIDO_ENVIDO {
+		SendInfoPlayer(opponent, common.OpponentRejectEnvidoEnvido)
+		move.envidoState = 0
+	} else if actual.lastMove == NO_QUERER_ENVIDO {
+		SendInfoPlayer(opponent, common.OpponetRejectEnvido)
+		move.envidoState = 0
+	} else if actual.lastMove == CANTAR_ENVIDO {
+		SendInfoPlayer(opponent, common.OpponetSingEnvido)
+	} else if actual.lastMove == QUERER_ENVIDO {
+		SendInfoPlayer(opponent, common.OpponetAcceptEnvido)
+		move.envidoState = 0
+	} else if actual.lastMove == CANTAR_ENVIDO_ENVIDO {
+		SendInfoPlayer(opponent, common.OpponentSingEnvidoEnvido)
+	}
+
+}
+
+func sendInfoOpponent(move *Move, player *Player) {
+	if move.trucoState == CANTO_TRUCO {
+		SendInfoPlayer(player, common.OpponentSingTruco)
+	} else if move.trucoState == CANTAR_RETRUCO {
+		SendInfoPlayer(player, common.OpponentSingRetruco)
+	} else if move.trucoState == ACEPTAR_TRUCO && !player.notifyTruco {
+		move.alreadyAceptedTruco = true
+		player.setNotifyTruco(true)
+		SendInfoPlayer(player, common.OpponetAcceptTruco)
+	} else if move.trucoState == ACEPTAR_RETRUCO && !player.notifyRetruco {
+		player.setNotifyRetruco(true)
+		SendInfoPlayer(player, common.OpponetAcceptRetruco)
+	} else if len(move.cardsPlayed) > 0 && move.envidoState == 0 {
+		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[0].card.getFullName() + common.NONE + "\n"
+		SendInfoPlayer(player, message)
+	}
+
 }

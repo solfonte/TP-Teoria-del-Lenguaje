@@ -14,7 +14,7 @@ import (
 
 const (
 	SERVER_HOST = "localhost"
-	SERVER_PORT = "9922"
+	SERVER_PORT = "9979"
 	SERVER_TYPE = "tcp"
 	QUIT        = "Q"
 )
@@ -52,7 +52,8 @@ func contains_message(message string) bool {
 		"Tiraste la carta", "Aceptaste",
 		"Rechazaste", "Tus puntos son",
 		"Te fuiste al MAZO",
-		common.FinishGame, common.WinMatchMessage,
+		common.FinishGame,
+		common.WinMatchMessage,
 		common.LoseMatchMessage}
 	find := false
 	for _, msg := range specificMessages {
@@ -76,6 +77,9 @@ func processGameloop(socket net.Conn) {
 		fmt.Println(messageServer)
 		if contains_message(messageServer) {
 			common.Send(socket, "OK")
+			if strings.Contains(messageServer, common.FinishGame) {
+				return
+			}
 		} else {
 			finish := false
 			for !finish {
@@ -90,6 +94,7 @@ func processGameloop(socket net.Conn) {
 							fmt.Println("entre a quit")
 							return
 						}
+
 						//fmt.Println("lo que mando ", stdin)
 						common.Send(socket, stdin)
 						finish = true

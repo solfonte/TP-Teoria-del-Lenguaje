@@ -7,15 +7,19 @@ import (
 )
 
 type Player struct {
-	id           int
-	name         string
-	socket       net.Conn
-	points       int
-	hand         Hand
-	cardSelected Card
-	winsPerPlay  int
-	hasSagnTruco bool
-	lastMove     int
+	id             int
+	name           string
+	socket         net.Conn
+	points         int
+	hand           Hand
+	cardSelected   Card
+	winsPerPlay    int
+	hasSagnTruco   bool
+	lastMove       int
+	hasSangReTruco bool
+	notifyTruco    bool
+	notifyRetruco  bool
+	turn           bool
 }
 
 func (player *Player) clearCards() {
@@ -75,4 +79,16 @@ func (player *Player) stop() {
 
 func (player *Player) setHasSangTruco(truco bool) {
 	player.hasSagnTruco = truco
+}
+
+func (player *Player) setHasSangRetruco(retruco bool) {
+	player.hasSangReTruco = retruco
+}
+
+func (player *Player) setNotifyTruco(notify bool) {
+	player.notifyTruco = notify
+}
+
+func (player *Player) setNotifyRetruco(notify bool) {
+	player.notifyRetruco = notify
 }
