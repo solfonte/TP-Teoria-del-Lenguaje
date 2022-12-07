@@ -42,7 +42,7 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 		if err == -1 {
 			return -1
 		}
-		
+
 		completeRound += 1
 
 		round.decide_hand_players(move.winner.id, move.loser.id)
@@ -56,6 +56,8 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 
 	round.points = round.getMatchPointsPlayers(initialCurrentId, initialWaitingId)
 	fmt.Println("Puntos ronda: ", round.points)
+	round.currentPlayer.turn = true
+	round.waitingPlayer.turn = true
 	sendInfoPlayers(round.currentPlayer, round.waitingPlayer, common.GetWinningRoundMessage(round.number), common.GetLossingRoundMessage(round.number))
 	sendInfoPointsPlayers(round.currentPlayer, round.waitingPlayer)
 	return round.points

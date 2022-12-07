@@ -127,6 +127,25 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 	return true
 }
 
+func (move *Move) handleTrucoResult(actual *Player, opponent *Player, finish *bool) bool {
+
+	if actual.lastMove == RECHAZAR_TRUCO || actual.lastMove == RECHAZAR_RETRUCO {
+		fmt.Println("No quiere truco")
+		return move.finish_round(opponent, actual, finish)
+	} else if opponent.lastMove == RECHAZAR_TRUCO || opponent.lastMove == RECHAZAR_RETRUCO {
+		fmt.Println("No quiere truco")
+		return move.finish_round(actual, opponent, finish)
+	} else if actual.lastMove == CANTAR_RETRUCO && opponent.lastMove == CANTAR_TRUCO {
+		actual.turn = false
+	} else if opponent.lastMove == CANTAR_RETRUCO && actual.lastMove == CANTAR_TRUCO {
+		opponent.turn = false
+	} else {
+		fmt.Println("algun otro caso del truco")
+		return false
+	}
+	return false
+}
+
 func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
 	options := []int{CANTAR_ENVIDO, QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO}
 
@@ -139,7 +158,19 @@ func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
 	return false
 }
 
+func trucoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
+	options := []int{CANTAR_TRUCO, CANTO_TRUCO, RECHAZAR_TRUCO, CANTAR_RETRUCO, RECHAZAR_RETRUCO, ACEPTAR_TRUCO, ACEPTAR_RETRUCO}
+	for _, option := range options {
+		if playerOption == option || anotherPlayerOption == option {
+			fmt.Println("opcion de TRUCO identificada")
+			return true
+		}
+	}
+	return false
+}
+
 func (move *Move) handleResult(actual *Player, opponent *Player, finish *bool) bool {
+	// ESTO CREO QUE SE PUEDE SACAR
 	if actual.lastMove == TIRAR_CARTA && opponent.lastMove == CANTAR_RETRUCO {
 		fmt.Println("entre actaul tiro una carta le seteo al otro last move en 0")
 		opponent.lastMove = 0
@@ -155,32 +186,21 @@ func (move *Move) handleResult(actual *Player, opponent *Player, finish *bool) b
 		fmt.Println("OPONENT se fue al  MAZO")
 		SendInfoPlayer(actual, common.OpponetHasSangFinishRound)
 		return move.finish_round(actual, opponent, finish)
+	} else if len(move.cardsPlayed) == 2 {
+		fmt.Println("hay dos cartas chequeo quien gana jugada")
+		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[1].card.getFullName() + common.NONE + "\n"
+		SendInfoPlayer(opponent, message)
+		result := move.cardsPlayed[0].card.compareCards(move.cardsPlayed[1].card)
+		return move.assingWinner(result, move.cardsPlayed[0].player, move.cardsPlayed[1].player, finish)
 	} else if envidoRelatedOptions(actual.lastMove, opponent.lastMove) {
 		fmt.Println("identifique envido")
 		handleEnvidoResult(move, actual, opponent, finish)
 		return false
-	} else if actual.lastMove == CANTAR_TRUCO || opponent.lastMove == CANTAR_TRUCO {
-		fmt.Println("alguno canto truco")
-		return false
-	} else if actual.lastMove == CANTAR_RETRUCO && opponent.lastMove != RECHAZAR_RETRUCO || opponent.lastMove == CANTAR_RETRUCO && actual.lastMove != RECHAZAR_RETRUCO {
-		fmt.Println("alguno canto REtruco")
-		return false
-	} else if len(move.cardsPlayed) == 2 {
-		fmt.Println("hay dos cartas chequeo quien gana jugada")
-		result := move.cardsPlayed[0].card.compareCards(move.cardsPlayed[1].card)
-		return move.assingWinner(result, move.cardsPlayed[0].player, move.cardsPlayed[1].player, finish)
-	} else if actual.lastMove == ACEPTAR_TRUCO || opponent.lastMove == ACEPTAR_TRUCO {
-		fmt.Println("alguno quiere truco")
-		return false
-	} else if opponent.lastMove == RECHAZAR_TRUCO || opponent.lastMove == RECHAZAR_RETRUCO {
-		fmt.Println("No quiere truco")
-		return move.finish_round(actual, opponent, finish)
-	} else if actual.lastMove == RECHAZAR_TRUCO || actual.lastMove == RECHAZAR_RETRUCO {
-		fmt.Println("No quiere truco")
-		return move.finish_round(opponent, actual, finish)
+	} else if trucoRelatedOptions(actual.lastMove, opponent.lastMove) {
+		fmt.Println("indentifique truco")
+		return move.handleTrucoResult(actual, opponent, finish)
 	}
 	fmt.Println("no entro en ninguna de las opciones")
-
 	return false
 }
 

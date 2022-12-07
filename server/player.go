@@ -19,6 +19,7 @@ type Player struct {
 	hasSangReTruco bool
 	notifyTruco    bool
 	notifyRetruco  bool
+	turn           bool
 }
 
 func (player *Player) clearCards() {

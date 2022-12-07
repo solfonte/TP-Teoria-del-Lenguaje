@@ -8,19 +8,17 @@ import (
 
 func definePlayerPossibleOptions(move *Move, player *Player, opponentOption int) []int {
 	var options []int
-	if player.lastMove == NO_QUERER_ENVIDO || player.lastMove == NO_QUERER_ENVIDO_ENVIDO || player.lastMove == QUERER_ENVIDO_ENVIDO {
+	fmt.Println("Mis ultimos movimiento: ", player.lastMove)
+	fmt.Println("Opponet ultimo movimiento: ", opponentOption)
+	if (player.lastMove == NO_QUERER_ENVIDO || player.lastMove == NO_QUERER_ENVIDO_ENVIDO || player.lastMove == QUERER_ENVIDO_ENVIDO) && opponentOption != CANTAR_TRUCO {
 		options = append(options, TIRAR_CARTA)
-		//#TODO este chequeo esta al pedo? si quisite envivo envido o no quisiste no se muesta mas opcion de envido
-		if move.canSingEnvido() {
-			options = append(options, CANTAR_ENVIDO)
-		}
 		if !move.alreadySangTruco {
 			options = append(options, CANTAR_TRUCO)
 		}
 		options = append(options, IRSE_AL_MAZO)
+		player.lastMove = 0
 		return options
 	}
-
 	if opponentOption == TIRAR_CARTA {
 		fmt.Println("Oponente tiro una carta")
 		options = append(options, TIRAR_CARTA)
@@ -75,7 +73,7 @@ func definePlayerPossibleOptions(move *Move, player *Player, opponentOption int)
 
 func isTurnOfPlayer(player *Player) bool {
 	fmt.Println("999999999999999999999999999999 PLAYER LAST MOVE = ", player.lastMove)
-	return !(player.lastMove == CANTAR_ENVIDO_ENVIDO) && !(player.lastMove == CANTAR_RETRUCO)
+	return !(player.lastMove == CANTAR_ENVIDO_ENVIDO) && !(player.lastMove == CANTAR_RETRUCO && !player.turn)
 }
 
 func containsOption(option int, options []int) bool {
