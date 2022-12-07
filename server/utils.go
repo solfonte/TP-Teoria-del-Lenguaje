@@ -220,3 +220,22 @@ func sendInfoEnvido(move *Move, actual *Player, opponent *Player) {
 	}
 
 }
+
+func sendInfoOpponent(move *Move, player *Player) {
+	if move.trucoState == CANTO_TRUCO {
+		SendInfoPlayer(player, common.OpponentSingTruco)
+	} else if move.trucoState == CANTAR_RETRUCO {
+		SendInfoPlayer(player, common.OpponentSingRetruco)
+	} else if move.trucoState == ACEPTAR_TRUCO && !player.notifyTruco {
+		move.alreadyAceptedTruco = true
+		player.setNotifyTruco(true)
+		SendInfoPlayer(player, common.OpponetAcceptTruco)
+	} else if move.trucoState == ACEPTAR_RETRUCO && !player.notifyRetruco {
+		player.setNotifyRetruco(true)
+		SendInfoPlayer(player, common.OpponetAcceptRetruco)
+	} else if len(move.cardsPlayed) > 0 && move.envidoState == 0 {
+		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[0].card.getFullName() + common.NONE + "\n"
+		SendInfoPlayer(player, message)
+	}
+
+}

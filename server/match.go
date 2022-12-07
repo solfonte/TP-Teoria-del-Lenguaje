@@ -138,7 +138,7 @@ func (match *Match) beginGame() {
 func (match *Match) FinishMatch() {
 	for _, player := range match.players {
 		common.Send(player.socket, common.FinishGame)
-		//common.Receive(player.socket)
+		common.Receive(player.socket)
 	}
 	match.finish = true
 }

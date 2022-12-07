@@ -131,9 +131,19 @@ func (move *Move) handleTrucoResult(actual *Player, opponent *Player, finish *bo
 
 	if actual.lastMove == RECHAZAR_TRUCO || actual.lastMove == RECHAZAR_RETRUCO {
 		fmt.Println("No quiere truco")
+		message := common.OpponetRejectTruco
+		if actual.lastMove == RECHAZAR_RETRUCO {
+			message = common.OpponetRejectRetruco
+		}
+		SendInfoPlayer(opponent, message)
 		return move.finish_round(opponent, actual, finish)
 	} else if opponent.lastMove == RECHAZAR_TRUCO || opponent.lastMove == RECHAZAR_RETRUCO {
 		fmt.Println("No quiere truco")
+		message := common.OpponetRejectTruco
+		if opponent.lastMove == RECHAZAR_RETRUCO {
+			message = common.OpponetRejectRetruco
+		}
+		SendInfoPlayer(actual, message)
 		return move.finish_round(actual, opponent, finish)
 	} else if actual.lastMove == CANTAR_RETRUCO && opponent.lastMove == CANTAR_TRUCO {
 		actual.turn = false
@@ -465,28 +475,7 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	var err int
 	fmt.Println("estado del envido: ", move.envidoState)
 
-	if move.trucoState == CANTO_TRUCO {
-		SendInfoPlayer(player, common.OpponentSingTruco)
-	} else if move.trucoState == CANTAR_RETRUCO {
-		SendInfoPlayer(player, common.OpponentSingRetruco)
-	} else if move.trucoState == ACEPTAR_TRUCO && !player.notifyTruco {
-		move.alreadyAceptedTruco = true
-		player.setNotifyTruco(true)
-		SendInfoPlayer(player, common.OpponetAcceptTruco)
-	} else if move.trucoState == ACEPTAR_RETRUCO && !player.notifyRetruco {
-		player.setNotifyRetruco(true)
-		SendInfoPlayer(player, common.OpponetAcceptRetruco)
-	} else if move.trucoState == RECHAZAR_TRUCO {
-		move.alreadyAceptedTruco = true
-		SendInfoPlayer(player, common.OpponetRejectTruco)
-		return IRSE_AL_MAZO, err
-	} else if move.trucoState == RECHAZAR_RETRUCO {
-		SendInfoPlayer(player, common.OpponetRejectRetruco)
-		return IRSE_AL_MAZO, err
-	} else if len(move.cardsPlayed) > 0 && move.envidoState == 0 {
-		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[0].card.getFullName() + common.NONE + "\n"
-		SendInfoPlayer(player, message)
-	}
+	sendInfoOpponent(move, player)
 	option, err = move.sendInfoMove(player, options, playerError)
 
 	if playerError.err != nil {
@@ -503,32 +492,5 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 		move.handleTruco(player, option)
 	}
 
-	// switch option {
-	// case IRSE_AL_MAZO:
-	// 	move.handleFinishRound(player)
-	// 	return IRSE_AL_MAZO, err
-	// }
-
-	// case TIRAR_CARTA:
-	// 	err = move.handleThrowACard(player, playerError)
-	// case CANTAR_ENVIDO:
-	// 	move.handleEnvido(player, option)
-	// case QUERER_ENVIDO:
-	// 	move.handleEnvido(player, option)
-	// case NO_QUERER_ENVIDO:
-	// 	move.envidoState = NO_QUERER_ENVIDO
-	// case CANTAR_TRUCO:
-	// 	move.handleTruco(player, option)
-	// case CANTAR_RETRUCO:
-	// 	move.handleTruco(player, option)
-	// case ACEPTAR_TRUCO:
-	// 	move.handleTruco(player, option)
-	// case RECHAZAR_TRUCO:
-	// 	move.handleTruco(player, option)
-	// case RECHAZAR_RETRUCO:
-	// 	move.handleTruco(player, option)
-	// case ACEPTAR_RETRUCO:
-	// 	move.handleTruco(player, option)
-	// }
 	return option, err
 }
