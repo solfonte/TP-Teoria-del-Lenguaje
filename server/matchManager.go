@@ -73,12 +73,43 @@ func (matchManager *MatchManager) startMatches(finishChannel chan bool) {
 	}
 }
 
+func (matchManager *MatchManager)cancelMatch(match *Match) bool{
+	if match.finish {
+		return false
+	}
+	cancel := false
+	for _, p := range match.players {
+		if p.isDisconnected() {
+			cancel = true
+		}
+	}
+	return cancel
+}
+
+func (matchManager *MatchManager) addMatchPlayersToWaitingQueue(match *Match){
+	for _, p := range match.players {
+		if !p.isDisconnected(){
+			fmt.Print("entro")
+
+			matchManager.mutexMatches.Lock()
+			matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: p, duration: match.duration, maxPlayers: match.maxPlayers})
+			matchManager.mutexMatches.Unlock()
+		}
+	}
+}
+
 func (matchManager *MatchManager) delete_finish_matches() {
-	fmt.Println("entre a terminar matches")
+	fmt.Println("entro a delete matches")
 	temp := matchManager.matches[:0]
 	matchManager.mutexMatches.Lock()
 	for _, match := range matchManager.matches {
-		if !match.finish {
+		cancelled := false
+		if !matchManager.cancelMatch(match) {
+			matchManager.addMatchPlayersToWaitingQueue(match)
+			cancelled = true
+			fmt.Print("cancelled")
+		}
+		if !match.finish && !cancelled {
 			temp = append(temp, match)
 		}
 	}

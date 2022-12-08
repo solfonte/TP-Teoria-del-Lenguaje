@@ -92,3 +92,15 @@ func (player *Player) setNotifyTruco(notify bool) {
 func (player *Player) setNotifyRetruco(notify bool) {
 	player.notifyRetruco = notify
 }
+
+func (player *Player) isDisconnected() bool {
+	zero := make([]byte,0);
+	fmt.Println("entro a ver si esta conectado")
+	
+	if _, err := player.socket.Read(zero); err != nil {
+		fmt.Println("disconnected")
+
+		return true
+	} 
+	return false
+}

@@ -17,6 +17,8 @@ func start_receiver(acceptor Acceptor) {
 	finishChannelStartMatches := make(chan bool)
 	go matchManager.processWaitingPlayers(finishChannelWaitingPlayers)
 	go matchManager.startMatches(finishChannelStartMatches)
+	go matchManager.delete_finish_matches()
+
 	for {
 		// acept diferent connections
 		peer, error := acceptor.Accept()
@@ -29,10 +31,8 @@ func start_receiver(acceptor Acceptor) {
 		newPlayer := Player{id: len(acceptor.players) + 1, socket: peer, lastMove: 0}
 		acceptor.players = append(acceptor.players, newPlayer)
 
-		matchManager.delete_finish_matches()
 		matchManager.process_player(&newPlayer)
 		fmt.Println("client connected")
-
 	}
 
 }
