@@ -120,8 +120,8 @@ func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser s
 	fmt.Println(msg)
 
 	common.Send(loser.socket, msgLoser)
-	msg, _ = common.Receive(loser.socket)
-	fmt.Println(msg)
+	msg1, _ := common.Receive(loser.socket)
+	fmt.Println(msg1)
 }
 
 func SendWelcomeMessage(player *Player) {
@@ -157,10 +157,11 @@ func sendInfoPointsPlayers(player1 *Player, player2 *Player) {
 
 func sendPlayerCardPlayed(player *Player, card Card) {
 	common.Send(player.socket, common.GetCardPlayed(getCardColors(card.getFullName())))
-
+	common.Receive(player.socket)
 }
 
 func SendInfoPlayer(player *Player, message string) {
 	common.Send(player.socket, message)
-	common.Receive(player.socket)
+	msg, _ := common.Receive(player.socket)
+	fmt.Println("Le nvio dato especial y espero un OK recibo: ", msg)
 }

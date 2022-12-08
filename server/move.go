@@ -364,6 +364,7 @@ func (move *Move) handlePlayerActivity(player *Player, playerMove *int, playerEr
 	var err error
 	for status != RETURN_FROM_WAITING_OPTIONS && status != -1 && status != IRSE_AL_MAZO {
 		status, err = receiveWaitingRequests(player)
+		fmt.Println("status: ", status)
 		handleWaitingOptions(status, player, playerMove, playerError)
 		if err != nil {
 			fmt.Println("detecte error del q espera")

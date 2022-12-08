@@ -92,9 +92,11 @@ func loopSendOptionsToPlayer(options []int, player *Player, playerError *PlayerE
 	msgError := ""
 	for !containsOption(option, options) && playerError.err == nil {
 		fmt.Println("loop options player: entre a mandarle la info a los jugadores")
+		fmt.Println(message)
 		common.Send(player.socket, msgError+message)
-		fmt.Println("mande info a cliente")
+		fmt.Println("mande info a cliente ", player.name)
 		jugada, err := common.Receive(player.socket)
+		fmt.Println("Jugada ", jugada)
 		fmt.Println(err)
 		if err != nil {
 			fmt.Println("ERROR EN EL LOOP")
@@ -165,9 +167,12 @@ func receiveWaitingRequests(player *Player) (int, error) {
 	if err != nil {
 		return -1, err
 	}
-	fmt.Println("el hilo de receive waiting requests recibio " + message)
+	fmt.Println("el hilo de receive waiting requests recibio "+message, " del player ", player.name)
 	fmt.Println(message)
 	fmt.Println("pase waiting requests")
+	if message == "ACK" {
+		return 0, nil
+	}
 	option, _ := strconv.Atoi(message)
 	return option, nil
 }
