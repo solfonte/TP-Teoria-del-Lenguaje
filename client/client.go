@@ -14,7 +14,7 @@ import (
 
 const (
 	SERVER_HOST = "localhost"
-	SERVER_PORT = "9979"
+	SERVER_PORT = "9965"
 	SERVER_TYPE = "tcp"
 	QUIT        = "Q"
 )
@@ -58,8 +58,12 @@ func contains_message(message string) bool {
 	find := false
 	for _, msg := range specificMessages {
 		if strings.Contains(message, msg) {
-			find = true
-			break
+			fmt.Println(strings.Contains(message, common.WaitingOptionsPlayer))
+			if !strings.Contains(message, common.WaitingOptionsPlayer) && !strings.Contains(message, "Es tu turno,") {
+				fmt.Println("entre")
+				find = true
+				break
+			}
 		}
 	}
 	return find
@@ -77,6 +81,7 @@ func processGameloop(socket net.Conn) {
 		fmt.Println(messageServer)
 		if contains_message(messageServer) {
 			common.Send(socket, "OK")
+			fmt.Println("mande un ok")
 			if strings.Contains(messageServer, common.FinishGame) {
 				return
 			}
@@ -101,7 +106,7 @@ func processGameloop(socket net.Conn) {
 					}
 				case <-time.After(6 * time.Second):
 					if strings.Contains(messageServer, "Mientras esperas a que sea tu turno") {
-						common.Send(socket, "0")
+						common.Send(socket, "ACK")
 						finish = true
 					}
 				}
