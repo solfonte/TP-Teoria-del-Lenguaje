@@ -28,7 +28,9 @@ func (matchManager *MatchManager) process_player(player *Player) {
 		matchManager.mutexMatches.Unlock()
 	} else {
 		fmt.Println("Guardo al jugador que hizo join en la cola de jugadores esperando")
+		matchManager.mutexMatches.Lock()
 		matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: player, duration: requestedmatch["duration"], maxPlayers: requestedmatch["members"]})
+		matchManager.mutexMatches.Unlock()
 	}
 }
 
@@ -60,6 +62,10 @@ func (matchManager *MatchManager) startMatches(finishChannel chan bool) {
 	for !finish {
 		matchManager.mutexMatches.Lock()
 		for _, match := range matchManager.matches {
+			if matchManager.cancelMatch(match) {
+				matchManager.addMatchPlayersToWaitingQueue(match)
+				match.finish = true
+			}
 			if match.readyToStart && !match.started {
 				match.started = true
 				fmt.Println("arranco match")
@@ -73,13 +79,13 @@ func (matchManager *MatchManager) startMatches(finishChannel chan bool) {
 	}
 }
 
-func (matchManager *MatchManager)cancelMatch(match *Match) bool{
+func (matchManager *MatchManager) cancelMatch(match *Match) bool{
 	if match.finish {
 		return false
 	}
 	cancel := false
 	for _, p := range match.players {
-		if p.isDisconnected() {
+		if !p.isReadyToPlay() {
 			cancel = true
 		}
 	}
@@ -88,7 +94,7 @@ func (matchManager *MatchManager)cancelMatch(match *Match) bool{
 
 func (matchManager *MatchManager) addMatchPlayersToWaitingQueue(match *Match){
 	for _, p := range match.players {
-		if !p.isDisconnected(){
+		if p.isConnected(){
 			fmt.Print("entro")
 
 			matchManager.mutexMatches.Lock()
@@ -103,13 +109,9 @@ func (matchManager *MatchManager) delete_finish_matches() {
 	temp := matchManager.matches[:0]
 	matchManager.mutexMatches.Lock()
 	for _, match := range matchManager.matches {
-		cancelled := false
-		if !matchManager.cancelMatch(match) {
-			matchManager.addMatchPlayersToWaitingQueue(match)
-			cancelled = true
-			fmt.Print("cancelled")
-		}
-		if !match.finish && !cancelled {
+		fmt.Println("Entro al for de delete matches ")
+		
+		if !match.finish {
 			temp = append(temp, match)
 		}
 	}

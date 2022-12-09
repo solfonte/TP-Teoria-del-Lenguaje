@@ -52,6 +52,7 @@ func contains_message(message string) bool {
 		"Tiraste la carta", "Aceptaste",
 		"Rechazaste", "Tus puntos son",
 		"Te fuiste al MAZO",
+		"Listo para jugar?",
 		common.FinishGame,
 		common.WinMatchMessage,
 		common.LoseMatchMessage}
@@ -60,7 +61,6 @@ func contains_message(message string) bool {
 		if strings.Contains(message, msg) {
 			fmt.Println(strings.Contains(message, common.WaitingOptionsPlayer))
 			if !strings.Contains(message, common.WaitingOptionsPlayer) && !strings.Contains(message, "Es tu turno,") {
-				fmt.Println("entre")
 				find = true
 				break
 			}
