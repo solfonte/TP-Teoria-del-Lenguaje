@@ -58,9 +58,45 @@ type Move struct {
 	hasSangFinishRound    bool
 }
 
+/*********************************** ENVIDO FUNCTIONS ***********************************************/
+
+func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
+	options := []int{CANTAR_ENVIDO, QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO}
+
+	for _, option := range options {
+		if playerOption == option || anotherPlayerOption == option {
+			return true
+		}
+	}
+	return false
+}
+
 func (move *Move) canSingEnvido() bool {
 	return move.typeMove == FIRST_MOVE && !move.alreadySangEnvido && !move.alreadyAceptedTruco && !move.alreadyAceptedRetruco
 }
+
+func (move *Move) handleEnvido(player *Player, option int) {
+	if option == CANTAR_ENVIDO_ENVIDO {
+		SendInfoPlayer(player, common.SingEnvidoEnvido)
+		move.envidoState = CANTAR_ENVIDO_ENVIDO
+	} else if option == NO_QUERER_ENVIDO_ENVIDO {
+		SendInfoPlayer(player, common.RejectEnvidoEnvido)
+		move.envidoState = NO_QUERER_ENVIDO_ENVIDO
+	} else if option == NO_QUERER_ENVIDO {
+		SendInfoPlayer(player, common.RejectEnvido)
+		move.envidoState = NO_QUERER_ENVIDO
+	} else if option == QUERER_ENVIDO {
+		SendInfoPlayer(player, common.AcceptEnvido)
+		move.envidoState = QUERER_ENVIDO
+	} else if option == CANTAR_ENVIDO {
+		SendInfoPlayer(player, common.SingEnvido)
+		move.envidoState = CANTAR_ENVIDO
+		move.alreadySangEnvido = true
+	}
+
+}
+
+/*********************************** TRUCO FUNCTIONS ***********************************************/
 
 func (move *Move) canSingRetruco(player *Player) bool {
 	return !move.alreadyAceptedRetruco && move.alreadySangTruco && !player.hasSagnTruco
@@ -71,42 +107,43 @@ func (move *Move) setAlreadySangTruco(player1 *Player, player2 *Player) {
 	move.alreadyAceptedRetruco = (player1.hasSangReTruco || player2.hasSangReTruco)
 }
 
-func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool {
-	move.winner.id = winner.id
-	move.winner.points = 0
-	move.loser.id = loser.id
-	move.loser.points = 0
-
-	if move.hasSangFinishRound && move.trucoState != ACEPTAR_TRUCO && move.trucoState != ACEPTAR_RETRUCO && move.envidoState != QUERER_ENVIDO && move.envidoState != QUERER_ENVIDO_ENVIDO && move.trucoState != RECHAZAR_RETRUCO && move.trucoState != CANTAR_RETRUCO {
-		move.winner.points = 1
-		winner.points += 1
-	} else {
-		if move.trucoState == ACEPTAR_TRUCO || move.envidoState == QUERER_ENVIDO {
-			move.winner.points = 2
-			winner.points += 2
-		} else if move.envidoState == QUERER_ENVIDO_ENVIDO {
-			move.winner.points = 4
-			winner.points += 4
-		} else if move.trucoState == RECHAZAR_RETRUCO || (move.hasSangFinishRound && move.trucoState == CANTAR_RETRUCO) {
-			move.winner.points = 2
-			winner.points += 2
-		} else if move.trucoState == ACEPTAR_RETRUCO {
-			move.winner.points = 3
-			winner.points += 3
-		} else {
-			move.winner.points = 1
-			winner.points += 1
+func trucoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
+	options := []int{CANTAR_TRUCO, CANTO_TRUCO, RECHAZAR_TRUCO, CANTAR_RETRUCO, RECHAZAR_RETRUCO, ACEPTAR_TRUCO, ACEPTAR_RETRUCO}
+	for _, option := range options {
+		if playerOption == option || anotherPlayerOption == option {
+			return true
 		}
 	}
+	return false
+}
 
-	*finish = true
-	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
-
-	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove))
-	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
-
-	fmt.Println("termino jugada")
-	return true
+func (move *Move) handleTruco(player *Player, option int) {
+	if option == CANTAR_RETRUCO {
+		SendInfoPlayer(player, common.SingRetruco)
+		move.trucoState = CANTAR_RETRUCO
+		player.hasSangReTruco = true
+	} else if option == RECHAZAR_TRUCO {
+		move.trucoState = RECHAZAR_TRUCO
+		SendInfoPlayer(player, common.RejectTruco)
+	} else if option == RECHAZAR_RETRUCO {
+		move.trucoState = RECHAZAR_RETRUCO
+		SendInfoPlayer(player, common.RejectRetruco)
+	} else if option == ACEPTAR_RETRUCO {
+		move.trucoState = ACEPTAR_RETRUCO
+		SendInfoPlayer(player, common.AcceptRetruco)
+		move.alreadyAceptedRetruco = true
+		player.setNotifyRetruco(true)
+	} else if option == ACEPTAR_TRUCO {
+		SendInfoPlayer(player, common.AcceptTruco)
+		move.trucoState = ACEPTAR_TRUCO
+		move.alreadyAceptedTruco = true
+		player.setNotifyTruco(true)
+	} else if option == CANTAR_TRUCO {
+		SendInfoPlayer(player, common.SingTruco)
+		move.trucoState = CANTO_TRUCO
+		move.alreadySangTruco = true
+		player.hasSagnTruco = true
+	}
 }
 
 func (move *Move) handleTrucoResult(actual *Player, opponent *Player, finish *bool) bool {
@@ -135,26 +172,7 @@ func (move *Move) handleTrucoResult(actual *Player, opponent *Player, finish *bo
 	return false
 }
 
-func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
-	options := []int{CANTAR_ENVIDO, QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO}
-
-	for _, option := range options {
-		if playerOption == option || anotherPlayerOption == option {
-			return true
-		}
-	}
-	return false
-}
-
-func trucoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
-	options := []int{CANTAR_TRUCO, CANTO_TRUCO, RECHAZAR_TRUCO, CANTAR_RETRUCO, RECHAZAR_RETRUCO, ACEPTAR_TRUCO, ACEPTAR_RETRUCO}
-	for _, option := range options {
-		if playerOption == option || anotherPlayerOption == option {
-			return true
-		}
-	}
-	return false
-}
+/*********************************** HANDLERS ***********************************************/
 
 func (move *Move) handleResult(actual *Player, opponent *Player, finish *bool) bool {
 	if actual.lastMove == TIRAR_CARTA && opponent.lastMove == CANTAR_RETRUCO {
@@ -208,6 +226,90 @@ func (move *Move) handlePlayersMoves(orderChannel chan int, movesChannel chan in
 		}
 
 	}
+}
+
+func (move *Move) handlePlayerActivity(player *Player, playerMove *int, playerError *PlayerError) {
+	status := WAIT
+	var err error
+	for status != RETURN_FROM_WAITING_OPTIONS && status != -1 && status != IRSE_AL_MAZO {
+		status, err = receiveWaitingRequests(player)
+		fmt.Println("status: ", status)
+		handleWaitingOptions(status, player, playerMove, playerError)
+		if err != nil {
+			playerError.player = player
+			playerError.err = err
+		}
+	}
+	return
+}
+
+func (move *Move) handleFinishRound(player *Player) {
+	SendInfoPlayer(player, common.SingFinishRound)
+	move.hasSangFinishRound = true
+}
+
+func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int {
+	playerCards := player.getCards()
+	message, options := GetCardsToThrow(playerCards)
+
+	option, err := loopSendOptionsToPlayer(options, player, playerError, message)
+	cardPlayer := CardPlayer{card: playerCards[option-1], player: player}
+	move.cardsPlayed = append(move.cardsPlayed, cardPlayer)
+	sendPlayerCardPlayed(player, playerCards[option-1])
+	player.removeCardSelected(option - 1)
+	return err
+}
+
+func (move *Move) assingWinner(result int, player1 *Player, player2 *Player, finish *bool) bool {
+	if result == 1 || result == 0 {
+		return move.process_winner(player1, player2, finish)
+	} else {
+		return move.process_winner(player2, player1, finish)
+	}
+}
+
+func (move *Move) getMaxPoints() int {
+	return int(math.Max(float64(move.loser.points), float64(move.winner.points)))
+}
+
+/*********************************** MOVE FUCTIONS ***********************************************/
+
+func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool {
+	move.winner.id = winner.id
+	move.winner.points = 0
+	move.loser.id = loser.id
+	move.loser.points = 0
+
+	if move.hasSangFinishRound && move.trucoState != ACEPTAR_TRUCO && move.trucoState != ACEPTAR_RETRUCO && move.envidoState != QUERER_ENVIDO && move.envidoState != QUERER_ENVIDO_ENVIDO && move.trucoState != RECHAZAR_RETRUCO && move.trucoState != CANTAR_RETRUCO {
+		move.winner.points = 1
+		winner.points += 1
+	} else {
+		if move.trucoState == ACEPTAR_TRUCO || move.envidoState == QUERER_ENVIDO {
+			move.winner.points = 2
+			winner.points += 2
+		} else if move.envidoState == QUERER_ENVIDO_ENVIDO {
+			move.winner.points = 4
+			winner.points += 4
+		} else if move.trucoState == RECHAZAR_RETRUCO || (move.hasSangFinishRound && move.trucoState == CANTAR_RETRUCO) {
+			move.winner.points = 2
+			winner.points += 2
+		} else if move.trucoState == ACEPTAR_RETRUCO {
+			move.winner.points = 3
+			winner.points += 3
+		} else {
+			move.winner.points = 1
+			winner.points += 1
+		}
+	}
+
+	*finish = true
+	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
+
+	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove))
+	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
+
+	fmt.Println("termino jugada")
+	return true
 }
 
 func (move *Move) start_move(player1 *Player, player2 *Player, playerError *PlayerError, finish *bool) int {
@@ -270,18 +372,6 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 
 }
 
-func (move *Move) assingWinner(result int, player1 *Player, player2 *Player, finish *bool) bool {
-	if result == 1 || result == 0 {
-		return move.process_winner(player1, player2, finish)
-	} else {
-		return move.process_winner(player2, player1, finish)
-	}
-}
-
-func (move *Move) getMaxPoints() int {
-	return int(math.Max(float64(move.loser.points), float64(move.winner.points)))
-}
-
 func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bool {
 	move.winner.id = winner.id
 	move.winner.points = 0
@@ -319,21 +409,6 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 	return true
 }
 
-func (move *Move) handlePlayerActivity(player *Player, playerMove *int, playerError *PlayerError) {
-	status := WAIT
-	var err error
-	for status != RETURN_FROM_WAITING_OPTIONS && status != -1 && status != IRSE_AL_MAZO {
-		status, err = receiveWaitingRequests(player)
-		fmt.Println("status: ", status)
-		handleWaitingOptions(status, player, playerMove, playerError)
-		if err != nil {
-			playerError.player = player
-			playerError.err = err
-		}
-	}
-	return
-}
-
 func (move *Move) askPlayerToWait(player *Player, playerOption *int, playerError *PlayerError) int {
 	common.Send(player.socket, common.WaitPlayerToPlayMessage)
 	message, err := common.Receive(player.socket)
@@ -352,73 +427,6 @@ func (move *Move) askPlayerToWait(player *Player, playerOption *int, playerError
 		return -1
 	}
 	return 0
-}
-
-func (move *Move) handleEnvido(player *Player, option int) {
-	if option == CANTAR_ENVIDO_ENVIDO {
-		SendInfoPlayer(player, common.SingEnvidoEnvido)
-		move.envidoState = CANTAR_ENVIDO_ENVIDO
-	} else if option == NO_QUERER_ENVIDO_ENVIDO {
-		SendInfoPlayer(player, common.RejectEnvidoEnvido)
-		move.envidoState = NO_QUERER_ENVIDO_ENVIDO
-	} else if option == NO_QUERER_ENVIDO {
-		SendInfoPlayer(player, common.RejectEnvido)
-		move.envidoState = NO_QUERER_ENVIDO
-	} else if option == QUERER_ENVIDO {
-		SendInfoPlayer(player, common.AcceptEnvido)
-		move.envidoState = QUERER_ENVIDO
-	} else if option == CANTAR_ENVIDO {
-		SendInfoPlayer(player, common.SingEnvido)
-		move.envidoState = CANTAR_ENVIDO
-		move.alreadySangEnvido = true
-	}
-
-}
-
-func (move *Move) handleTruco(player *Player, option int) {
-	if option == CANTAR_RETRUCO {
-		SendInfoPlayer(player, common.SingRetruco)
-		move.trucoState = CANTAR_RETRUCO
-		player.hasSangReTruco = true
-	} else if option == RECHAZAR_TRUCO {
-		move.trucoState = RECHAZAR_TRUCO
-		SendInfoPlayer(player, common.RejectTruco)
-	} else if option == RECHAZAR_RETRUCO {
-		move.trucoState = RECHAZAR_RETRUCO
-		SendInfoPlayer(player, common.RejectRetruco)
-	} else if option == ACEPTAR_RETRUCO {
-		move.trucoState = ACEPTAR_RETRUCO
-		SendInfoPlayer(player, common.AcceptRetruco)
-		move.alreadyAceptedRetruco = true
-		player.setNotifyRetruco(true)
-	} else if option == ACEPTAR_TRUCO {
-		SendInfoPlayer(player, common.AcceptTruco)
-		move.trucoState = ACEPTAR_TRUCO
-		move.alreadyAceptedTruco = true
-		player.setNotifyTruco(true)
-	} else if option == CANTAR_TRUCO {
-		SendInfoPlayer(player, common.SingTruco)
-		move.trucoState = CANTO_TRUCO
-		move.alreadySangTruco = true
-		player.hasSagnTruco = true
-	}
-}
-
-func (move *Move) handleFinishRound(player *Player) {
-	SendInfoPlayer(player, common.SingFinishRound)
-	move.hasSangFinishRound = true
-}
-
-func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int {
-	playerCards := player.getCards()
-	message, options := GetCardsToThrow(playerCards)
-
-	option, err := loopSendOptionsToPlayer(options, player, playerError, message)
-	cardPlayer := CardPlayer{card: playerCards[option-1], player: player}
-	move.cardsPlayed = append(move.cardsPlayed, cardPlayer)
-	sendPlayerCardPlayed(player, playerCards[option-1])
-	player.removeCardSelected(option - 1)
-	return err
 }
 
 func (move *Move) sendInfoMove(player *Player, options []int, playerError *PlayerError) (int, int) {

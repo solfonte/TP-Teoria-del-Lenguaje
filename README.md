@@ -25,7 +25,11 @@
 ```Bash 
     go run serverMain/server_main.go 
 ```
+### Aclaraciones del TP:
 
+No esta implementada la parda, el que comienza es el primero que creo la partida.
+
+Si hay problemas para leer el cvs de las cartas, poner el path correspondiente en server/cardDealed.go linea 23
 ### ejemplos para el video 
 
 * Como podemos aplicar composicion:
