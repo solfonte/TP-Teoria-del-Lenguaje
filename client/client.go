@@ -52,7 +52,6 @@ func contains_message(message string) bool {
 		"Tiraste la carta", "Aceptaste",
 		"Rechazaste", "Tus puntos son",
 		"Te fuiste al MAZO",
-		"Listo para jugar?",
 		common.FinishGame,
 		common.WinMatchMessage,
 		common.LoseMatchMessage}

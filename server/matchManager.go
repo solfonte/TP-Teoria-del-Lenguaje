@@ -62,7 +62,7 @@ func (matchManager *MatchManager) startMatches(finishChannel chan bool) {
 	for !finish {
 		matchManager.mutexMatches.Lock()
 		for _, match := range matchManager.matches {
-			if matchManager.cancelMatch(match) {
+			if !match.started && matchManager.cancelMatch(match) {
 				matchManager.addMatchPlayersToWaitingQueue(match)
 				match.finish = true
 			}
@@ -95,7 +95,7 @@ func (matchManager *MatchManager) cancelMatch(match *Match) bool{
 func (matchManager *MatchManager) addMatchPlayersToWaitingQueue(match *Match){
 	for _, p := range match.players {
 		if p.isConnected(){
-			fmt.Print("entro")
+			fmt.Print(p.name, " is connected when adding to waiting queue")
 
 			matchManager.mutexMatches.Lock()
 			matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: p, duration: match.duration, maxPlayers: match.maxPlayers})

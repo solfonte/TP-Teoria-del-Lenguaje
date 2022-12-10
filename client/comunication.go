@@ -9,6 +9,10 @@ import (
 	"truco/app/common"
 )
 
+const (
+	PING_MESSAGE = "Listo para jugar?"
+)
+
 func checkErrorServer(err error) {
 	if err != nil {
 		panic("error in server, Close connection")
@@ -57,14 +61,20 @@ func sendMenuResponses(socket net.Conn) {
 	processMenuOptions(socket, messageServer)
 }
 
+func isPingMessage(message string) bool {
+	return strings.Contains(message, PING_MESSAGE)
+}
+
 func startGame(socket net.Conn) {
 	i := 0
 	// estas son tus cartas
 	for i < 2 {
 		messageServer, err := common.Receive(socket)
 		checkErrorServer(err)
-		fmt.Println(common.BWhite+messageServer+common.NONE)
+		if (!isPingMessage(messageServer)){
+			fmt.Println(common.BWhite+messageServer+common.NONE)
+			i++
+		}
 		common.Send(socket, "Ok")
-		i++
 	}
 }
