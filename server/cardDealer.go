@@ -5,12 +5,8 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-
-	//"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/joho/godotenv"
 )
 
 type CardDealer struct {
@@ -18,20 +14,13 @@ type CardDealer struct {
 }
 
 func (cardDealer *CardDealer) initialize() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		fmt.Println("error loading .env")
-		//return err
-	}
 	for i := range cardDealer.cards {
 		cardDealer.cards[i] = 1
 	}
 }
 
 func (cardDealer *CardDealer) assignCards(player *Player) {
-	//absPath, _ := filepath.Abs(os.Getenv("FILENAME"))
 	cardNames := readCSV("../server/cards.csv")
-
 
 	rand.Seed(time.Now().UnixNano())
 	var amountOfCards int = 0
