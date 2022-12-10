@@ -110,7 +110,7 @@ func (match *Match) beginGame() {
 	}
 	go match.handleConnections(&stop, &playerError)
 	numberRound := 0
-	for match.points < 6 {
+	for match.points < match.duration {
 		for _, player := range match.players {
 			player.setHasSangTruco(false)
 			player.setHasSangRetruco(false)
