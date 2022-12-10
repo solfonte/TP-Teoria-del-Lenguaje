@@ -5,6 +5,8 @@ import (
 )
 
 const (
+	ACK = "ACK"
+
 	WelcomeMessage = YELLOW + `
 	_     _                           _     _               _   _                        
    | |   (_)                         (_)   | |             | | | |                       

@@ -17,6 +17,7 @@ const (
 	SERVER_PORT = "9965"
 	SERVER_TYPE = "tcp"
 	QUIT        = "Q"
+	TIMETOWAIT  = 6
 )
 
 func Start() {
@@ -89,23 +90,20 @@ func processGameloop(socket net.Conn) {
 					if !ok {
 						break
 					} else {
-						//fmt.Println("Read input from stdin:", stdin)
 						if strings.TrimSpace(stdin) == QUIT {
 							return
 						}
 
-						//fmt.Println("lo que mando ", stdin)
 						common.Send(socket, stdin)
 						finish = true
 					}
-				case <-time.After(6 * time.Second):
+				case <-time.After(TIMETOWAIT * time.Second):
 					if strings.Contains(messageServer, "Mientras esperas a que sea tu turno") {
-						common.Send(socket, "ACK")
+						common.Send(socket, common.ACK)
 						finish = true
 					}
 				}
 			}
-			fmt.Println("sali de procesar")
 		}
 	}
 }

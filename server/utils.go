@@ -170,7 +170,7 @@ func receiveWaitingRequests(player *Player) (int, error) {
 	fmt.Println("el hilo de receive waiting requests recibio "+message, " del player ", player.name)
 	fmt.Println(message)
 	fmt.Println("pase waiting requests")
-	if message == "ACK" {
+	if message == common.ACK {
 		return 0, nil
 	}
 	option, _ := strconv.Atoi(message)
