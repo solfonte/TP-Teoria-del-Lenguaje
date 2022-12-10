@@ -71,6 +71,9 @@ const (
 	OpponentSingEnvidoEnvido   = BBlue + "Tu oponente canto ENVIDO ENVIDO" + NONE + "\n"
 	OpponentAcceptEnvidoEnvido = BBlue + "Tu oponente Acepto ENVIDO" + NONE + "\n"
 	OpponentRejectEnvidoEnvido = BBlue + "Tu oponente Rechazo ENVIDO ENVIDO" + NONE + "\n"
+
+	ErrorCreateOrJoin = BRed + "Error: ingrese CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada" + NONE + "\n"
+	ErrorMaxPoints    = BRed + "Error! ingrese duracion de partida de valor 15 o 30 puntos" + NONE + "\n"
 )
 
 func GetWinningMoveMessage(number int) string {

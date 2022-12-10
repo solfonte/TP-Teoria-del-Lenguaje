@@ -15,7 +15,7 @@ func sendMenu(player Player) (string, error) {
 	fmt.Println("RESPONSE QUE ME LLEGA ", response)
 
 	for (response != "CREATE") && (response != "JOIN") {
-		common.Send(player.socket, "Error: ingrese CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada")
+		common.Send(player.socket, common.ErrorCreateOrJoin)
 		messagePlayer, error = common.Receive(player.socket)
 		response = strings.ToUpper(messagePlayer)
 	}
@@ -28,7 +28,7 @@ func getAmountOfPoints(player Player) int {
 	amout_duration_points, _ := strconv.Atoi(duration)
 
 	for amout_duration_points != 15 && amout_duration_points != 30 {
-		common.Send(player.socket, "Error! ingrese duracion de partida de valor 15 o 30 puntos")
+		common.Send(player.socket, common.ErrorMaxPoints)
 		duration, _ := common.Receive(player.socket)
 		amout_duration_points, _ = strconv.Atoi(duration)
 
