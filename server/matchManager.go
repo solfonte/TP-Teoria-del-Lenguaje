@@ -6,9 +6,8 @@ import (
 )
 
 type WaitingPlayer struct {
-	duration   int
-	maxPlayers int
-	player     *Player
+	duration int
+	player   *Player
 }
 type MatchManager struct {
 	matches        []*Match
@@ -21,14 +20,14 @@ func (matchManager *MatchManager) process_player(player *Player) {
 	messageClient, _ := sendMenu(*player)
 	requestedmatch := processRequest(*player, messageClient)
 	if requestedmatch["create"] == 0 {
-		newMatch := Match{duration: requestedmatch["duration"], maxPlayers: requestedmatch["members"], started: false, players: make(map[int]*Player), readyToStart: false}
+		newMatch := Match{duration: requestedmatch["duration"], started: false, players: make(map[int]*Player), readyToStart: false}
 		newMatch.addPlayerToMatch(player)
 		matchManager.mutexMatches.Lock()
 		matchManager.matches = append(matchManager.matches, &newMatch)
 		matchManager.mutexMatches.Unlock()
 	} else {
 		fmt.Println("Guardo al jugador que hizo join en la cola de jugadores esperando")
-		matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: player, duration: requestedmatch["duration"], maxPlayers: requestedmatch["members"]})
+		matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: player, duration: requestedmatch["duration"]})
 	}
 }
 
@@ -39,7 +38,7 @@ func (matchManager *MatchManager) processWaitingPlayers(finishChannel chan bool)
 		for index, waitingPlayer := range matchManager.waitingPlayers {
 			matchManager.mutexMatches.Lock()
 			for _, match := range matchManager.matches {
-				if waitingPlayer.duration == match.duration && waitingPlayer.maxPlayers == match.maxPlayers && !match.readyToStart {
+				if waitingPlayer.duration == match.duration && !match.readyToStart {
 					fmt.Println("Jugador cumple con condiciones de match ", waitingPlayer.player.name)
 					match.addPlayerToMatch(waitingPlayer.player)
 					fmt.Println("match started: ", match.started)

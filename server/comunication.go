@@ -22,20 +22,6 @@ func sendMenu(player Player) (string, error) {
 	return response, error
 }
 
-func getAmountOfPlayers(player Player) int {
-
-	common.Send(player.socket, common.AmountOfMembersMessage)
-	members, _ := common.Receive(player.socket)
-	amount_members, _ := strconv.Atoi(members)
-
-	for amount_members != 2 && amount_members != 4 {
-		common.Send(player.socket, " Error! Elegir cantidad de integrantes 2 o 4")
-		members, _ = common.Receive(player.socket)
-		amount_members, _ = strconv.Atoi(members)
-	}
-	return amount_members
-}
-
 func getAmountOfPoints(player Player) int {
 	common.Send(player.socket, common.DurationOfMatchMessage)
 	duration, _ := common.Receive(player.socket)
@@ -68,9 +54,7 @@ func processRequest(player Player, message string) map[string]int {
 }
 
 func getMatchParameters(match map[string]int, player Player) {
-	members := getAmountOfPlayers(player)
 	duration := getAmountOfPoints(player)
-	match["members"] = members
 	match["duration"] = duration
 }
 

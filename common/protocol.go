@@ -36,7 +36,6 @@ const (
 	AskPlayerName       = BWhite + "Porfavor Ingrese su nombre: " + NONE
 	RequestMatchMessage = BWhite + "Ingresa " + BGreen + "CREATE" + BWhite + " para creare un juego o ingresa " + BBlue + "JOIN" + BWhite + " para unirte a una partida ya creada" + NONE
 
-	AmountOfMembersMessage  = BWhite + "ingrese cantidad integrantes: " + BCyan + "2 " + BWhite + "o " + BCyan + "4" + NONE
 	DurationOfMatchMessage  = BWhite + "Ingrese duracion de partida partida:" + BCyan + "15 " + BWhite + "o " + BCyan + "30 " + BWhite + "puntos" + NONE
 	CreateMatchMessage      = BWhite + "OK, Partida creada, esperando a que se una el resto de los jugadores" + NONE
 	JoinMatchMessage        = BWhite + "OK, Partida solicitada, se esta buscando una partida" + NONE

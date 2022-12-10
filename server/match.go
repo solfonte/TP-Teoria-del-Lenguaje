@@ -7,7 +7,6 @@ import (
 
 type Match struct {
 	duration        int
-	maxPlayers      int
 	players         map[int]*Player
 	started         bool
 	rounds          []Round
@@ -44,7 +43,7 @@ func (match *Match) addPlayerToMatch(player *Player) {
 	if match != nil {
 		match.players[player.id] = player
 		fmt.Println("agrego jugador :", player.name)
-		if len(match.players) == match.maxPlayers {
+		if len(match.players) == 2 {
 			fmt.Println("Arranco la partida")
 			match.waiterPlayerId = player.id
 			match.readyToStart = true
