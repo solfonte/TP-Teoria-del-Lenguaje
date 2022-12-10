@@ -7,7 +7,6 @@ import (
 )
 
 const (
-	opponentMessageForEnvido    = "Tu oponente canto envido. Tus opciones son: (1) Quiero (2) Quiero envido envido (3) No quiero"
 	RETURN_FROM_WAITING_OPTIONS = 0
 	TIRAR_CARTA                 = 4
 	CANTAR_ENVIDO               = 5
@@ -31,6 +30,7 @@ const (
 
 	MAX_CARDS_FOR_MOVE = 2
 	LAST_MOVE          = 3
+	FIRST_MOVE         = 1
 )
 
 type InfoPlayer struct {
@@ -50,7 +50,7 @@ type Move struct {
 	typeMove              int
 	cardsPlayed           []CardPlayer
 	alreadySangEnvido     bool
-	trucoState            int //20 canto truco, 21 se acepto truco, 22 se rechaza truco
+	trucoState            int
 	alreadyAceptedTruco   bool
 	alreadyAceptedRetruco bool
 	alreadySangTruco      bool
@@ -59,7 +59,7 @@ type Move struct {
 }
 
 func (move *Move) canSingEnvido() bool {
-	return move.typeMove == 1 && !move.alreadySangEnvido && !move.alreadyAceptedTruco && !move.alreadyAceptedRetruco
+	return move.typeMove == FIRST_MOVE && !move.alreadySangEnvido && !move.alreadyAceptedTruco && !move.alreadyAceptedRetruco
 }
 
 func (move *Move) canSingRetruco(player *Player) bool {

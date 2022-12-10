@@ -20,7 +20,6 @@ func definePlayerPossibleOptions(move *Move, player *Player, opponentOption int)
 		return options
 	}
 	if opponentOption == TIRAR_CARTA {
-		fmt.Println("Oponente tiro una carta")
 		options = append(options, TIRAR_CARTA)
 		if move.canSingEnvido() {
 			options = append(options, CANTAR_ENVIDO)
@@ -149,7 +148,6 @@ func getMessageInfoMoveToSend(move *Move, options []int) string {
 func handleWaitingOptions(status int, player *Player, playerMove *int, playerError *PlayerError) {
 
 	if status == VER_MIS_CARTAS {
-		fmt.Println("STATUS ES VER MIS CARTAS")
 		sendInfoCards(*player, playerError)
 	}
 	if status == IRSE_AL_MAZO {
