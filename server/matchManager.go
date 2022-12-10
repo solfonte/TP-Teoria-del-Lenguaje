@@ -43,7 +43,9 @@ func (matchManager *MatchManager) processWaitingPlayers(finishChannel chan bool)
 			for _, match := range matchManager.matches {
 				if waitingPlayer.duration == match.duration && waitingPlayer.maxPlayers == match.maxPlayers && !match.readyToStart {
 					fmt.Println("Jugador cumple con condiciones de match ", waitingPlayer.player.name)
-					match.addPlayerToMatch(waitingPlayer.player)
+					if (waitingPlayer.player.isReadyToPlay()){
+						match.addPlayerToMatch(waitingPlayer.player)
+					}
 					fmt.Println("match started: ", match.started)
 					matchManager.waitingPlayers = append(matchManager.waitingPlayers[:index], matchManager.waitingPlayers[index+1:]...)
 				}
@@ -65,8 +67,7 @@ func (matchManager *MatchManager) startMatches(finishChannel chan bool) {
 			if !match.started && matchManager.cancelMatch(match) {
 				matchManager.addMatchPlayersToWaitingQueue(match)
 				match.finish = true
-			}
-			if match.readyToStart && !match.started {
+			}else if match.readyToStart && !match.started {
 				match.started = true
 				fmt.Println("arranco match")
 				go match.beginGame()
@@ -94,9 +95,8 @@ func (matchManager *MatchManager) cancelMatch(match *Match) bool{
 
 func (matchManager *MatchManager) addMatchPlayersToWaitingQueue(match *Match){
 	for _, p := range match.players {
-		if p.isConnected(){
+		if p.isReadyToPlay(){
 			fmt.Print(p.name, " is connected when adding to waiting queue")
-
 			matchManager.mutexMatches.Lock()
 			matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: p, duration: match.duration, maxPlayers: match.maxPlayers})
 			matchManager.mutexMatches.Unlock()
