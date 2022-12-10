@@ -22,15 +22,15 @@ const (
 	WAIT                        = 80
 	STOP                        = 81
 	PLAY                        = 82
-)
+	CANTO_TRUCO                 = 20
+	ACEPTAR_TRUCO               = 21
+	RECHAZAR_TRUCO              = 22
+	CANTAR_RETRUCO              = 23
+	ACEPTAR_RETRUCO             = 24
+	RECHAZAR_RETRUCO            = 25
 
-const (
-	CANTO_TRUCO      = 20
-	ACEPTAR_TRUCO    = 21
-	RECHAZAR_TRUCO   = 22
-	CANTAR_RETRUCO   = 23
-	ACEPTAR_RETRUCO  = 24
-	RECHAZAR_RETRUCO = 25
+	MAX_CARDS_FOR_MOVE = 2
+	LAST_MOVE          = 3
 )
 
 type InfoPlayer struct {
@@ -158,10 +158,8 @@ func trucoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
 
 func (move *Move) handleResult(actual *Player, opponent *Player, finish *bool) bool {
 	if actual.lastMove == TIRAR_CARTA && opponent.lastMove == CANTAR_RETRUCO {
-		fmt.Println("entre actaul tiro una carta le seteo al otro last move en 0")
 		opponent.lastMove = 0
 	} else if opponent.lastMove == TIRAR_CARTA && actual.lastMove == CANTAR_RETRUCO {
-		fmt.Println("entre oponente tiro una carta le seteo al otro last move en 0")
 		actual.lastMove = 0
 	}
 	if actual.lastMove == IRSE_AL_MAZO {
@@ -170,7 +168,7 @@ func (move *Move) handleResult(actual *Player, opponent *Player, finish *bool) b
 	} else if opponent.lastMove == IRSE_AL_MAZO {
 		SendInfoPlayer(actual, common.OpponetHasSangFinishRound)
 		return move.finish_round(actual, opponent, finish)
-	} else if len(move.cardsPlayed) == 2 {
+	} else if len(move.cardsPlayed) == MAX_CARDS_FOR_MOVE {
 		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[1].card.getFullName() + common.NONE + "\n"
 		SendInfoPlayer(opponent, message)
 		result := move.cardsPlayed[0].card.compareCards(move.cardsPlayed[1].card)
@@ -291,7 +289,7 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 	move.loser.points = 0
 	if !move.hasSangFinishRound {
 		winner.winsPerPlay += 1
-		if move.typeMove == 3 || winner.winsPerPlay >= 2 {
+		if move.typeMove == LAST_MOVE || winner.winsPerPlay >= 2 {
 			if move.alreadyAceptedRetruco {
 				move.winner.points = 3
 				winner.points += 3

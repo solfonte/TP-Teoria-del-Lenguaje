@@ -56,7 +56,6 @@ func (player *Player) askPlayerName() {
 		fmt.Println("Error reciving from client: ", error.Error())
 	}
 	player.name = playerName
-	fmt.Println("nombre del jugador: ", player.name)
 }
 
 func (player *Player) dealCards(cards []Card) {
@@ -68,7 +67,6 @@ func (player *Player) removeCardSelected(posToDelete int) {
 }
 
 func (player *Player) sumPoints(points int) {
-	fmt.Println("SUME PUNTOS POR ENVIDO ", points)
 	player.points += points
 }
 

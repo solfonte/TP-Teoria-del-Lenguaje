@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"math"
 	"truco/app/common"
 )
@@ -16,6 +15,11 @@ type Round struct {
 	points        int
 	number        int
 }
+
+const (
+	MOVES_PER_ROUND = 3
+	ERROR           = -1
+)
 
 func (Round *Round) initialize(players map[int](*Player)) {
 	Round.players = players
@@ -35,27 +39,19 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 	round.waitingPlayer.winsPerPlay = 0
 	var err int
 
-	for completeRound <= 3 && !finish {
-		fmt.Println("estoy en ronda ", completeRound)
-		var move = Move{typeMove: completeRound, alreadySangEnvido: false} //TODO: no se si hace falta inicializarlo asi pero por ahora para probar
+	for completeRound <= MOVES_PER_ROUND && !finish {
+		var move = Move{typeMove: completeRound, alreadySangEnvido: false}
 		err = move.start_move(round.currentPlayer, round.waitingPlayer, playerError, &finish)
-		if err == -1 {
-			return -1
+		if err == ERROR {
+			return ERROR
 		}
 
 		completeRound += 1
-
 		round.decide_hand_players(move.winner.id, move.loser.id)
-		fmt.Println("Jugador 1: ", round.currentPlayer)
-		fmt.Println("Jugador 2: ", round.waitingPlayer)
-
-		fmt.Println("Puntos ronda", round.points)
 	}
-	fmt.Println("Gano ronda ", round.currentPlayer)
-	fmt.Println("Puntos ronda", round.points)
 
 	round.points = round.getMatchPointsPlayers(initialCurrentId, initialWaitingId)
-	fmt.Println("Puntos ronda: ", round.points)
+
 	round.currentPlayer.turn = true
 	round.waitingPlayer.turn = true
 	sendInfoPlayers(round.currentPlayer, round.waitingPlayer, common.GetWinningRoundMessage(round.number), common.GetLossingRoundMessage(round.number))
@@ -71,14 +67,3 @@ func (round *Round) decide_hand_players(initialCurrentPlayerId int, initialWaitP
 	round.waitingPlayer = round.players[initialWaitPlayerId]
 	round.currentPlayer = round.players[initialCurrentPlayerId]
 }
-
-// func (round *Round) waitingPlayerId() int {
-// 	fmt.Println("jugador actual id", round.currentPlayerId)
-// 	if round.currentPlayerId == 0 {
-// 		fmt.Println("entre a  caso donde cambio a 1")
-// 		return 1
-// 	} else {
-// 		fmt.Println("entre a  caso donde cambio a 0")
-// 		return 0
-// 	}
-// }

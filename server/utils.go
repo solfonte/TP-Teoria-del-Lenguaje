@@ -72,7 +72,6 @@ func definePlayerPossibleOptions(move *Move, player *Player, opponentOption int)
 }
 
 func isTurnOfPlayer(player *Player) bool {
-	fmt.Println("999999999999999999999999999999 PLAYER LAST MOVE = ", player.lastMove)
 	return !(player.lastMove == CANTAR_ENVIDO_ENVIDO) && !(player.lastMove == CANTAR_RETRUCO && !player.turn)
 }
 
