@@ -16,7 +16,6 @@ func (Card Card) getFullName() string {
 
 // Devuelve 1 si la carta es mejor que la otra, 0 si son de igual jerarquia o -1 si es menor que la otra.
 func (Card Card) compareCards(anotherCard Card) int {
-	//TODO: Si me tiran el 1 de espada vs el 3 de espada?
 	if Card.id >= RANGO_I_TRES && Card.id <= RANGO_F_TRES && anotherCard.id >= RANGO_I_TRES && anotherCard.id <= RANGO_F_TRES {
 		return 0
 	}

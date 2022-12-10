@@ -74,6 +74,7 @@ const (
 
 	ErrorCreateOrJoin = BRed + "Error: ingrese CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada" + NONE + "\n"
 	ErrorMaxPoints    = BRed + "Error! ingrese duracion de partida de valor 15 o 30 puntos" + NONE + "\n"
+	Rules             = "Las reglas del juego son: Podes cantar envido, envido-envido, real envido, truco y retruco"
 )
 
 func GetWinningMoveMessage(number int) string {

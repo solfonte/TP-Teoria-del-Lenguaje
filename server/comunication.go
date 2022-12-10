@@ -112,7 +112,7 @@ func SendWelcomeMessage(player *Player) {
 
 	common.Send(player.socket, common.WelcomeMessage)
 	common.Receive(player.socket)
-	common.Send(player.socket, "Las reglas del juego son: ")
+	common.Send(player.socket, common.Rules)
 	common.Receive(player.socket)
 }
 
