@@ -58,9 +58,7 @@ func contains_message(message string) bool {
 	find := false
 	for _, msg := range specificMessages {
 		if strings.Contains(message, msg) {
-			fmt.Println(strings.Contains(message, common.WaitingOptionsPlayer))
 			if !strings.Contains(message, common.WaitingOptionsPlayer) && !strings.Contains(message, "Es tu turno,") {
-				fmt.Println("entre")
 				find = true
 				break
 			}
@@ -75,13 +73,11 @@ func processGameloop(socket net.Conn) {
 	ch := make(chan string)
 	go ProcessResponseClient(ch, reader)
 	for {
-		fmt.Println("voy a procesar")
 		messageServer, err := common.Receive(socket)
 		checkErrorServer(err)
 		fmt.Println(messageServer)
 		if contains_message(messageServer) {
 			common.Send(socket, "OK")
-			fmt.Println("mande un ok")
 			if strings.Contains(messageServer, common.FinishGame) {
 				return
 			}
@@ -90,13 +86,11 @@ func processGameloop(socket net.Conn) {
 			for !finish {
 				select {
 				case stdin, ok := <-ch:
-					fmt.Println("lo que mando ", stdin)
 					if !ok {
 						break
 					} else {
 						//fmt.Println("Read input from stdin:", stdin)
 						if strings.TrimSpace(stdin) == QUIT {
-							fmt.Println("entre a quit")
 							return
 						}
 
@@ -123,7 +117,6 @@ func ProcessResponseClient(ch chan string, reader *bufio.Reader) {
 			close(ch)
 			return
 		}
-		fmt.Println("recibo: ", s)
 		ch <- s
 	}
 }
