@@ -13,11 +13,11 @@ import (
 )
 
 const (
-	SERVER_HOST = "localhost"
-	SERVER_PORT = "9965"
-	SERVER_TYPE = "tcp"
-	QUIT        = "Q"
-	TIMETOWAIT  = 6
+	SERVER_HOST  = "localhost"
+	SERVER_PORT  = "9965"
+	SERVER_TYPE  = "tcp"
+	QUIT         = "Q"
+	TIME_TO_WAIT = 6
 )
 
 func Start() {
@@ -97,7 +97,7 @@ func processGameloop(socket net.Conn) {
 						common.Send(socket, stdin)
 						finish = true
 					}
-				case <-time.After(TIMETOWAIT * time.Second):
+				case <-time.After(TIME_TO_WAIT * time.Second):
 					if strings.Contains(messageServer, "Mientras esperas a que sea tu turno") {
 						common.Send(socket, common.ACK)
 						finish = true

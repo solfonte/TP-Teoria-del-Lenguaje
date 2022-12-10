@@ -17,7 +17,7 @@
 ### Client 
 
 ```Bash 
-    go run clientMain/client.go
+    go run clientMain/client_main.go
 ```
 
 ### Server 
