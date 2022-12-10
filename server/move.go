@@ -112,7 +112,6 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 func (move *Move) handleTrucoResult(actual *Player, opponent *Player, finish *bool) bool {
 
 	if actual.lastMove == RECHAZAR_TRUCO || actual.lastMove == RECHAZAR_RETRUCO {
-		fmt.Println("No quiere truco")
 		message := common.OpponetRejectTruco
 		if actual.lastMove == RECHAZAR_RETRUCO {
 			message = common.OpponetRejectRetruco
@@ -120,7 +119,6 @@ func (move *Move) handleTrucoResult(actual *Player, opponent *Player, finish *bo
 		SendInfoPlayer(opponent, message)
 		return move.finish_round(opponent, actual, finish)
 	} else if opponent.lastMove == RECHAZAR_TRUCO || opponent.lastMove == RECHAZAR_RETRUCO {
-		fmt.Println("No quiere truco")
 		message := common.OpponetRejectTruco
 		if opponent.lastMove == RECHAZAR_RETRUCO {
 			message = common.OpponetRejectRetruco
@@ -132,7 +130,6 @@ func (move *Move) handleTrucoResult(actual *Player, opponent *Player, finish *bo
 	} else if opponent.lastMove == CANTAR_RETRUCO && actual.lastMove == CANTAR_TRUCO {
 		opponent.turn = false
 	} else {
-		fmt.Println("algun otro caso del truco")
 		return false
 	}
 	return false
@@ -143,7 +140,6 @@ func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
 
 	for _, option := range options {
 		if playerOption == option || anotherPlayerOption == option {
-			fmt.Println("opcion de envido identificada")
 			return true
 		}
 	}
@@ -154,7 +150,6 @@ func trucoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
 	options := []int{CANTAR_TRUCO, CANTO_TRUCO, RECHAZAR_TRUCO, CANTAR_RETRUCO, RECHAZAR_RETRUCO, ACEPTAR_TRUCO, ACEPTAR_RETRUCO}
 	for _, option := range options {
 		if playerOption == option || anotherPlayerOption == option {
-			fmt.Println("opcion de TRUCO identificada")
 			return true
 		}
 	}
@@ -171,27 +166,21 @@ func (move *Move) handleResult(actual *Player, opponent *Player, finish *bool) b
 	}
 	if actual.lastMove == IRSE_AL_MAZO {
 		SendInfoPlayer(opponent, common.OpponetHasSangFinishRound)
-		fmt.Println("ACTUAL se fue al MAZO")
 		return move.finish_round(opponent, actual, finish)
 	} else if opponent.lastMove == IRSE_AL_MAZO {
-		fmt.Println("OPONENT se fue al  MAZO")
 		SendInfoPlayer(actual, common.OpponetHasSangFinishRound)
 		return move.finish_round(actual, opponent, finish)
 	} else if len(move.cardsPlayed) == 2 {
-		fmt.Println("hay dos cartas chequeo quien gana jugada")
 		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[1].card.getFullName() + common.NONE + "\n"
 		SendInfoPlayer(opponent, message)
 		result := move.cardsPlayed[0].card.compareCards(move.cardsPlayed[1].card)
 		return move.assingWinner(result, move.cardsPlayed[0].player, move.cardsPlayed[1].player, finish)
 	} else if envidoRelatedOptions(actual.lastMove, opponent.lastMove) {
-		fmt.Println("identifique envido")
 		handleEnvidoResult(move, actual, opponent, finish)
 		return false
 	} else if trucoRelatedOptions(actual.lastMove, opponent.lastMove) {
-		fmt.Println("indentifique truco")
 		return move.handleTrucoResult(actual, opponent, finish)
 	}
-	fmt.Println("no entro en ninguna de las opciones")
 	return false
 }
 
@@ -257,7 +246,6 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			option1 = 0
 			player1.lastMove = 0
 		}
-		fmt.Println("finish move: ", moveFinished)
 		if isTurnOfPlayer(player2) && !moveFinished && playerError.err == nil {
 			orderChannel1 <- WAIT
 			orderChannel2 <- PLAY
@@ -315,7 +303,6 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 				winner.points += 1
 			}
 		} else {
-			fmt.Println("NINGUN PUNTO")
 			move.winner.points = 0
 		}
 	}

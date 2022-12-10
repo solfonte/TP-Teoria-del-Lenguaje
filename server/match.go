@@ -48,9 +48,7 @@ func (match *Match) addPlayerToMatch(player *Player) {
 			fmt.Println("Arranco la partida")
 			match.waiterPlayerId = player.id
 			match.readyToStart = true
-			//match.beginGame()
 		} else {
-			// CREO ALGUIEN LA PARTIDA
 			fmt.Println("alguiien creo la partida")
 			match.initialPlayerId = player.id
 		}
@@ -82,8 +80,6 @@ func (match *Match) handle_disconnection_player(playerError PlayerError) {
 }
 
 func (match *Match) DisconnectMatch() {
-	fmt.Println("--------termiandoooooooooooooooo---")
-
 	for _, player := range match.players {
 		player.stop()
 	}
