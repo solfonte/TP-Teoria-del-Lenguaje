@@ -162,7 +162,6 @@ func trucoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
 }
 
 func (move *Move) handleResult(actual *Player, opponent *Player, finish *bool) bool {
-	// ESTO CREO QUE SE PUEDE SACAR
 	if actual.lastMove == TIRAR_CARTA && opponent.lastMove == CANTAR_RETRUCO {
 		fmt.Println("entre actaul tiro una carta le seteo al otro last move en 0")
 		opponent.lastMove = 0
@@ -242,7 +241,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	go move.handlePlayersMoves(orderChannel2, movesChannel2, mazoChannell2, player2, playerError)
 	for !moveFinished && playerError.err == nil {
 
-		move.setAlreadySangTruco(player1, player2) //TODO:chequear si va aca
+		move.setAlreadySangTruco(player1, player2)
 		if isTurnOfPlayer(player1) && !moveFinished && playerError.err == nil {
 			orderChannel1 <- PLAY
 			orderChannel2 <- WAIT
@@ -255,7 +254,6 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			moveFinished = move.handleResult(player1, player2, finish)
 			movesChannel2 <- option1 //al jugador 2 le mando la jugada del jugador 1
 		} else {
-			fmt.Println("esta bien que entre aca si alguien tiro irse al mazo")
 			option1 = 0
 			player1.lastMove = 0
 		}
@@ -274,7 +272,6 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 			moveFinished = move.handleResult(player2, player1, finish)
 			movesChannel1 <- option2
 		} else {
-			fmt.Println("esta bien que entre aca si alguien tiro irse al mazo")
 			option2 = 0
 			player2.lastMove = 0
 		}
@@ -304,7 +301,6 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 	move.winner.points = 0
 	move.loser.id = loser.id
 	move.loser.points = 0
-	// hay que settear a cero por cada ronda
 	if !move.hasSangFinishRound {
 		winner.winsPerPlay += 1
 		if move.typeMove == 3 || winner.winsPerPlay >= 2 {
@@ -346,12 +342,10 @@ func (move *Move) handlePlayerActivity(player *Player, playerMove *int, playerEr
 		fmt.Println("status: ", status)
 		handleWaitingOptions(status, player, playerMove, playerError)
 		if err != nil {
-			fmt.Println("detecte error del q espera")
 			playerError.player = player
 			playerError.err = err
 		}
 	}
-	fmt.Println("Salgo del for del waiting options ")
 	return
 }
 
@@ -443,9 +437,7 @@ func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int
 }
 
 func (move *Move) sendInfoMove(player *Player, options []int, playerError *PlayerError) (int, int) {
-	fmt.Println("mando info")
 	message := getMessageInfoMoveToSend(move, options)
-	fmt.Println("sendInfoMove: todavia no entre al for")
 	option, err := loopSendOptionsToPlayer(options, player, playerError, message)
 	return option, err
 }
@@ -453,7 +445,6 @@ func (move *Move) sendInfoMove(player *Player, options []int, playerError *Playe
 func (move *Move) askPlayerToMove(player *Player, options []int, playerError *PlayerError) (int, int) {
 	option := 0
 	var err int
-	fmt.Println("estado del envido: ", move.envidoState)
 
 	sendInfoOpponent(move, player)
 	option, err = move.sendInfoMove(player, options, playerError)
