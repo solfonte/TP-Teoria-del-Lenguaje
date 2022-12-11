@@ -6,7 +6,7 @@
 | Stephanie Izquierdo Osorio | 104196  | sizquierdo@fi.uba.ar |
 | Maria Sol Fontenla | 103870 | msfontenla@fi.uba.ar |
 
-
+# Lenguaje Go 
 
 # Buildear 
 
@@ -25,41 +25,16 @@
 ```Bash 
     go run serverMain/server_main.go 
 ```
+
+* Acepta multiples jugadores 
+* Se desconeta al servidor con el comando Q
+
 ### Aclaraciones del TP:
 
-No esta implementada la parda, el que comienza es el primero que creo la partida.
-
-Si hay problemas para leer el cvs de las cartas, poner el path correspondiente en server/cardDealed.go linea 23
-### ejemplos para el video 
-
-* Como podemos aplicar composicion:
-    si sacamos de nuestra estructura el nombre del atributo y dejamos directamente el tipo de dato 
-    le estamos dando la funcionadidad de ese tipo a la estructura. 
-    ej: 
-    tenemos struct 
-    ```Go 
-    type Acceptor struct {
-	socketListerner net.Listener
-	players []Player
-    }
-    ```
-    Vemos que posee el atributo socketListerner que es del tipo listener, si solo dejamos el tipo 
-    ahora el acceptor posee la funcionalidad del socket y directamente invocamos a aceptador para realizar los metodos del socket 
-     ```Go 
-    type Acceptor struct {
-	net.Listener
-	players []Player
-    }
-
-    aceptador.Accept()
-    acceptador.Close()
-    ```
-
-* Channels 
-
-Permiten la comunicaion entre dos go rutings, es decir si yo quiero que una go ruting utilize los valores de otra se los puedo enviar por el channel establecido. El cannal debe definir un tipo. 
-Son bloqueantes, lo cual permite que exista una sincronizacion. 
-Se pueden definir tamaños:
-* si es fijo se llama buffer y se bloquea si esta lleno o si esta vacio 
-
-No hace falta cerrarlos. Puede hacerlo para indicar al receptor que ya no se envia nada. 
+* No esta implementada la parda
+* El que creo la partida es el que comienza primero en el juego
+* Se implemento truco y retruco 
+* Se implemeneto envido, envido - envido 
+* Si ambos jugadores tiran una carta del mismo valor gana el que la tiro primero
+* Cuando un jugador esta en espera de que el otro jugador espere este puede irse al   mazo o ver que cartas tiene. En caso que no responde por 6 segundos no podra solicitar mas ninguna opcion y debe esperar a que su oponenete juege.
+* Si hay problemas para leer el cvs de las cartas, poner el path correspondiente en server/cardDealed.go linea 23
