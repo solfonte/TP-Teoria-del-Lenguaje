@@ -29,7 +29,7 @@ func (matchManager *MatchManager) process_player(player *Player) {
 	} else {
 		fmt.Println("Guardo al jugador que hizo join en la cola de jugadores esperando")
 		matchManager.mutexMatches.Lock()
-		matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: player, duration: requestedmatch["duration"], maxPlayers: requestedmatch["members"]})
+		matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: player, duration: requestedmatch["duration"]})
 		matchManager.mutexMatches.Unlock()
 	}
 }
@@ -46,7 +46,9 @@ func (matchManager *MatchManager) processWaitingPlayers(finishChannel chan bool)
 				matchManager.mutexMatches.Lock()
 				for _, match := range matchManager.matches {
 					if waitingPlayer.duration == match.duration && !match.readyToStart {
-						match.addPlayerToMatch(waitingPlayer.player)
+						if (waitingPlayer.player.isReadyToPlay()){
+							match.addPlayerToMatch(waitingPlayer.player)
+						}
 						matchManager.waitingPlayers = append(matchManager.waitingPlayers[:index], matchManager.waitingPlayers[index+1:]...)
 					}
 				}
@@ -67,6 +69,7 @@ func (matchManager *MatchManager) startMatches(finishChannel chan bool) {
 			matchManager.mutexMatches.Lock()
 			for _, match := range matchManager.matches {
 				if !match.started && matchManager.cancelMatch(match) {
+					fmt.Println("esta para cancelar el match")
 					matchManager.addMatchPlayersToWaitingQueue(match)
 					match.finish = true
 				}else if match.readyToStart && !match.started {
@@ -137,7 +140,7 @@ func (matchManager *MatchManager) addMatchPlayersToWaitingQueue(match *Match){
 		if p.isReadyToPlay(){
 			fmt.Print(p.name, " is connected when adding to waiting queue")
 			matchManager.mutexMatches.Lock()
-			matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: p, duration: match.duration, maxPlayers: match.maxPlayers})
+			matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: p, duration: match.duration})
 			matchManager.mutexMatches.Unlock()
 		}
 	}

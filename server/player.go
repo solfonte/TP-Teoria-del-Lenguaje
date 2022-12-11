@@ -97,10 +97,8 @@ func (player *Player) setNotifyRetruco(notify bool) {
 }
 
 func (player *Player) isReadyToPlay() bool {
-	fmt.Println("entro a ver si esta conectado")
 	common.Send(player.socket, READY_TO_PLAY_MESSAGE)
-	msg, err := common.Receive(player.socket)
-	fmt.Println(msg, " mensaje")
+	_, err := common.Receive(player.socket)
 	if err != nil {
 		fmt.Println("disconnected")
 		player.connected = false
