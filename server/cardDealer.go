@@ -27,14 +27,12 @@ func (cardDealer *CardDealer) assignCards(player *Player) {
 	var assignedCards []Card
 
 	for amountOfCards < 3 {
-		card := rand.Int() % 40          // posicion en nuestro vector de cartas
-		if cardDealer.cards[card] != 0 { // si no fue asignada
+		card := rand.Int() % 40
+		if cardDealer.cards[card] != 0 {
 			card_value, _ := strconv.Atoi(cardNames[card][0])
 			card_suit := cardNames[card][1]
 
 			assignedCards = append(assignedCards, Card{id: card, value: card_value, suit: card_suit})
-
-			//se le asigna cero para determinar que ya se repartio
 			cardDealer.cards[card] = 0
 			amountOfCards += 1
 		}

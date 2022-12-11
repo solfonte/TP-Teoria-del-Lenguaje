@@ -59,11 +59,11 @@ func sendMenuResponses(socket net.Conn) {
 
 func startGame(socket net.Conn) {
 	i := 0
-	// estas son tus cartas
+
 	for i < 2 {
 		messageServer, err := common.Receive(socket)
 		checkErrorServer(err)
-		fmt.Println(common.BWhite+messageServer+common.NONE)
+		fmt.Println(common.BWhite + messageServer + common.NONE)
 		common.Send(socket, "Ok")
 		i++
 	}

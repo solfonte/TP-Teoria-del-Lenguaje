@@ -42,13 +42,10 @@ func (match *Match) deal_cards(players map[int]*Player) {
 func (match *Match) addPlayerToMatch(player *Player) {
 	if match != nil {
 		match.players[player.id] = player
-		fmt.Println("agrego jugador :", player.name)
 		if len(match.players) == 2 {
-			fmt.Println("Arranco la partida")
 			match.waiterPlayerId = player.id
 			match.readyToStart = true
 		} else {
-			fmt.Println("alguiien creo la partida")
 			match.initialPlayerId = player.id
 		}
 	}
@@ -66,7 +63,6 @@ func (match *Match) changeInitialPlayerForRounds() {
 }
 
 func (match *Match) handle_disconnection_player(playerError PlayerError) {
-	fmt.Println("--------------------desconecto jugadores-------------------------")
 
 	msg := "Tu oponente se desconecto"
 	if playerError.player.id == match.initialPlayerId {
@@ -97,14 +93,12 @@ func (match *Match) handleConnections(stop *bool, playerError *PlayerError) {
 func (match *Match) beginGame() {
 	defer match.DisconnectMatch()
 	match.deal_cards(match.players)
-	fmt.Println("Entre a comenzo juego")
 
 	var round = Round{}
 	var playerError = PlayerError{err: nil, player: nil}
 	var stop bool = false
 	round.initialize(match.players)
 	for _, player := range match.players {
-		fmt.Println("comenzo juego")
 		startGame(*player)
 	}
 	go match.handleConnections(&stop, &playerError)
@@ -119,8 +113,6 @@ func (match *Match) beginGame() {
 		sendInfoCards(*match.players[match.initialPlayerId], &playerError)
 		sendInfoCards(*match.players[match.waiterPlayerId], &playerError)
 		match.points = round.startRound(match.initialPlayerId, match.waiterPlayerId, &playerError, numberRound)
-
-		fmt.Println("puntos que va el partido: ", match.points)
 		numberRound += 1
 		match.changeInitialPlayerForRounds()
 		match.deal_cards(match.players)

@@ -8,8 +8,6 @@ import (
 
 func definePlayerPossibleOptions(move *Move, player *Player, opponentOption int) []int {
 	var options []int
-	fmt.Println("Mis ultimos movimiento: ", player.lastMove)
-	fmt.Println("Opponet ultimo movimiento: ", opponentOption)
 	if (player.lastMove == NO_QUERER_ENVIDO || player.lastMove == NO_QUERER_ENVIDO_ENVIDO || player.lastMove == QUERER_ENVIDO_ENVIDO) && opponentOption != CANTAR_TRUCO {
 		options = append(options, TIRAR_CARTA)
 		if !move.alreadySangTruco {
@@ -89,13 +87,8 @@ func loopSendOptionsToPlayer(options []int, player *Player, playerError *PlayerE
 	option := 0
 	msgError := ""
 	for !containsOption(option, options) && playerError.err == nil {
-		fmt.Println("loop options player: entre a mandarle la info a los jugadores")
-		fmt.Println(message)
 		common.Send(player.socket, msgError+message)
-		fmt.Println("mande info a cliente ", player.name)
 		jugada, err := common.Receive(player.socket)
-		fmt.Println("Jugada ", jugada)
-		fmt.Println(err)
 		if err != nil {
 			fmt.Println("ERROR EN EL LOOP")
 			playerError.player = player
@@ -104,7 +97,6 @@ func loopSendOptionsToPlayer(options []int, player *Player, playerError *PlayerE
 		}
 		msgError = "Error: no elegiste una opcion valida. "
 		option, _ = strconv.Atoi(jugada)
-		fmt.Println("El jugador "+player.name+" mando la opcion: ", option)
 	}
 	return option, 0
 }
@@ -164,9 +156,6 @@ func receiveWaitingRequests(player *Player) (int, error) {
 	if err != nil {
 		return -1, err
 	}
-	fmt.Println("el hilo de receive waiting requests recibio "+message, " del player ", player.name)
-	fmt.Println(message)
-	fmt.Println("pase waiting requests")
 	if message == common.ACK {
 		return 0, nil
 	}
@@ -176,29 +165,24 @@ func receiveWaitingRequests(player *Player) (int, error) {
 
 func handleEnvidoResult(move *Move, actual *Player, opponent *Player, finish *bool) {
 	sendInfoEnvido(move, actual, opponent)
-	fmt.Println(" me llegan las opciones " + strconv.Itoa(actual.lastMove) + " y " + strconv.Itoa(opponent.lastMove))
 	if (actual.lastMove == CANTAR_ENVIDO || opponent.lastMove == CANTAR_ENVIDO) && (actual.lastMove == QUERER_ENVIDO || opponent.lastMove == QUERER_ENVIDO) {
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
 		envidoWinner.sumPoints(2)
-		fmt.Println("sume puntos por envido a " + envidoWinner.name)
 	} else if (actual.lastMove == CANTAR_ENVIDO || opponent.lastMove == CANTAR_ENVIDO) && (actual.lastMove == NO_QUERER_ENVIDO || opponent.lastMove == NO_QUERER_ENVIDO) {
 		playerToSumPoints := actual
 		if opponent.lastMove == CANTAR_ENVIDO {
 			playerToSumPoints = opponent
 		}
 		playerToSumPoints.sumPoints(1)
-		fmt.Println("sume puntos por envido no querido a " + playerToSumPoints.name)
 	} else if (actual.lastMove == CANTAR_ENVIDO_ENVIDO || opponent.lastMove == CANTAR_ENVIDO_ENVIDO) && (actual.lastMove == QUERER_ENVIDO_ENVIDO || opponent.lastMove == QUERER_ENVIDO_ENVIDO) {
 		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
 		envidoWinner.sumPoints(4)
-		fmt.Println("sume puntos por envido envido a " + envidoWinner.name)
 	} else if (actual.lastMove == CANTAR_ENVIDO_ENVIDO || opponent.lastMove == CANTAR_ENVIDO_ENVIDO) && (actual.lastMove == NO_QUERER_ENVIDO_ENVIDO || opponent.lastMove == NO_QUERER_ENVIDO_ENVIDO) {
 		playerToSumPoints := actual
 		if opponent.lastMove == CANTAR_ENVIDO_ENVIDO {
 			playerToSumPoints = opponent
 		}
 		playerToSumPoints.sumPoints(2)
-		fmt.Println("sume puntos por envido envido a " + playerToSumPoints.name)
 	}
 }
 

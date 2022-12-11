@@ -1,36 +1,7 @@
 package server
 
 import (
-	"fmt"
-	"math"
 	"truco/app/common"
-)
-
-const (
-	RETURN_FROM_WAITING_OPTIONS = 0
-	TIRAR_CARTA                 = 4
-	CANTAR_ENVIDO               = 5
-	CANTAR_TRUCO                = 6
-	QUERER_ENVIDO               = 7
-	CANTAR_ENVIDO_ENVIDO        = 8
-	NO_QUERER_ENVIDO_ENVIDO     = 9
-	NO_QUERER_ENVIDO            = 10
-	QUERER_ENVIDO_ENVIDO        = 13
-	IRSE_AL_MAZO                = 11
-	VER_MIS_CARTAS              = 12
-	WAIT                        = 80
-	STOP                        = 81
-	PLAY                        = 82
-	CANTO_TRUCO                 = 20
-	ACEPTAR_TRUCO               = 21
-	RECHAZAR_TRUCO              = 22
-	CANTAR_RETRUCO              = 23
-	ACEPTAR_RETRUCO             = 24
-	RECHAZAR_RETRUCO            = 25
-
-	MAX_CARDS_FOR_MOVE = 2
-	LAST_MOVE          = 3
-	FIRST_MOVE         = 1
 )
 
 type InfoPlayer struct {
@@ -59,8 +30,6 @@ type Move struct {
 }
 
 /*********************************** ENVIDO FUNCTIONS ***********************************************/
-
-
 
 func (move *Move) canSingEnvido() bool {
 	return move.typeMove == FIRST_MOVE && !move.alreadySangEnvido && !move.alreadyAceptedTruco && !move.alreadyAceptedRetruco
@@ -97,7 +66,6 @@ func (move *Move) setAlreadySangTruco(player1 *Player, player2 *Player) {
 	move.alreadySangTruco = (player1.hasSagnTruco || player2.hasSagnTruco)
 	move.alreadyAceptedRetruco = (player1.hasSangReTruco || player2.hasSangReTruco)
 }
-
 
 func (move *Move) handleTruco(player *Player, option int) {
 	if option == CANTAR_RETRUCO {
@@ -215,7 +183,7 @@ func (move *Move) handlePlayerActivity(player *Player, playerMove *int, playerEr
 	var err error
 	for status != RETURN_FROM_WAITING_OPTIONS && status != -1 && status != IRSE_AL_MAZO {
 		status, err = receiveWaitingRequests(player)
-		fmt.Println("status: ", status)
+
 		handleWaitingOptions(status, player, playerMove, playerError)
 		if err != nil {
 			playerError.player = player
@@ -250,10 +218,6 @@ func (move *Move) assingWinner(result int, player1 *Player, player2 *Player, fin
 	}
 }
 
-func (move *Move) getMaxPoints() int {
-	return int(math.Max(float64(move.loser.points), float64(move.winner.points)))
-}
-
 /*********************************** MOVE FUCTIONS ***********************************************/
 
 func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool {
@@ -285,12 +249,9 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 	}
 
 	*finish = true
-	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
 
 	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove))
-	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
 
-	fmt.Println("termino jugada")
 	return true
 }
 
@@ -376,16 +337,10 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 			move.winner.points = 0
 		}
 	}
-
-	fmt.Println("ganador primera jugada ", move.winner, "\n\nPUNTOS GANADOR: ", move.winner.points)
-
 	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove))
-	fmt.Println("jugadas ganadas ", winner.winsPerPlay)
 	if winner.winsPerPlay == 2 || move.hasSangFinishRound {
-		fmt.Println("termino jugada")
 		*finish = true
 	} else {
-		fmt.Println("No termino jugada")
 		*finish = false
 	}
 	return true
@@ -393,8 +348,8 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 
 func (move *Move) askPlayerToWait(player *Player, playerOption *int, playerError *PlayerError) int {
 	common.Send(player.socket, common.WaitPlayerToPlayMessage)
-	message, err := common.Receive(player.socket)
-	fmt.Println("mESNAJE QUE ME LLEGA EN AK PLAYER TO WAIT: ", message)
+	_, err := common.Receive(player.socket)
+
 	if err != nil {
 		playerError.player = player
 		playerError.err = err
