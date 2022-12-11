@@ -117,7 +117,7 @@ func (match *Match) beginGame() {
 		match.changeInitialPlayerForRounds()
 		match.deal_cards(match.players)
 	}
-	match.process_winner_and_loser()
+	match.process_winner_and_loser(&playerError)
 	match.FinishMatch()
 
 }
@@ -130,17 +130,17 @@ func (match *Match) FinishMatch() {
 	match.finish = true
 }
 
-func (match Match) process_winner_and_loser() {
+func (match Match) process_winner_and_loser(playerError *PlayerError) {
 	if match.players[match.initialPlayerId].points >= match.players[match.waiterPlayerId].points {
 		sendInfoPlayers(match.players[match.initialPlayerId],
 			match.players[match.waiterPlayerId],
 			common.WinMatchMessage,
-			common.LoseMatchMessage)
+			common.LoseMatchMessage, playerError)
 	} else {
 		sendInfoPlayers(match.players[match.waiterPlayerId],
 			match.players[match.initialPlayerId],
 			common.WinMatchMessage,
-			common.LoseMatchMessage)
+			common.LoseMatchMessage, playerError)
 	}
 
 }

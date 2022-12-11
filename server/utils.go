@@ -163,10 +163,10 @@ func receiveWaitingRequests(player *Player) (int, error) {
 	return option, nil
 }
 
-func handleEnvidoResult(move *Move, actual *Player, opponent *Player, finish *bool) {
-	sendInfoEnvido(move, actual, opponent)
+func handleEnvidoResult(move *Move, actual *Player, opponent *Player, finish *bool, playerError *PlayerError) {
+	sendInfoEnvido(move, actual, opponent, playerError)
 	if (actual.lastMove == CANTAR_ENVIDO || opponent.lastMove == CANTAR_ENVIDO) && (actual.lastMove == QUERER_ENVIDO || opponent.lastMove == QUERER_ENVIDO) {
-		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
+		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent, playerError)
 		envidoWinner.sumPoints(2)
 	} else if (actual.lastMove == CANTAR_ENVIDO || opponent.lastMove == CANTAR_ENVIDO) && (actual.lastMove == NO_QUERER_ENVIDO || opponent.lastMove == NO_QUERER_ENVIDO) {
 		playerToSumPoints := actual
@@ -175,7 +175,7 @@ func handleEnvidoResult(move *Move, actual *Player, opponent *Player, finish *bo
 		}
 		playerToSumPoints.sumPoints(1)
 	} else if (actual.lastMove == CANTAR_ENVIDO_ENVIDO || opponent.lastMove == CANTAR_ENVIDO_ENVIDO) && (actual.lastMove == QUERER_ENVIDO_ENVIDO || opponent.lastMove == QUERER_ENVIDO_ENVIDO) {
-		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent)
+		envidoWinner := actual.verifyEnvidoWinnerAgainst(opponent, playerError)
 		envidoWinner.sumPoints(4)
 	} else if (actual.lastMove == CANTAR_ENVIDO_ENVIDO || opponent.lastMove == CANTAR_ENVIDO_ENVIDO) && (actual.lastMove == NO_QUERER_ENVIDO_ENVIDO || opponent.lastMove == NO_QUERER_ENVIDO_ENVIDO) {
 		playerToSumPoints := actual
@@ -186,42 +186,42 @@ func handleEnvidoResult(move *Move, actual *Player, opponent *Player, finish *bo
 	}
 }
 
-func sendInfoEnvido(move *Move, actual *Player, opponent *Player) {
+func sendInfoEnvido(move *Move, actual *Player, opponent *Player, playerError *PlayerError) {
 	if actual.lastMove == QUERER_ENVIDO_ENVIDO {
-		SendInfoPlayer(opponent, common.OpponentAcceptEnvidoEnvido)
+		SendInfoPlayer(opponent, common.OpponentAcceptEnvidoEnvido, playerError)
 		move.envidoState = 0
 	} else if actual.lastMove == NO_QUERER_ENVIDO_ENVIDO {
-		SendInfoPlayer(opponent, common.OpponentRejectEnvidoEnvido)
+		SendInfoPlayer(opponent, common.OpponentRejectEnvidoEnvido, playerError)
 		move.envidoState = 0
 	} else if actual.lastMove == NO_QUERER_ENVIDO {
-		SendInfoPlayer(opponent, common.OpponetRejectEnvido)
+		SendInfoPlayer(opponent, common.OpponetRejectEnvido, playerError)
 		move.envidoState = 0
 	} else if actual.lastMove == CANTAR_ENVIDO {
-		SendInfoPlayer(opponent, common.OpponetSingEnvido)
+		SendInfoPlayer(opponent, common.OpponetSingEnvido, playerError)
 	} else if actual.lastMove == QUERER_ENVIDO {
-		SendInfoPlayer(opponent, common.OpponetAcceptEnvido)
+		SendInfoPlayer(opponent, common.OpponetAcceptEnvido, playerError)
 		move.envidoState = 0
 	} else if actual.lastMove == CANTAR_ENVIDO_ENVIDO {
-		SendInfoPlayer(opponent, common.OpponentSingEnvidoEnvido)
+		SendInfoPlayer(opponent, common.OpponentSingEnvidoEnvido, playerError)
 	}
 
 }
 
-func sendInfoOpponent(move *Move, player *Player) {
+func sendInfoOpponent(move *Move, player *Player, playerError *PlayerError) {
 	if move.trucoState == CANTO_TRUCO {
-		SendInfoPlayer(player, common.OpponentSingTruco)
+		SendInfoPlayer(player, common.OpponentSingTruco, playerError)
 	} else if move.trucoState == CANTAR_RETRUCO {
-		SendInfoPlayer(player, common.OpponentSingRetruco)
+		SendInfoPlayer(player, common.OpponentSingRetruco, playerError)
 	} else if move.trucoState == ACEPTAR_TRUCO && !player.notifyTruco {
 		move.alreadyAceptedTruco = true
 		player.setNotifyTruco(true)
-		SendInfoPlayer(player, common.OpponetAcceptTruco)
+		SendInfoPlayer(player, common.OpponetAcceptTruco, playerError)
 	} else if move.trucoState == ACEPTAR_RETRUCO && !player.notifyRetruco {
 		player.setNotifyRetruco(true)
-		SendInfoPlayer(player, common.OpponetAcceptRetruco)
+		SendInfoPlayer(player, common.OpponetAcceptRetruco, playerError)
 	} else if len(move.cardsPlayed) > 0 && move.envidoState == 0 {
 		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[0].card.getFullName() + common.NONE + "\n"
-		SendInfoPlayer(player, message)
+		SendInfoPlayer(player, message, playerError)
 	}
 
 }

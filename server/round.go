@@ -54,8 +54,8 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 
 	round.currentPlayer.turn = true
 	round.waitingPlayer.turn = true
-	sendInfoPlayers(round.currentPlayer, round.waitingPlayer, common.GetWinningRoundMessage(round.number), common.GetLossingRoundMessage(round.number))
-	sendInfoPointsPlayers(round.currentPlayer, round.waitingPlayer)
+	sendInfoPlayers(round.currentPlayer, round.waitingPlayer, common.GetWinningRoundMessage(round.number), common.GetLossingRoundMessage(round.number), playerError)
+	sendInfoPointsPlayers(round.currentPlayer, round.waitingPlayer, playerError)
 	return round.points
 }
 

@@ -64,10 +64,10 @@ func startGame(player Player) {
 
 }
 
-func sendOtherPlayDisconnection(player Player, msg string) {
+func sendOtherPlayDisconnection(player Player, msg string) error {
 	common.Send(player.socket, msg)
-	message, _ := common.Receive(player.socket)
-	fmt.Println(message)
+	_, err := common.Receive(player.socket)
+	return err
 }
 
 func getCardColors(card string) string {
@@ -97,13 +97,19 @@ func sendInfoCards(player Player, playerError *PlayerError) {
 	}
 }
 
-func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser string) {
+func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser string, playerError *PlayerError) {
 	common.Send(winner.socket, msgWinner)
-	common.Receive(winner.socket)
-
+	_, err := common.Receive(winner.socket)
+	if err != nil {
+		playerError.player = winner
+		playerError.err = err
+	}
 	common.Send(loser.socket, msgLoser)
-	common.Receive(loser.socket)
-
+	_, err = common.Receive(loser.socket)
+	if err != nil {
+		playerError.player = loser
+		playerError.err = err
+	}
 }
 
 func SendWelcomeMessage(player *Player) {
@@ -129,23 +135,38 @@ func GetCardsToThrow(cards []Card) (string, []int) {
 
 }
 
-func sendInfoPointsPlayers(player1 *Player, player2 *Player) {
+func sendInfoPointsPlayers(player1 *Player, player2 *Player, playerError *PlayerError) {
 
 	common.Send(player1.socket, common.GetPointsMessage(player1.points, player2.points))
-	common.Receive(player1.socket)
+	_, err := common.Receive(player1.socket)
+	if err != nil {
+		playerError.player = player1
+		playerError.err = err
+	}
 	common.Send(player2.socket, common.GetPointsMessage(player2.points, player1.points))
-	common.Receive(player2.socket)
+	_, err = common.Receive(player2.socket)
+	if err != nil {
+		playerError.player = player2
+		playerError.err = err
+	}
 }
 
-func sendPlayerCardPlayed(player *Player, card Card) error {
+func sendPlayerCardPlayed(player *Player, card Card, playerError *PlayerError) int {
 	common.Send(player.socket, common.GetCardPlayed(getCardColors(card.getFullName())))
 	_, err := common.Receive(player.socket)
-	return err
+	if err != nil {
+		playerError.player = player
+		playerError.err = err
+		return -1
+	}
+	return 0
 }
 
-func SendInfoPlayer(player *Player, message string) error {
+func SendInfoPlayer(player *Player, message string, playerError *PlayerError) {
 	common.Send(player.socket, message)
 	_, err := common.Receive(player.socket)
-	return err
-
+	if err != nil {
+		playerError.player = player
+		playerError.err = err
+	}
 }

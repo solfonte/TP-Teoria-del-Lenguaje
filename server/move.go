@@ -35,21 +35,21 @@ func (move *Move) canSingEnvido() bool {
 	return move.typeMove == FIRST_MOVE && !move.alreadySangEnvido && !move.alreadyAceptedTruco && !move.alreadyAceptedRetruco
 }
 
-func (move *Move) handleEnvido(player *Player, option int) {
+func (move *Move) handleEnvido(player *Player, option int, playerError *PlayerError) {
 	if option == CANTAR_ENVIDO_ENVIDO {
-		SendInfoPlayer(player, common.SingEnvidoEnvido)
+		SendInfoPlayer(player, common.SingEnvidoEnvido, playerError)
 		move.envidoState = CANTAR_ENVIDO_ENVIDO
 	} else if option == NO_QUERER_ENVIDO_ENVIDO {
-		SendInfoPlayer(player, common.RejectEnvidoEnvido)
+		SendInfoPlayer(player, common.RejectEnvidoEnvido, playerError)
 		move.envidoState = NO_QUERER_ENVIDO_ENVIDO
 	} else if option == NO_QUERER_ENVIDO {
-		SendInfoPlayer(player, common.RejectEnvido)
+		SendInfoPlayer(player, common.RejectEnvido, playerError)
 		move.envidoState = NO_QUERER_ENVIDO
 	} else if option == QUERER_ENVIDO {
-		SendInfoPlayer(player, common.AcceptEnvido)
+		SendInfoPlayer(player, common.AcceptEnvido, playerError)
 		move.envidoState = QUERER_ENVIDO
 	} else if option == CANTAR_ENVIDO {
-		SendInfoPlayer(player, common.SingEnvido)
+		SendInfoPlayer(player, common.SingEnvido, playerError)
 		move.envidoState = CANTAR_ENVIDO
 		move.alreadySangEnvido = true
 	}
@@ -67,51 +67,51 @@ func (move *Move) setAlreadySangTruco(player1 *Player, player2 *Player) {
 	move.alreadyAceptedRetruco = (player1.hasSangReTruco || player2.hasSangReTruco)
 }
 
-func (move *Move) handleTruco(player *Player, option int) {
+func (move *Move) handleTruco(player *Player, option int, playerError *PlayerError) {
 	if option == CANTAR_RETRUCO {
-		SendInfoPlayer(player, common.SingRetruco)
+		SendInfoPlayer(player, common.SingRetruco, playerError)
 		move.trucoState = CANTAR_RETRUCO
 		player.hasSangReTruco = true
 	} else if option == RECHAZAR_TRUCO {
 		move.trucoState = RECHAZAR_TRUCO
-		SendInfoPlayer(player, common.RejectTruco)
+		SendInfoPlayer(player, common.RejectTruco, playerError)
 	} else if option == RECHAZAR_RETRUCO {
 		move.trucoState = RECHAZAR_RETRUCO
-		SendInfoPlayer(player, common.RejectRetruco)
+		SendInfoPlayer(player, common.RejectRetruco, playerError)
 	} else if option == ACEPTAR_RETRUCO {
 		move.trucoState = ACEPTAR_RETRUCO
-		SendInfoPlayer(player, common.AcceptRetruco)
+		SendInfoPlayer(player, common.AcceptRetruco, playerError)
 		move.alreadyAceptedRetruco = true
 		player.setNotifyRetruco(true)
 	} else if option == ACEPTAR_TRUCO {
-		SendInfoPlayer(player, common.AcceptTruco)
+		SendInfoPlayer(player, common.AcceptTruco, playerError)
 		move.trucoState = ACEPTAR_TRUCO
 		move.alreadyAceptedTruco = true
 		player.setNotifyTruco(true)
 	} else if option == CANTAR_TRUCO {
-		SendInfoPlayer(player, common.SingTruco)
+		SendInfoPlayer(player, common.SingTruco, playerError)
 		move.trucoState = CANTO_TRUCO
 		move.alreadySangTruco = true
 		player.hasSagnTruco = true
 	}
 }
 
-func (move *Move) handleTrucoResult(actual *Player, opponent *Player, finish *bool) bool {
+func (move *Move) handleTrucoResult(actual *Player, opponent *Player, finish *bool, playerError *PlayerError) bool {
 
 	if actual.lastMove == RECHAZAR_TRUCO || actual.lastMove == RECHAZAR_RETRUCO {
 		message := common.OpponetRejectTruco
 		if actual.lastMove == RECHAZAR_RETRUCO {
 			message = common.OpponetRejectRetruco
 		}
-		SendInfoPlayer(opponent, message)
-		return move.finish_round(opponent, actual, finish)
+		SendInfoPlayer(opponent, message, playerError)
+		return move.finish_round(opponent, actual, finish, playerError)
 	} else if opponent.lastMove == RECHAZAR_TRUCO || opponent.lastMove == RECHAZAR_RETRUCO {
 		message := common.OpponetRejectTruco
 		if opponent.lastMove == RECHAZAR_RETRUCO {
 			message = common.OpponetRejectRetruco
 		}
-		SendInfoPlayer(actual, message)
-		return move.finish_round(actual, opponent, finish)
+		SendInfoPlayer(actual, message, playerError)
+		return move.finish_round(actual, opponent, finish, playerError)
 	} else if actual.lastMove == CANTAR_RETRUCO && opponent.lastMove == CANTAR_TRUCO {
 		actual.turn = false
 	} else if opponent.lastMove == CANTAR_RETRUCO && actual.lastMove == CANTAR_TRUCO {
@@ -124,28 +124,28 @@ func (move *Move) handleTrucoResult(actual *Player, opponent *Player, finish *bo
 
 /*********************************** HANDLERS ***********************************************/
 
-func (move *Move) handleResult(actual *Player, opponent *Player, finish *bool) bool {
+func (move *Move) handleResult(actual *Player, opponent *Player, finish *bool, playerError *PlayerError) bool {
 	if actual.lastMove == TIRAR_CARTA && opponent.lastMove == CANTAR_RETRUCO {
 		opponent.lastMove = 0
 	} else if opponent.lastMove == TIRAR_CARTA && actual.lastMove == CANTAR_RETRUCO {
 		actual.lastMove = 0
 	}
 	if actual.lastMove == IRSE_AL_MAZO {
-		SendInfoPlayer(opponent, common.OpponetHasSangFinishRound)
-		return move.finish_round(opponent, actual, finish)
+		SendInfoPlayer(opponent, common.OpponetHasSangFinishRound, playerError)
+		return move.finish_round(opponent, actual, finish, playerError)
 	} else if opponent.lastMove == IRSE_AL_MAZO {
-		SendInfoPlayer(actual, common.OpponetHasSangFinishRound)
-		return move.finish_round(actual, opponent, finish)
+		SendInfoPlayer(actual, common.OpponetHasSangFinishRound, playerError)
+		return move.finish_round(actual, opponent, finish, playerError)
 	} else if len(move.cardsPlayed) == MAX_CARDS_FOR_MOVE {
 		message := common.BBlue + "Tu oponente tiro una carta " + move.cardsPlayed[1].card.getFullName() + common.NONE + "\n"
-		SendInfoPlayer(opponent, message)
+		SendInfoPlayer(opponent, message, playerError)
 		result := move.cardsPlayed[0].card.compareCards(move.cardsPlayed[1].card)
-		return move.assingWinner(result, move.cardsPlayed[0].player, move.cardsPlayed[1].player, finish)
+		return move.assingWinner(result, move.cardsPlayed[0].player, move.cardsPlayed[1].player, finish, playerError)
 	} else if envidoRelatedOptions(actual.lastMove, opponent.lastMove) {
-		handleEnvidoResult(move, actual, opponent, finish)
+		handleEnvidoResult(move, actual, opponent, finish, playerError)
 		return false
 	} else if trucoRelatedOptions(actual.lastMove, opponent.lastMove) {
-		return move.handleTrucoResult(actual, opponent, finish)
+		return move.handleTrucoResult(actual, opponent, finish, playerError)
 	}
 	return false
 }
@@ -193,8 +193,8 @@ func (move *Move) handlePlayerActivity(player *Player, playerMove *int, playerEr
 	return
 }
 
-func (move *Move) handleFinishRound(player *Player) {
-	SendInfoPlayer(player, common.SingFinishRound)
+func (move *Move) handleFinishRound(player *Player, playerError *PlayerError) {
+	SendInfoPlayer(player, common.SingFinishRound, playerError)
 	move.hasSangFinishRound = true
 }
 
@@ -205,22 +205,22 @@ func (move *Move) handleThrowACard(player *Player, playerError *PlayerError) int
 	option, err := loopSendOptionsToPlayer(options, player, playerError, message)
 	cardPlayer := CardPlayer{card: playerCards[option-1], player: player}
 	move.cardsPlayed = append(move.cardsPlayed, cardPlayer)
-	sendPlayerCardPlayed(player, playerCards[option-1])
+	err = sendPlayerCardPlayed(player, playerCards[option-1], playerError)
 	player.removeCardSelected(option - 1)
 	return err
 }
 
-func (move *Move) assingWinner(result int, player1 *Player, player2 *Player, finish *bool) bool {
+func (move *Move) assingWinner(result int, player1 *Player, player2 *Player, finish *bool, playerError *PlayerError) bool {
 	if result == 1 || result == 0 {
-		return move.process_winner(player1, player2, finish)
+		return move.process_winner(player1, player2, finish, playerError)
 	} else {
-		return move.process_winner(player2, player1, finish)
+		return move.process_winner(player2, player1, finish, playerError)
 	}
 }
 
 /*********************************** MOVE FUCTIONS ***********************************************/
 
-func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool {
+func (move *Move) finish_round(winner *Player, loser *Player, finish *bool, playerError *PlayerError) bool {
 	move.winner.id = winner.id
 	move.winner.points = 0
 	move.loser.id = loser.id
@@ -250,7 +250,7 @@ func (move *Move) finish_round(winner *Player, loser *Player, finish *bool) bool
 
 	*finish = true
 
-	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove))
+	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove), playerError)
 
 	return true
 }
@@ -283,7 +283,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 				option2 = option_wait
 				player2.lastMove = option_wait
 			}
-			moveFinished = move.handleResult(player1, player2, finish)
+			moveFinished = move.handleResult(player1, player2, finish, playerError)
 			movesChannel2 <- option1 //al jugador 2 le mando la jugada del jugador 1
 		} else {
 			option1 = 0
@@ -300,7 +300,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 				player1.lastMove = option_wait
 			}
 
-			moveFinished = move.handleResult(player2, player1, finish)
+			moveFinished = move.handleResult(player2, player1, finish, playerError)
 			movesChannel1 <- option2
 		} else {
 			option2 = 0
@@ -315,7 +315,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 
 }
 
-func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bool {
+func (move *Move) process_winner(winner *Player, loser *Player, finish *bool, playerError *PlayerError) bool {
 	move.winner.id = winner.id
 	move.winner.points = 0
 	move.loser.id = loser.id
@@ -337,7 +337,7 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 			move.winner.points = 0
 		}
 	}
-	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove))
+	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove), playerError)
 	if winner.winsPerPlay == 2 || move.hasSangFinishRound {
 		*finish = true
 	} else {
@@ -349,7 +349,6 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool) bo
 func (move *Move) askPlayerToWait(player *Player, playerOption *int, playerError *PlayerError) int {
 	common.Send(player.socket, common.WaitPlayerToPlayMessage)
 	_, err := common.Receive(player.socket)
-
 	if err != nil {
 		playerError.player = player
 		playerError.err = err
@@ -376,7 +375,10 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	option := 0
 	var err int
 
-	sendInfoOpponent(move, player)
+	sendInfoOpponent(move, player, playerError)
+	if playerError.err != nil {
+		return -1, -1
+	}
 	option, err = move.sendInfoMove(player, options, playerError)
 
 	if playerError.err != nil {
@@ -384,13 +386,13 @@ func (move *Move) askPlayerToMove(player *Player, options []int, playerError *Pl
 	}
 
 	if option == IRSE_AL_MAZO {
-		move.handleFinishRound(player)
+		move.handleFinishRound(player, playerError)
 		return IRSE_AL_MAZO, err
 	} else if option == TIRAR_CARTA {
 		err = move.handleThrowACard(player, playerError)
 	} else {
-		move.handleEnvido(player, option)
-		move.handleTruco(player, option)
+		move.handleEnvido(player, option, playerError)
+		move.handleTruco(player, option, playerError)
 	}
 
 	return option, err

@@ -31,16 +31,16 @@ func (player *Player) getCards() []Card {
 	return player.hand.cardsNotSelected
 }
 
-func (player *Player) verifyEnvidoWinnerAgainst(opponent *Player) *Player {
+func (player *Player) verifyEnvidoWinnerAgainst(opponent *Player, playerError *PlayerError) *Player {
 	if player.hand.winsEnvidoOver(opponent.hand) {
 		msgWinning := common.GetWinningEnvidoMessage(player.hand.calculatePointsEnvido(), opponent.hand.calculatePointsEnvido())
 		msgLossing := common.GetLossingEnvidoMessage(opponent.hand.calculatePointsEnvido(), player.hand.calculatePointsEnvido())
-		sendInfoPlayers(player, opponent, msgWinning, msgLossing)
+		sendInfoPlayers(player, opponent, msgWinning, msgLossing, playerError)
 		return player
 	}
 	msgWinning := common.GetWinningEnvidoMessage(opponent.hand.calculatePointsEnvido(), player.hand.calculatePointsEnvido())
 	msgLossing := common.GetLossingEnvidoMessage(player.hand.calculatePointsEnvido(), opponent.hand.calculatePointsEnvido())
-	sendInfoPlayers(opponent, player, msgWinning, msgLossing)
+	sendInfoPlayers(opponent, player, msgWinning, msgLossing, playerError)
 	return opponent
 }
 
