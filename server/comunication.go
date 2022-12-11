@@ -10,9 +10,8 @@ import (
 func sendMenu(player Player) (string, error) {
 	common.Send(player.socket, common.RequestMatchMessage)
 	messagePlayer, error := common.Receive(player.socket)
-	fmt.Println(messagePlayer)
+
 	response := strings.ToUpper(messagePlayer)
-	fmt.Println("RESPONSE QUE ME LLEGA ", response)
 
 	for (response != "CREATE") && (response != "JOIN") {
 		common.Send(player.socket, common.ErrorCreateOrJoin)
@@ -100,12 +99,11 @@ func sendInfoCards(player Player, playerError *PlayerError) {
 
 func sendInfoPlayers(winner *Player, loser *Player, msgWinner string, msgLoser string) {
 	common.Send(winner.socket, msgWinner)
-	msg, _ := common.Receive(winner.socket)
-	fmt.Println(msg)
+	common.Receive(winner.socket)
 
 	common.Send(loser.socket, msgLoser)
-	msg1, _ := common.Receive(loser.socket)
-	fmt.Println(msg1)
+	common.Receive(loser.socket)
+
 }
 
 func SendWelcomeMessage(player *Player) {
@@ -139,13 +137,15 @@ func sendInfoPointsPlayers(player1 *Player, player2 *Player) {
 	common.Receive(player2.socket)
 }
 
-func sendPlayerCardPlayed(player *Player, card Card) {
+func sendPlayerCardPlayed(player *Player, card Card) error {
 	common.Send(player.socket, common.GetCardPlayed(getCardColors(card.getFullName())))
-	common.Receive(player.socket)
+	_, err := common.Receive(player.socket)
+	return err
 }
 
-func SendInfoPlayer(player *Player, message string) {
+func SendInfoPlayer(player *Player, message string) error {
 	common.Send(player.socket, message)
-	msg, _ := common.Receive(player.socket)
-	fmt.Println("Le nvio dato especial y espero un OK recibo: ", msg)
+	_, err := common.Receive(player.socket)
+	return err
+
 }

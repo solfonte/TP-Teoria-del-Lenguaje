@@ -69,7 +69,7 @@ func contains_message(message string) bool {
 }
 
 func processGameloop(socket net.Conn) {
-	// loop de server manda algo cliente responde
+
 	reader := bufio.NewReader(os.Stdin)
 	ch := make(chan string)
 	go ProcessResponseClient(ch, reader)
@@ -93,7 +93,6 @@ func processGameloop(socket net.Conn) {
 						if strings.TrimSpace(stdin) == QUIT {
 							return
 						}
-
 						common.Send(socket, stdin)
 						finish = true
 					}
