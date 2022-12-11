@@ -10,7 +10,7 @@ import (
 
 const (
 	HOST                  = "localhost"
-	PORT                  = "9965"
+	PORT                  = "9967"
 	TYPE                  = "tcp"
 	ShutdownServerCommand = "Q"
 )
@@ -28,10 +28,9 @@ func Start() {
 		os.Exit(1)
 	}
 	// delay the execution of the function or method or an anonymous method until the nearby functions returns.
-	acceptor := Acceptor{Listener: server}
+	acceptor := Acceptor{Listener: server, matchManager: &MatchManager{matches: []*Match{}}}
 	go stop(acceptor)
 	start_receiver(acceptor)
-
 }
 
 func stop(acceptor Acceptor) {
@@ -47,4 +46,5 @@ func stop(acceptor Acceptor) {
 			stop_receiver(acceptor)
 		}
 	}
+	return
 }
