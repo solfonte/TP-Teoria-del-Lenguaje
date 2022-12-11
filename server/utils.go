@@ -241,3 +241,24 @@ func sendInfoOpponent(move *Move, player *Player) {
 	}
 
 }
+
+func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
+	options := []int{CANTAR_ENVIDO, QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO}
+
+	for _, option := range options {
+		if playerOption == option || anotherPlayerOption == option {
+			return true
+		}
+	}
+	return false
+}
+
+func trucoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
+	options := []int{CANTAR_TRUCO, CANTO_TRUCO, RECHAZAR_TRUCO, CANTAR_RETRUCO, RECHAZAR_RETRUCO, ACEPTAR_TRUCO, ACEPTAR_RETRUCO}
+	for _, option := range options {
+		if playerOption == option || anotherPlayerOption == option {
+			return true
+		}
+	}
+	return false
+}

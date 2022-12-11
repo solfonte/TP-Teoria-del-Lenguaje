@@ -60,16 +60,7 @@ type Move struct {
 
 /*********************************** ENVIDO FUNCTIONS ***********************************************/
 
-func envidoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
-	options := []int{CANTAR_ENVIDO, QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO_ENVIDO, NO_QUERER_ENVIDO, QUERER_ENVIDO_ENVIDO}
 
-	for _, option := range options {
-		if playerOption == option || anotherPlayerOption == option {
-			return true
-		}
-	}
-	return false
-}
 
 func (move *Move) canSingEnvido() bool {
 	return move.typeMove == FIRST_MOVE && !move.alreadySangEnvido && !move.alreadyAceptedTruco && !move.alreadyAceptedRetruco
@@ -107,15 +98,6 @@ func (move *Move) setAlreadySangTruco(player1 *Player, player2 *Player) {
 	move.alreadyAceptedRetruco = (player1.hasSangReTruco || player2.hasSangReTruco)
 }
 
-func trucoRelatedOptions(playerOption int, anotherPlayerOption int) bool {
-	options := []int{CANTAR_TRUCO, CANTO_TRUCO, RECHAZAR_TRUCO, CANTAR_RETRUCO, RECHAZAR_RETRUCO, ACEPTAR_TRUCO, ACEPTAR_RETRUCO}
-	for _, option := range options {
-		if playerOption == option || anotherPlayerOption == option {
-			return true
-		}
-	}
-	return false
-}
 
 func (move *Move) handleTruco(player *Player, option int) {
 	if option == CANTAR_RETRUCO {
