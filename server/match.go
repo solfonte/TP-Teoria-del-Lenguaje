@@ -22,6 +22,10 @@ type PlayerError struct {
 	err    error
 }
 
+func (match *Match) getPlayersMatch() (*Player, *Player) {
+	return match.players[match.initialPlayerId], match.players[match.waiterPlayerId]
+}
+
 func (match *Match) clearCards(players map[int]*Player) {
 	for _, p := range players {
 		p.clearCards()
