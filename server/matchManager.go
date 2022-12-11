@@ -27,7 +27,10 @@ func (matchManager *MatchManager) process_player(player *Player) {
 		matchManager.matches = append(matchManager.matches, &newMatch)
 		matchManager.mutexMatches.Unlock()
 	} else {
-		matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: player, duration: requestedmatch["duration"]})
+		fmt.Println("Guardo al jugador que hizo join en la cola de jugadores esperando")
+		matchManager.mutexMatches.Lock()
+		matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: player, duration: requestedmatch["duration"], maxPlayers: requestedmatch["members"]})
+		matchManager.mutexMatches.Unlock()
 	}
 }
 
@@ -63,11 +66,17 @@ func (matchManager *MatchManager) startMatches(finishChannel chan bool) {
 		default:
 			matchManager.mutexMatches.Lock()
 			for _, match := range matchManager.matches {
-				if match.readyToStart && !match.started {
+				if !match.started && matchManager.cancelMatch(match) {
+					matchManager.addMatchPlayersToWaitingQueue(match)
+					match.finish = true
+				}else if match.readyToStart && !match.started {
 					match.started = true
+					fmt.Println("arranco match")
 					go match.beginGame()
 				}
-
+				if len(finishChannel) > 0 {
+					finish = <-finishChannel
+				}
 			}
 			matchManager.mutexMatches.Unlock()
 		}
@@ -108,3 +117,29 @@ func (matchManager *MatchManager) playerFinish(player Player) bool {
 	}
 	return false
 }
+
+
+func (matchManager *MatchManager) cancelMatch(match *Match) bool{
+	if match.finish {
+		return false
+	}
+	cancel := false
+	for _, p := range match.players {
+		if !p.isReadyToPlay() {
+			cancel = true
+		}
+	}
+	return cancel
+}
+
+func (matchManager *MatchManager) addMatchPlayersToWaitingQueue(match *Match){
+	for _, p := range match.players {
+		if p.isReadyToPlay(){
+			fmt.Print(p.name, " is connected when adding to waiting queue")
+			matchManager.mutexMatches.Lock()
+			matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: p, duration: match.duration, maxPlayers: match.maxPlayers})
+			matchManager.mutexMatches.Unlock()
+		}
+	}
+}
+

@@ -86,7 +86,7 @@ func (match *Match) DisconnectMatch() {
 
 func (match *Match) handleConnections(stop *bool, playerError *PlayerError) {
 	for *stop == false {
-		if playerError.err != nil {
+		if playerError.err != nil && match.started {
 			fmt.Println("desconecto")
 			match.handle_disconnection_player(*playerError)
 			return

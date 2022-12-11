@@ -29,12 +29,11 @@ func start_receiver(acceptor Acceptor) {
 			finishChannelFinishMatch <- true
 			return
 		}
-		newPlayer := Player{id: len(acceptor.players) + 1, socket: peer, lastMove: 0}
+		newPlayer := Player{id: len(acceptor.players) + 1, socket: peer, lastMove: 0, connected: true}
 		acceptor.players = append(acceptor.players, newPlayer)
 
 		acceptor.matchManager.process_player(&newPlayer)
 		fmt.Println("client connected")
-
 	}
 }
 

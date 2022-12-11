@@ -309,8 +309,10 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	}
 	orderChannel1 <- STOP
 	orderChannel2 <- STOP
-	player1.lastMove = 0
-	player2.lastMove = 0
+	if (playerError.err != nil){
+		player1.lastMove = 0
+		player2.lastMove = 0
+	}
 	return err
 
 }
