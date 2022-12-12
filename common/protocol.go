@@ -74,7 +74,8 @@ const (
 
 	ErrorCreateOrJoin = BRed + "Error: ingrese CREATE para crear un juego O ingresa JOIN para unirte a una partida ya creada" + NONE + "\n"
 	ErrorMaxPoints    = BRed + "Error! ingrese duracion de partida de valor 15 o 30 puntos" + NONE + "\n"
-	Rules             = "Las reglas del juego son: Podes cantar envido, envido-envido, real envido, truco y retruco"
+	Rules             = "Las reglas del juego son: Podes cantar envido, envido-envido, real envido, truco y retruco o irte al mazo"
+	Ready_To_Play     = "Listo para jugar?"
 )
 
 func GetWinningMoveMessage(number int) string {
@@ -99,7 +100,7 @@ func GetPointsMessage(player1Points int, player2Points int) string {
 
 func GetWinningEnvidoMessage(player1Points int, player2Points int) string {
 	message := BPurple + "Ganaste el Envido con " + strconv.Itoa(player1Points) + " puntos"
-	return message + " y tu oponente perdio con " + strconv.Itoa(player2Points) + " puntos" + "\n"
+	return message + " y tu oponente perdio con " + strconv.Itoa(player2Points) + " puntos" + NONE + "\n"
 }
 
 func GetLossingEnvidoMessage(player1Points int, player2Points int) string {
