@@ -45,4 +45,8 @@ const (
 	MAX_CARDS_FOR_MOVE = 2
 	LAST_MOVE          = 3
 	FIRST_MOVE         = 1
+	CREATE             = "CREATE"
+	JOIN               = "JOIN"
+	DURATION_15        = 15
+	DURATION_30        = 30
 )

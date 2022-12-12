@@ -5,10 +5,6 @@ import (
 	"net"
 	"truco/app/common"
 )
-const (
-	READY_TO_PLAY_MESSAGE = "Listo para jugar?"
-)
-
 
 type Player struct {
 	id             int
@@ -24,7 +20,7 @@ type Player struct {
 	notifyTruco    bool
 	notifyRetruco  bool
 	turn           bool
-	connected	   bool
+	connected      bool
 }
 
 func (player *Player) clearCards() {
@@ -97,14 +93,13 @@ func (player *Player) setNotifyRetruco(notify bool) {
 }
 
 func (player *Player) isReadyToPlay() bool {
-	common.Send(player.socket, READY_TO_PLAY_MESSAGE)
+	common.Send(player.socket, common.Ready_To_Play)
 	_, err := common.Receive(player.socket)
 	if err != nil {
 		fmt.Println("disconnected")
 		player.connected = false
 		return false
-	} 
-	fmt.Println("no se desconecto ", player.name)
+	}
 	return true
 }
 

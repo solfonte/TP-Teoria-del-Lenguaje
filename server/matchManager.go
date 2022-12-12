@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -27,7 +26,6 @@ func (matchManager *MatchManager) process_player(player *Player) {
 		matchManager.matches = append(matchManager.matches, &newMatch)
 		matchManager.mutexMatches.Unlock()
 	} else {
-		fmt.Println("Guardo al jugador que hizo join en la cola de jugadores esperando")
 		matchManager.mutexMatches.Lock()
 		matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: player, duration: requestedmatch["duration"]})
 		matchManager.mutexMatches.Unlock()
@@ -46,7 +44,7 @@ func (matchManager *MatchManager) processWaitingPlayers(finishChannel chan bool)
 				matchManager.mutexMatches.Lock()
 				for _, match := range matchManager.matches {
 					if waitingPlayer.duration == match.duration && !match.readyToStart {
-						if (waitingPlayer.player.isReadyToPlay()){
+						if waitingPlayer.player.isReadyToPlay() {
 							match.addPlayerToMatch(waitingPlayer.player)
 						}
 						matchManager.waitingPlayers = append(matchManager.waitingPlayers[:index], matchManager.waitingPlayers[index+1:]...)
@@ -56,7 +54,7 @@ func (matchManager *MatchManager) processWaitingPlayers(finishChannel chan bool)
 			}
 		}
 	}
-	fmt.Println("Sali de processwaitingPlayers")
+
 }
 
 func (matchManager *MatchManager) startMatches(finishChannel chan bool) {
@@ -69,12 +67,10 @@ func (matchManager *MatchManager) startMatches(finishChannel chan bool) {
 			matchManager.mutexMatches.Lock()
 			for _, match := range matchManager.matches {
 				if !match.started && matchManager.cancelMatch(match) {
-					fmt.Println("esta para cancelar el match")
 					matchManager.addMatchPlayersToWaitingQueue(match)
 					match.finish = true
-				}else if match.readyToStart && !match.started {
+				} else if match.readyToStart && !match.started {
 					match.started = true
-					fmt.Println("arranco match")
 					go match.beginGame()
 				}
 				if len(finishChannel) > 0 {
@@ -84,7 +80,6 @@ func (matchManager *MatchManager) startMatches(finishChannel chan bool) {
 			matchManager.mutexMatches.Unlock()
 		}
 	}
-	fmt.Println("Sali de startMatches")
 }
 
 func (matchManager *MatchManager) deleteFinishMatches(finishChannel chan bool) {
@@ -109,7 +104,6 @@ func (matchManager *MatchManager) deleteFinishMatches(finishChannel chan bool) {
 			matchManager.matches = temp
 		}
 	}
-	fmt.Println("sali de delete matches")
 }
 
 func (matchManager *MatchManager) playerFinish(player Player) bool {
@@ -121,8 +115,7 @@ func (matchManager *MatchManager) playerFinish(player Player) bool {
 	return false
 }
 
-
-func (matchManager *MatchManager) cancelMatch(match *Match) bool{
+func (matchManager *MatchManager) cancelMatch(match *Match) bool {
 	if match.finish {
 		return false
 	}
@@ -135,14 +128,12 @@ func (matchManager *MatchManager) cancelMatch(match *Match) bool{
 	return cancel
 }
 
-func (matchManager *MatchManager) addMatchPlayersToWaitingQueue(match *Match){
+func (matchManager *MatchManager) addMatchPlayersToWaitingQueue(match *Match) {
 	for _, p := range match.players {
-		if p.isReadyToPlay(){
-			fmt.Print(p.name, " is connected when adding to waiting queue")
+		if p.isReadyToPlay() {
 			matchManager.mutexMatches.Lock()
 			matchManager.waitingPlayers = append(matchManager.waitingPlayers, WaitingPlayer{player: p, duration: match.duration})
 			matchManager.mutexMatches.Unlock()
 		}
 	}
 }
-

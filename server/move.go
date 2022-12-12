@@ -309,7 +309,7 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 	}
 	orderChannel1 <- STOP
 	orderChannel2 <- STOP
-	if (playerError.err != nil){
+	if playerError.err != nil {
 		player1.lastMove = 0
 		player2.lastMove = 0
 	}
@@ -349,19 +349,12 @@ func (move *Move) process_winner(winner *Player, loser *Player, finish *bool, pl
 }
 
 func (move *Move) askPlayerToWait(player *Player, playerOption *int, playerError *PlayerError) int {
-	common.Send(player.socket, common.WaitPlayerToPlayMessage)
-	_, err := common.Receive(player.socket)
-	if err != nil {
-		playerError.player = player
-		playerError.err = err
+	SendInfoPlayer(player, common.WaitPlayerToPlayMessage, playerError)
+	if playerError.err != nil {
 		return -1
 	}
-
 	move.handlePlayerActivity(player, playerOption, playerError)
-
-	if err != nil {
-		playerError.player = player
-		playerError.err = err
+	if playerError.err != nil {
 		return -1
 	}
 	return 0

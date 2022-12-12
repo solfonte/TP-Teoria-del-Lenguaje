@@ -13,7 +13,7 @@ func sendMenu(player Player) (string, error) {
 
 	response := strings.ToUpper(messagePlayer)
 
-	for (response != "CREATE") && (response != "JOIN") {
+	for (response != CREATE) && (response != JOIN) {
 		common.Send(player.socket, common.ErrorCreateOrJoin)
 		messagePlayer, error = common.Receive(player.socket)
 		response = strings.ToUpper(messagePlayer)
@@ -26,7 +26,7 @@ func getAmountOfPoints(player Player) int {
 	duration, _ := common.Receive(player.socket)
 	amout_duration_points, _ := strconv.Atoi(duration)
 
-	for amout_duration_points != 15 && amout_duration_points != 30 {
+	for amout_duration_points != DURATION_15 && amout_duration_points != DURATION_30 {
 		common.Send(player.socket, common.ErrorMaxPoints)
 		duration, _ := common.Receive(player.socket)
 		amout_duration_points, _ = strconv.Atoi(duration)
@@ -38,7 +38,7 @@ func getAmountOfPoints(player Player) int {
 func processRequest(player Player, message string) map[string]int {
 	match := make(map[string]int)
 
-	if message == "CREATE" {
+	if message == CREATE {
 		match["create"] = 0
 		getMatchParameters(match, player)
 		common.Send(player.socket, common.CreateMatchMessage)
