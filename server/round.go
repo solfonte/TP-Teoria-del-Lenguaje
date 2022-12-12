@@ -16,11 +16,6 @@ type Round struct {
 	number        int
 }
 
-const (
-	MOVES_PER_ROUND = 3
-	ERROR           = -1
-)
-
 func (Round *Round) initialize(players map[int](*Player)) {
 	Round.players = players
 	Round.moves = 0
@@ -47,13 +42,15 @@ func (round *Round) startRound(initialCurrentId int, initialWaitingId int, playe
 		}
 
 		completeRound += 1
-		round.decide_hand_players(move.winner.id, move.loser.id)
+		round.decide_hand_players(move.winnerId, move.loserId)
 	}
 
 	round.points = round.getMatchPointsPlayers(initialCurrentId, initialWaitingId)
 
 	round.currentPlayer.turn = true
 	round.waitingPlayer.turn = true
+	round.currentPlayer.lastMove = 0
+	round.waitingPlayer.lastMove = 0
 	sendInfoPlayers(round.currentPlayer, round.waitingPlayer, common.GetWinningRoundMessage(round.number), common.GetLossingRoundMessage(round.number), playerError)
 	sendInfoPointsPlayers(round.currentPlayer, round.waitingPlayer, playerError)
 	return round.points

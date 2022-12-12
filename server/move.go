@@ -4,19 +4,14 @@ import (
 	"truco/app/common"
 )
 
-type InfoPlayer struct {
-	id     int
-	points int
-}
-
 type CardPlayer struct {
 	card   Card
 	player *Player
 }
 
 type Move struct {
-	winner                InfoPlayer
-	loser                 InfoPlayer
+	winnerId              int
+	loserId               int
 	points                int
 	typeMove              int
 	cardsPlayed           []CardPlayer
@@ -221,29 +216,20 @@ func (move *Move) assingWinner(result int, player1 *Player, player2 *Player, fin
 /*********************************** MOVE FUCTIONS ***********************************************/
 
 func (move *Move) finish_round(winner *Player, loser *Player, finish *bool, playerError *PlayerError) bool {
-	move.winner.id = winner.id
-	move.winner.points = 0
-	move.loser.id = loser.id
-	move.loser.points = 0
-
+	move.winnerId = winner.id
+	move.loserId = loser.id
 	if move.hasSangFinishRound && move.trucoState != ACEPTAR_TRUCO && move.trucoState != ACEPTAR_RETRUCO && move.envidoState != QUERER_ENVIDO && move.envidoState != QUERER_ENVIDO_ENVIDO && move.trucoState != RECHAZAR_RETRUCO && move.trucoState != CANTAR_RETRUCO {
-		move.winner.points = 1
 		winner.points += 1
 	} else {
 		if move.trucoState == ACEPTAR_TRUCO || move.envidoState == QUERER_ENVIDO {
-			move.winner.points = 2
 			winner.points += 2
 		} else if move.envidoState == QUERER_ENVIDO_ENVIDO {
-			move.winner.points = 4
 			winner.points += 4
 		} else if move.trucoState == RECHAZAR_RETRUCO || (move.hasSangFinishRound && move.trucoState == CANTAR_RETRUCO) {
-			move.winner.points = 2
 			winner.points += 2
 		} else if move.trucoState == ACEPTAR_RETRUCO {
-			move.winner.points = 3
 			winner.points += 3
 		} else {
-			move.winner.points = 1
 			winner.points += 1
 		}
 	}
@@ -318,25 +304,18 @@ func (move *Move) start_move(player1 *Player, player2 *Player, playerError *Play
 }
 
 func (move *Move) process_winner(winner *Player, loser *Player, finish *bool, playerError *PlayerError) bool {
-	move.winner.id = winner.id
-	move.winner.points = 0
-	move.loser.id = loser.id
-	move.loser.points = 0
+	move.winnerId = winner.id
+	move.loserId = loser.id
 	if !move.hasSangFinishRound {
 		winner.winsPerPlay += 1
 		if move.typeMove == LAST_MOVE || winner.winsPerPlay >= 2 {
 			if move.alreadyAceptedRetruco {
-				move.winner.points = 3
 				winner.points += 3
 			} else if winner.hasSagnTruco || loser.hasSagnTruco {
-				move.winner.points = 2
 				winner.points += 2
 			} else {
-				move.winner.points = 1
 				winner.points += 1
 			}
-		} else {
-			move.winner.points = 0
 		}
 	}
 	sendInfoPlayers(winner, loser, common.GetWinningMoveMessage(move.typeMove), common.GetLossingMoveMessage(move.typeMove), playerError)

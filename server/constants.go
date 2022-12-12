@@ -1,6 +1,7 @@
 package server
 
 const (
+
 	RANGO_I_TRES                = 4
 	RANGO_F_TRES                = 7
 	RANGO_I_DOS                 = 8
@@ -49,4 +50,6 @@ const (
 	JOIN               = "JOIN"
 	DURATION_15        = 15
 	DURATION_30        = 30
+	MOVES_PER_ROUND    = 3
+	ERROR              = -1
 )
